@@ -27,10 +27,32 @@ namespace CyberChan
         //    Dotabuff(ctx).ConfigureAwait(false).GetAwaiter().GetResult();
         //}
 
-        [Command("dotabuff")]
-        [Description("Retrieve your most recent dota match from dotabuff.")]
-        [Aliases("db","dota")]
-        public async Task Dotabuff(CommandContext ctx)
+        //[Command("dotabuff")]
+        //[Description("Retrieve your most recent dota match from dotabuff.")]
+        //[Aliases("db", "dota")]
+        //public async Task Dotabuff(CommandContext ctx)
+        //{
+        //    try
+        //    {
+        //        if (!Program.steamID.ContainsKey(ctx.User.Username))
+        //        {
+        //            await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
+        //        }
+        //        else
+        //        {
+        //            await ctx.RespondAsync($"Dotabuff Link: https://www.dotabuff.com/matches/{ Program.dota.GetMatchId(Program.steamID[ctx.User.Username])}");
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
+        //    }
+
+        //}
+
+        [Command("steamname")]
+        [Description("Displays your steam display name.")]
+        public async Task SteamTest(CommandContext ctx)
         {
             try
             {
@@ -40,7 +62,7 @@ namespace CyberChan
                 }
                 else
                 {
-                    await ctx.RespondAsync($"Dotabuff Link: https://www.dotabuff.com/matches/{ Program.dota.GetMatchId(Program.steamID[ctx.User.Username])}");
+                    await ctx.RespondAsync($"Steam Display Name: { Program.steam.DisplayNameSearch(Program.steamID[ctx.User.Username])}");
                 }
             }
             catch (Exception e)
@@ -69,14 +91,39 @@ namespace CyberChan
 
         }
 
-        [Command("mal")]
-        [Description("Search MyAnimeList for an anime. Usage: !mal <search term>")]
-        public async Task MyAnimeList(CommandContext ctx)
+        [Command("animesearch")]
+        [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
+        [Aliases("as", "mal")]
+        public async Task AnimeSearch(CommandContext ctx)
         {
-            var search = ctx.Message.Content.Replace("!mal ", "");
+            try
+            {
+                var search = ctx.Message.Content.Replace("!mal ", "");
+                search = search.Replace("!as ", "");
+                search = search.Replace("!animesearch ", "");
+                await ctx.RespondAsync($"https://kitsu.io/anime/{ Program.kitsu.AnimeSearch(search)}");
+            }
+            catch
+            {
+                await ctx.RespondAsync($"No show found.");
+            }
+        }
 
-            await ctx.RespondAsync($"https://myanimelist.net/anime/{ Program.mal.Search(search)}");
-
+        [Command("mangasearch")]
+        [Description("Search Kitsu for an anime. Usage: !mangasearch <search term>")]
+        [Aliases("ms")]
+        public async Task MangaSearch(CommandContext ctx)
+        {
+            try
+            {
+                var search = ctx.Message.Content.Replace("!mangasearch ", "");
+                search = search.Replace("!ms ", "");
+                await ctx.RespondAsync($"https://kitsu.io/manga/{ Program.kitsu.MangaSearch(search)}");
+            }
+            catch
+            {
+                await ctx.RespondAsync($"No show found.");
+            }
         }
 
         [Command("source")]

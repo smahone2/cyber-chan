@@ -14,7 +14,8 @@ namespace CyberChan
 
         public Dota()
         {
-            match = new DOTA2Match(ConfigurationManager.AppSettings["SteamAPIKey"]);
+            //steamweb.
+            //match = new DOTA2Match(ConfigurationManager.AppSettings["SteamAPIKey"]);
         }
 
         public string GetMatchId(string steamid)

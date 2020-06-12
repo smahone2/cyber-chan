@@ -17,7 +17,8 @@ namespace CyberChan
         static CommandsNextModule commands;
         public static Dota dota;
         public static Dictionary<String,String> steamID;
-        public static MyAnimeList mal;
+        public static Kitsu kitsu;
+        public static Steam steam;
 
         static void Main(string[] args)
         {
@@ -65,7 +66,8 @@ namespace CyberChan
             });
             commands.RegisterCommands<Commands>();
             dota = new Dota();
-            mal = new MyAnimeList();
+            kitsu = new Kitsu();
+            steam = new Steam();
         }
 
         static void Events()
