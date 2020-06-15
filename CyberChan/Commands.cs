@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -93,36 +94,99 @@ namespace CyberChan
 
         [Command("animesearch")]
         [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
-        [Aliases("as", "mal")]
+        [Aliases("as", "mal", "asearch")]
         public async Task AnimeSearch(CommandContext ctx)
         {
             try
             {
+                //var search = ctx.Command.Arguments.ToString();
                 var search = ctx.Message.Content.Replace("!mal ", "");
+                search = search.Replace("!asearch ", "");
                 search = search.Replace("!as ", "");
                 search = search.Replace("!animesearch ", "");
                 await ctx.RespondAsync($"https://kitsu.io/anime/{ Program.kitsu.AnimeSearch(search)}");
             }
             catch
             {
-                await ctx.RespondAsync($"No show found.");
+                await ctx.RespondAsync($"No anime found.");
             }
         }
 
         [Command("mangasearch")]
-        [Description("Search Kitsu for an anime. Usage: !mangasearch <search term>")]
-        [Aliases("ms")]
+        [Description("Search Kitsu for a manga. Usage: !mangasearch <search term>")]
+        [Aliases("ms", "msearch")]
         public async Task MangaSearch(CommandContext ctx)
         {
             try
             {
                 var search = ctx.Message.Content.Replace("!mangasearch ", "");
+                search = search.Replace("!msearch ", "");
                 search = search.Replace("!ms ", "");
                 await ctx.RespondAsync($"https://kitsu.io/manga/{ Program.kitsu.MangaSearch(search)}");
             }
             catch
             {
-                await ctx.RespondAsync($"No show found.");
+                await ctx.RespondAsync($"No manga found.");
+            }
+        }
+
+        [Command("roll")]
+        [Description("Roll some dice. Usage: !roll <[#]d#>")]
+        public async Task DiceRoll(CommandContext ctx)
+        {
+            try
+            {
+                var rand = new Random();
+                int sum = 0;
+                var result = "";
+
+                var num_die = Int32.Parse(ctx.Message.Content.Split(" ")[1].Split("d")[0]);
+                var die_sides = Int32.Parse(ctx.Message.Content.Split(" ")[1].Split("d")[1]);
+                for (int i = 0; i < num_die; i++)
+                {
+                    int roll = rand.Next(1, die_sides+1);
+                    sum = sum + roll;
+                    if (i+1 != num_die)
+                    {
+                        result = result + roll.ToString() + " + ";
+                    }
+                    else
+                    {
+                        result = result + roll.ToString() + " = " + sum;
+                    }
+                }
+
+                await ctx.RespondAsync($"Numbers rolled: {result}");
+            }
+            catch
+            {
+                await ctx.RespondAsync($"Invalid input.");
+            }
+        }
+
+        [Command("flip")]
+        [Description("Flip a coin. Usage: !flip")]
+        public async Task CoinFlip(CommandContext ctx)
+        {
+            try
+            {
+                var rand = new Random();
+                var result = "";
+
+                if (rand.Next(0, 2) == 1)
+                {
+                    result = "Heads";
+                }
+                else
+                {
+                    result = "Tails";
+                }
+                System.Console.WriteLine(rand.Next(0, 1));
+                await ctx.RespondAsync($"Coin flipped: {result}");
+            }
+            catch
+            {
+                await ctx.RespondAsync($"Invalid input.");
             }
         }
 
