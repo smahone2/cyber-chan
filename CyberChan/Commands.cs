@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 using DSharpPlus.VoiceNext;
+using GiphyDotNet.Manager;
+using GiphyDotNet.Model.Parameters;
 
 namespace CyberChan
 {
@@ -18,7 +21,16 @@ namespace CyberChan
         [Description("Just saying hello.")]
         public async Task Hi(CommandContext ctx)
         {
-            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!");
+            Giphy giphy = new Giphy();
+            RandomParameter giphyParameters = new RandomParameter()
+            {
+                Tag = "Hi"
+            };
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
+            embed.ImageUrl = giphy.RandomGif(giphyParameters).Result.Data.ImageUrl;
+
+            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!",false,embed);
+            
         }
 
         //[Command("db")]
@@ -66,7 +78,7 @@ namespace CyberChan
                     await ctx.RespondAsync($"Steam Display Name: { Program.steam.DisplayNameSearch(Program.steamID[ctx.User.Username])}");
                 }
             }
-            catch (Exception e)
+            catch 
             {
                 await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
             }

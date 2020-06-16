@@ -6,9 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="ffmpeg.exe" />
+    <None Remove="SteamIds.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.VoiceNext" Version="3.2.3" />
+    <PackageReference Include="GiphyDotNet" Version="2.0.0" />
     <PackageReference Include="Kitsu" Version="1.4.2" />
     <PackageReference Include="SteamWebAPI2" Version="4.2.4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
@@ -16,9 +22,6 @@
 
   <ItemGroup>
     <None Update="CyberChan.dll.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="SteamIds.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
