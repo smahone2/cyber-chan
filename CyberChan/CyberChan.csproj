@@ -16,8 +16,11 @@
     <PackageReference Include="DSharpPlus.VoiceNext" Version="3.2.3" />
     <PackageReference Include="GiphyDotNet" Version="2.0.0" />
     <PackageReference Include="Kitsu" Version="1.4.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="RestSharp" Version="106.11.4" />
     <PackageReference Include="SteamWebAPI2" Version="4.2.4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="TenorSharp" Version="1.4.1" />
   </ItemGroup>
 
   <ItemGroup>

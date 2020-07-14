@@ -8,6 +8,8 @@ using DSharpPlus.CommandsNext.Attributes;
 using System.Collections.Generic;
 using System.IO;
 using System.Configuration;
+using GiphyDotNet.Manager;
+using TenorSharp;
 
 namespace CyberChan
 {
@@ -19,6 +21,8 @@ namespace CyberChan
         public static Dictionary<String,String> steamID;
         public static Kitsu kitsu;
         public static Steam steam;
+        public static Giphy giphy;
+        public static TenorClient tenor;
 
         static void Main(string[] args)
         {
@@ -59,15 +63,26 @@ namespace CyberChan
             {
                 Token = ConfigurationManager.AppSettings["DiscordToken"],
                 TokenType = TokenType.Bot
+                
             });
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefix = "!"
             });
             commands.RegisterCommands<Commands>();
+
+            //var tenorConfig = new TenorConfiguration()
+            //{
+            //    ApiKey = ConfigurationManager.AppSettings["TenorAPI"],
+            //    MediaFilter = TenorSharp.Enums.MediaFilter.minimal,
+            //    ContentFilter = TenorSharp.Enums.ContentFilter.low
+            //};
+
             dota = new Dota();
             kitsu = new Kitsu();
             steam = new Steam();
+            giphy = new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]);
+            tenor = new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]);
         }
 
         static void Events()

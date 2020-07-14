@@ -11,6 +11,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.VoiceNext;
 using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
+using TenorSharp;
 
 namespace CyberChan
 {
@@ -21,16 +22,31 @@ namespace CyberChan
         [Description("Just saying hello.")]
         public async Task Hi(CommandContext ctx)
         {
-            Giphy giphy = new Giphy();
             RandomParameter giphyParameters = new RandomParameter()
             {
                 Tag = "Hi"
             };
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
-            embed.ImageUrl = giphy.RandomGif(giphyParameters).Result.Data.ImageUrl;
-
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
+            };
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!",false,embed);
             
+        }
+
+        [Command("waifu")]
+        [Description("Let me find your waifu!")]
+        public async Task Waifu(CommandContext ctx)
+        {
+            var rand = new Random();
+            var image = Program.tenor.Search("Anime Girl", 50, rand.Next(0, 1000));
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                ImageUrl = image.GifResults[rand.Next(0, 50)].Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
+            };
+
+            await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", false, embed);
         }
 
         //[Command("db")]
