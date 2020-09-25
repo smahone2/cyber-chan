@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -11,6 +12,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.VoiceNext;
 using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
+using Steam.Models.SteamEconomy;
 using TenorSharp;
 
 namespace CyberChan
@@ -39,11 +41,12 @@ namespace CyberChan
         public async Task Waifu(CommandContext ctx)
         {
             var rand = new Random();
-            var image = Program.tenor.Search("Anime Girl", 50, rand.Next(0, 1000));
+            var search = Program.tenor.Search("Anime Girl", 50, rand.Next(0, 1000));
+            var image = search.GifResults[rand.Next(0, 50)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
-                ImageUrl = image.GifResults[rand.Next(0, 50)].Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
+                ImageUrl = image.Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
             };
 
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", false, embed);
