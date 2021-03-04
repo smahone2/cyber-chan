@@ -29,7 +29,7 @@ pipelines:
                 USER: $user
                 SERVER: $server
                 REMOTE_PATH: $directory
-                LOCAL_PATH: Build/*
+                LOCAL_PATH: 'Build/*'
      master:
        - step:
           name: Deploy to prod
@@ -42,4 +42,4 @@ pipelines:
                 USER: $user
                 SERVER: $server
                 REMOTE_PATH: $directory
-                LOCAL_PATH: Build/*
+                LOCAL_PATH: 'Build/*'
