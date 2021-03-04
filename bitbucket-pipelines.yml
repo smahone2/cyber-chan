@@ -5,9 +5,9 @@
 
 image: mcr.microsoft.com/dotnet/core/sdk:3.1
 
-pipelines:
-  default:
-    - step:
+definitions: 
+  steps:
+    - step: &build-test
         name: Build and Test
         caches:
           - dotnetcore
@@ -16,30 +16,28 @@ pipelines:
           - dotnet build --no-restore --configuration Release -o Build
         artifacts:
           - Build/**
+    - step: &deploy
+        name: Deploy to test
+        deployment: Test
+        # trigger: manual  # Uncomment to make this a manual deployment.
+        script:
+          - echo "Deploying code" 
+          - pipe: atlassian/scp-deploy:1.0.0
+            variables:
+              USER: $user
+              SERVER: $server
+              REMOTE_PATH: $directory
+              LOCAL_PATH: 'Build/*'
+          
+pipelines:
   branches:
      test:
-       - step:
-          name: Deploy to test
-          deployment: Test
-          # trigger: manual  # Uncomment to make this a manual deployment.
-          script:
-            - echo "Deploying to test environment" 
-            - pipe: atlassian/scp-deploy:1.0.0
-              variables:
-                USER: $user
-                SERVER: $server
-                REMOTE_PATH: $directory
-                LOCAL_PATH: 'Build/*'
+       - step: *build-test
+       - step: *deploy
+          
      master:
-       - step:
-          name: Deploy to prod
+       - step: *build-test
+       - step: 
+          <<: *deploy
+          name: Deploy to Prod
           deployment: Production
-          # trigger: manual  # Uncomment to make this a manual deployment.
-          script:
-            - echo "Deploying to production environment" 
-            - pipe: atlassian/scp-deploy:1.0.0
-              variables:
-                USER: $user
-                SERVER: $server
-                REMOTE_PATH: $directory
-                LOCAL_PATH: 'Build/*'
