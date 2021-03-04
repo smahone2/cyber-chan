@@ -24,7 +24,12 @@ pipelines:
           # trigger: manual  # Uncomment to make this a manual deployment.
           script:
             - echo "Deploying to test environment" 
-            - scp -r Build/* cyberchan@petethepirate.com:$directory
+            - pipe: atlassian/scp-deploy:1.0.0
+              variables:
+                USER: $user
+                SERVER: $server
+                REMOTE_PATH: $directory
+                LOCAL_PATH: Build/*
      master:
        - step:
           name: Deploy to prod
@@ -32,4 +37,9 @@ pipelines:
           # trigger: manual  # Uncomment to make this a manual deployment.
           script:
             - echo "Deploying to production environment" 
-            - scp -r Build/* cyberchan@petethepirate.com:$directory
+            - pipe: atlassian/scp-deploy:1.0.0
+              variables:
+                USER: $user
+                SERVER: $server
+                REMOTE_PATH: $directory
+                LOCAL_PATH: Build/*
