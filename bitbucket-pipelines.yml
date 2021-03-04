@@ -14,13 +14,22 @@ pipelines:
         script:
           - dotnet restore
           - dotnet build --no-restore --configuration Release -o Build
-          - dotnet test --no-build --configuration Release --test-adapter-path:. --logger:"junit;LogFilePath=$REPORTS_PATH/junit.xml"
         artifacts:
           - Build/**
-    - step:
-        name: Deploy to test
-        deployment: Test
-        # trigger: manual  # Uncomment to make this a manual deployment.
-        script:
-          - echo "Deploying to test environment" 
-          - scp -r Build/ cyberchan@petethepirate.com:~cyberchan/PublishOutputTest/
+  branches:
+     test:
+       - step:
+          name: Deploy to test
+          deployment: Test
+          # trigger: manual  # Uncomment to make this a manual deployment.
+          script:
+            - echo "Deploying to test environment" 
+            - scp -r Build/* cyberchan@petethepirate.com:$directory
+     master:
+       - step:
+          name: Deploy to prod
+          deployment: Production
+          # trigger: manual  # Uncomment to make this a manual deployment.
+          script:
+            - echo "Deploying to production environment" 
+            - scp -r Build/* cyberchan@petethepirate.com:$directory
