@@ -31,7 +31,7 @@ definitions:
               DELETE_FLAG: 'false'
           - pipe: atlassian/ssh-run:0.3.0
             variables:
-              SSH_USER: $user'
+              SSH_USER: $user
               SERVER: $server
               COMMAND: $command
           
