@@ -187,7 +187,19 @@ namespace CyberChan
                     }
                 }
 
-                await ctx.RespondAsync($"Numbers rolled: {result}");
+                if (!string.IsNullOrEmpty(result))
+                    result = $"Numbers rolled: {result}";
+
+                if (result.Length > 2000 && result.Length <= 10000)
+                {
+                    IEnumerable<string> resultChunks = result.Split(1999);
+                    var tasks = resultChunks.Select(c => ctx.RespondAsync(c));
+                    await Task.WhenAll(tasks);
+                }
+                else
+                {
+                    await ctx.RespondAsync(result);
+                }
             }
             catch
             {
