@@ -22,12 +22,12 @@ definitions:
         # trigger: manual  # Uncomment to make this a manual deployment.
         script:
           - echo "Deploying code" 
-          - pipe: atlassian/scp-deploy:1.0.0
+          - pipe: atlassian/rsync-deploy:0.4.4
             variables:
               USER: $user
               SERVER: $server
               REMOTE_PATH: $directory
-              LOCAL_PATH: 'Build/*'
+              LOCAL_PATH: 'Build/'
           
 pipelines:
   branches:
