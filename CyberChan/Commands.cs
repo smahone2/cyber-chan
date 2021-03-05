@@ -35,6 +35,22 @@ namespace CyberChan
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", false, embed);
 
         }
+        
+        [Command("bye")]
+        [Description("Just saying goodbye.")]
+        public async Task Hi(CommandContext ctx)
+        {
+            RandomParameter giphyParameters = new RandomParameter()
+            {
+                Tag = "Bye"
+            };
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
+            };
+            await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", false, embed);
+
+        }
 
         [Command("waifu")]
         [Description("Let me find your waifu!")]
