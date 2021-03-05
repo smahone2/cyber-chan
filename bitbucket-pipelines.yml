@@ -28,6 +28,7 @@ definitions:
               SERVER: $server
               REMOTE_PATH: $directory
               LOCAL_PATH: 'Build/'
+              DELETE_FLAG: 'false'
           
 pipelines:
   branches:
