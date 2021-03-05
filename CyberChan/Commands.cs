@@ -38,7 +38,7 @@ namespace CyberChan
         
         [Command("bye")]
         [Description("Just saying goodbye.")]
-        public async Task Hi(CommandContext ctx)
+        public async Task Bye(CommandContext ctx)
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
