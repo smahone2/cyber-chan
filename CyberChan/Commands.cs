@@ -192,12 +192,9 @@ namespace CyberChan
 
                 if (result.Length > 2000 && result.Length <= 10000)
                 {
-                    IEnumerable<string> resultChunks = result.Split(2000);
-
-                    foreach (string chunk in resultChunks)
-                    {
-                        await ctx.RespondAsync(chunk);
-                    }
+                    IEnumerable<string> resultChunks = result.Split(1999);
+                    var tasks = resultChunks.Select(c => ctx.RespondAsync(c));
+                    await Task.WhenAll(tasks);
                 }
                 else
                 {
