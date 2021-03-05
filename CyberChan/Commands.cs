@@ -32,8 +32,24 @@ namespace CyberChan
             {
                 ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
             };
-            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!",false,embed);
-            
+            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", false, embed);
+
+        }
+        
+        [Command("bye")]
+        [Description("Just saying goodbye.")]
+        public async Task Bye(CommandContext ctx)
+        {
+            RandomParameter giphyParameters = new RandomParameter()
+            {
+                Tag = "Bye"
+            };
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
+            };
+            await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", false, embed);
+
         }
 
         [Command("waifu")]
@@ -97,7 +113,7 @@ namespace CyberChan
                     await ctx.RespondAsync($"Steam Display Name: { Program.steam.DisplayNameSearch(Program.steamID[ctx.User.Username])}");
                 }
             }
-            catch 
+            catch
             {
                 await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
             }
@@ -175,9 +191,9 @@ namespace CyberChan
                 var die_sides = Int32.Parse(ctx.Message.Content.Split(" ")[1].Split("d")[1]);
                 for (int i = 0; i < num_die; i++)
                 {
-                    int roll = rand.Next(1, die_sides+1);
+                    int roll = rand.Next(1, die_sides + 1);
                     sum = sum + roll;
-                    if (i+1 != num_die)
+                    if (i + 1 != num_die)
                     {
                         result = result + roll.ToString() + " + ";
                     }
@@ -187,7 +203,19 @@ namespace CyberChan
                     }
                 }
 
-                await ctx.RespondAsync($"Numbers rolled: {result}");
+                if (!string.IsNullOrEmpty(result))
+                    result = $"Numbers rolled: {result}";
+
+                if (result.Length > 2000 && result.Length <= 10000)
+                {
+                    IEnumerable<string> resultChunks = result.Split(1999);
+                    var tasks = resultChunks.Select(c => ctx.RespondAsync(c));
+                    await Task.WhenAll(tasks);
+                }
+                else
+                {
+                    await ctx.RespondAsync(result);
+                }
             }
             catch
             {
@@ -224,7 +252,7 @@ namespace CyberChan
         [Command("source")]
         [Description("Link to the source code.")]
         public async Task SourceCode(CommandContext ctx)
-        { 
+        {
             await ctx.RespondAsync($"https://bitbucket.org/sean_mahoney/cyber-chan/src/master/");
 
         }
