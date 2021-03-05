@@ -1,68 +1,49 @@
-#  Template publish .NET Core package to nuget.org
+#  Template .NET Core build
 
-#  This template allows you to publish your .NET Core package to nuget.org.
-#  The workflow allows running tests, code linting and security scans on feature branches (as well as master).
-#  The .NET Core package will be validated and published after the code is merged to master.
-
-# Prerequisites: $NUGET_SECRET_API_KEY setup as deployment variables.
+#  This template allows you to validate your .NET Core package.
+#  The workflow allows running tests and code linting on the default branch.
 
 image: mcr.microsoft.com/dotnet/core/sdk:3.1
 
-pipelines:
-  default:
-    - parallel:
-        - step:
-            name: Build and Test
-            caches:
-              - dotnetcore
-            script:
-              - export SOLUTION_NAME=HelloProject
-              - export CONFIGURATION=Release
-              - REPORTS_PATH=./test-reports/build_${BITBUCKET_BUILD_NUMBER}
-              - dotnet restore ${SOLUTION_NAME}.sln
-              - dotnet build --no-restore ${SOLUTION_NAME}.sln --configuration ${CONFIGURATION}
-              - dotnet test --no-build ${SOLUTION_NAME}.sln --test-adapter-path:. --logger:"junit;LogFilePath=$REPORTS_PATH/junit.xml"
-        - step:
-            name: Lint the dotnetcore package
-            caches:
-              - dotnetcore
-            script:
-              - export SOLUTION_NAME=HelloProject
-              - REPORTS_PATH=linter-reports
-              - dotnet new tool-manifest
-              - dotnet tool install JetBrains.ReSharper.GlobalTools
-              - dotnet tool restore
-              - dotnet jb inspectcode ${SOLUTION_NAME}.sln --output="${REPORTS_PATH}/jb-${BITBUCKET_BUILD_NUMBER}.xml"
-            artifacts:
-              - linter-reports/**
-  branches:
-    master:
-    - parallel:
-        - step:
-            name: Build and Test
-            caches:
-              - dotnetcore
-            script:
-              - export SOLUTION_NAME=HelloProject
-              - export export CONFIGURATION=Release
-              - REPORTS_PATH=./test-reports/build_${BITBUCKET_BUILD_NUMBER}
-              - dotnet restore ${SOLUTION_NAME}.sln
-              - dotnet build --no-restore ${SOLUTION_NAME}.sln --configuration ${CONFIGURATION}
-              - dotnet test --no-build ${SOLUTION_NAME}.sln --test-adapter-path:. --logger:"junit;LogFilePath=$REPORTS_PATH/junit.xml"
-        - step:
-            name: Security Scan
-            script:
-              # Run a security scan for sensitive data.
-              # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
-              - pipe: atlassian/git-secrets-scan:0.4.3
-    - step:
-        name: Deploy to Production
-        deployment: Production
+definitions: 
+  steps:
+    - step: &build-test
+        name: Build and Test
+        caches:
+          - dotnetcore
         script:
-          - export SOLUTION_NAME=HelloProject
-          - export RELEASES_DIR="./releases"
-          - export NUPKG_VERSION=1.0.${BITBUCKET_BUILD_NUMBER}
-          # create nuget package
-          - dotnet pack ${SOLUTION_NAME}.sln --output ${RELEASES_DIR} --configuration Release -p:Version=${NUPKG_VERSION}
-          # publish package to nuget.org
-          - dotnet nuget push ${RELEASES_DIR}/HelloPipes.${NUPKG_VERSION}.nupkg --api-key ${NUGET_SECRET_API_KEY} --source https://api.nuget.org/v3/index.json
+          - dotnet restore
+          - dotnet build --no-restore --configuration Release -o Build
+        artifacts:
+          - Build/**
+    - step: &deploy
+        name: Deploy to test
+        deployment: Test
+        # trigger: manual  # Uncomment to make this a manual deployment.
+        script:
+          - echo "Deploying code" 
+          - pipe: atlassian/rsync-deploy:0.4.4
+            variables:
+              USER: $user
+              SERVER: $server
+              REMOTE_PATH: $directory
+              LOCAL_PATH: 'Build/'
+              DELETE_FLAG: 'false'
+          - pipe: atlassian/ssh-run:0.3.0
+            variables:
+              SSH_USER: $user'
+              SERVER: $server
+              COMMAND: $command
+          
+pipelines:
+  branches:
+     test:
+       - step: *build-test
+       - step: *deploy
+          
+     master:
+       - step: *build-test
+       - step: 
+          <<: *deploy
+          name: Deploy to Prod
+          deployment: Production
