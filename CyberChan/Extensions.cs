@@ -7,14 +7,10 @@ namespace CyberChan
 {
     public static class Extensions
     {
-        public static IEnumerable<string> Split(this string str, int n)
+        public static IEnumerable<string> Split(this string str, int maxChunkSize)
         {
-            if (String.IsNullOrEmpty(str) || n < 1)
-            {
-                throw new ArgumentException();
-            }
-
-            return Enumerable.Range(0, str.Length / n).Select(i => str.Substring(i * n, n));
+            for (int i = 0; i < str.Length; i += maxChunkSize)
+                yield return str.Substring(i, Math.Min(maxChunkSize, str.Length - i));
         }
     }
 }
