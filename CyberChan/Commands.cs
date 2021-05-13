@@ -57,8 +57,8 @@ namespace CyberChan
         public async Task Waifu(CommandContext ctx)
         {
             var rand = new Random();
-            var search = Program.tenor.Search("Anime Girl", 50, rand.Next(0, 1000));
-            var image = search.GifResults[rand.Next(0, 50)];
+            var search = Program.tenor.Search($"Anime Girl", 10, rand.Next(0,1000));
+            var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
@@ -66,6 +66,24 @@ namespace CyberChan
             };
 
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", false, embed);
+        }
+
+        [Command("gif")]
+        [Description("Search for any ol' gif! Usage: !gif <search term>")]
+        public async Task Gif(CommandContext ctx)
+        {
+            var rand = new Random();
+            var extraText = ctx.Message.Content.Replace("!gif ", "");
+            extraText = extraText.Length > 0 ? extraText : "random";
+            var search = Program.tenor.Search(extraText, 10, rand.Next(0, extraText.Length > 0 ? 50 : 1000));
+            var image = search.GifResults[rand.Next(0, 10)];
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                ImageUrl = image.Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
+            };
+
+            await ctx.RespondAsync($"{ctx.User.Mention}, here is your gif!", false, embed);
         }
 
         //[Command("db")]
