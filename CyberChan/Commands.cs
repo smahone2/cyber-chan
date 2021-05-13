@@ -57,7 +57,9 @@ namespace CyberChan
         public async Task Waifu(CommandContext ctx)
         {
             var rand = new Random();
-            var search = Program.tenor.Search("Anime Girl", 50, rand.Next(0, 1000));
+            var extraText = ctx.Message.Content.Replace("!waifu ", "");
+            extraText = extraText.Length > 0 ? extraText = $" {extraText}" : "";
+            var search = Program.tenor.Search($"Anime Girl{extraText}", 50, rand.Next(0, 1000));
             var image = search.GifResults[rand.Next(0, 50)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
