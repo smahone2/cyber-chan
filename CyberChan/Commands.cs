@@ -58,9 +58,9 @@ namespace CyberChan
         {
             var rand = new Random();
             var extraText = ctx.Message.Content.Replace("!waifu ", "");
-            extraText = extraText.Length > 0 ? extraText = $" {extraText}" : "";
-            var search = Program.tenor.Search($"Anime Girl{extraText}", 50, rand.Next(0, 1000));
-            var image = search.GifResults[rand.Next(0, 50)];
+            extraText = extraText.Length > 0 ? $" {extraText}" : "";
+            var search = Program.tenor.Search($"Anime Girl{extraText}", 10, rand.Next(0, extraText.Length > 0 ? 10 : 1000));
+            var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
@@ -68,6 +68,24 @@ namespace CyberChan
             };
 
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", false, embed);
+        }
+
+        [Command("gif")]
+        [Description("Search for any ol' gif!")]
+        public async Task Gif(CommandContext ctx)
+        {
+            var rand = new Random();
+            var extraText = ctx.Message.Content.Replace("!gif ", "");
+            extraText = extraText.Length > 0 ? extraText : "random";
+            var search = Program.tenor.Search(extraText, 10, rand.Next(0, extraText.Length > 0 ? 50 : 1000));
+            var image = search.GifResults[rand.Next(0, 10)];
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                ImageUrl = image.Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
+            };
+
+            await ctx.RespondAsync($"{ctx.User.Mention}, here is your gif!", false, embed);
         }
 
         //[Command("db")]
