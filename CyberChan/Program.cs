@@ -16,13 +16,14 @@ namespace CyberChan
     class Program
     {
         static DiscordClient discord;
-        static CommandsNextModule commands;
+        static CommandsNextExtension commands;
         public static Dota dota;
         public static Dictionary<String,String> steamID;
         public static Kitsu kitsu;
         public static Steam steam;
         public static Giphy giphy;
         public static TenorClient tenor;
+        public static Trace trace;
 
         static void Main(string[] args)
         {
@@ -67,7 +68,7 @@ namespace CyberChan
             });
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefix = "!"
+                StringPrefixes = new[] { "!" }
             });
             commands.RegisterCommands<Commands>();
 
@@ -83,6 +84,7 @@ namespace CyberChan
             steam = new Steam();
             giphy = new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]);
             tenor = new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]);
+            trace = new Trace();
         }
 
         static void Events()
@@ -96,7 +98,7 @@ namespace CyberChan
             discord.MessageCreated += AutoReplyToSean;
         }
 
-        static async Task AutoReplyToSean(MessageCreateEventArgs e)
+        static async Task AutoReplyToSean(DiscordClient d,MessageCreateEventArgs e)
         {
             //if (e.Author.Discriminator == "3638") //XPeteX47
             //    await e.Message.RespondAsync("~b-baka!~");

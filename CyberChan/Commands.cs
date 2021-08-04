@@ -17,7 +17,8 @@ using TenorSharp;
 
 namespace CyberChan
 {
-    public class Commands
+    public class Commands : BaseCommandModule
+
     {
         //test text
         [Command("hi")]
@@ -32,7 +33,7 @@ namespace CyberChan
             {
                 ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
             };
-            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", false, embed);
+            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
 
         }
         
@@ -48,7 +49,7 @@ namespace CyberChan
             {
                 ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
             };
-            await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", false, embed);
+            await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
 
         }
 
@@ -65,7 +66,7 @@ namespace CyberChan
                 ImageUrl = image.Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
             };
 
-            await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", false, embed);
+            await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", embed);
         }
 
         [Command("gif")]
@@ -83,7 +84,45 @@ namespace CyberChan
                 ImageUrl = image.Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
             };
 
-            await ctx.RespondAsync($"{ctx.User.Mention}, here is your gif!", false, embed);
+            await ctx.RespondAsync($"{ctx.User.Mention}, here is your gif!", embed);
+        }
+
+        [Command("lookup")]
+        [Description("Find anime based on linked image. Usage (reply to message with image): !lookup")]
+        [Aliases("find", "get")]
+        public async Task LookupAnime(CommandContext ctx)
+        {
+            var message = ctx.Message;
+            if (message.MessageType == MessageType.Reply)
+            {
+                var reply = message.ReferencedMessage;
+                if (reply.Embeds.Count > 0)
+                {
+                    var link = reply.Embeds[0].Url.ToString();
+
+                    if (Program.trace.ImageSearch(link))
+                    {
+                        var searchResults = Program.trace.searchResult;
+                        var title = searchResults.TitleEnglish;
+                        var episode = searchResults.Episode;
+                        var sceneStart = searchResults.SceneStart;
+                        var sceneStartString = sceneStart.ToString();
+                        var mal = searchResults.MyAnimeListID;
+
+                        await ctx.RespondAsync($"Title:{title}\nEpisode:{episode}\nTimestamp:{sceneStartString}\nMAL link:https://myanimelist.net/anime/{mal}");
+                    }
+                    else
+                    {
+                        await ctx.RespondAsync($"No results found.");
+                    }
+                } else
+                {
+                    await ctx.RespondAsync($"No embed found in source message.");
+                }
+            } else
+            {
+                await ctx.RespondAsync($"Respond to the message containing the image you want to lookup.");
+            }
         }
 
         //[Command("db")]
@@ -116,46 +155,46 @@ namespace CyberChan
 
         //}
 
-        [Command("steamname")]
-        [Description("Displays your steam display name.")]
-        public async Task SteamTest(CommandContext ctx)
-        {
-            try
-            {
-                if (!Program.steamID.ContainsKey(ctx.User.Username))
-                {
-                    await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
-                }
-                else
-                {
-                    await ctx.RespondAsync($"Steam Display Name: { Program.steam.DisplayNameSearch(Program.steamID[ctx.User.Username])}");
-                }
-            }
-            catch
-            {
-                await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
-            }
+        //[Command("steamname")]
+        //[Description("Displays your steam display name.")]
+        //public async Task SteamTest(CommandContext ctx)
+        //{
+        //    try
+        //    {
+        //        if (!Program.steamID.ContainsKey(ctx.User.Username))
+        //        {
+        //            await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
+        //        }
+        //        else
+        //        {
+        //            await ctx.RespondAsync($"Steam Display Name: { Program.steam.DisplayNameSearch(Program.steamID[ctx.User.Username])}");
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
+        //    }
 
-        }
+        //}
 
-        [Command("steamid")]
-        [Description("Associate your Steam ID with the bot. Usage: !steamid <steamid>")]
-        public async Task Steamid(CommandContext ctx)
-        {
-            var id = ctx.Message.Content.Replace("!steamid ", "");
-            if (!Program.steamID.ContainsKey(ctx.User.Username))
-                Program.steamID.Add(ctx.User.Username, id);
-            else
-                Program.steamID[ctx.User.Username] = id;
-            StreamWriter sw = new StreamWriter("SteamIds.txt");
-            foreach (var user in Program.steamID)
-            {
-                sw.WriteLine(user.Key + "," + user.Value);
-            }
-            sw.Close();
-            await ctx.RespondAsync($"Steam Id {id} saved for {ctx.User.Mention}");
+        //[Command("steamid")]
+        //[Description("Associate your Steam ID with the bot. Usage: !steamid <steamid>")]
+        //public async Task Steamid(CommandContext ctx)
+        //{
+        //    var id = ctx.Message.Content.Replace("!steamid ", "");
+        //    if (!Program.steamID.ContainsKey(ctx.User.Username))
+        //        Program.steamID.Add(ctx.User.Username, id);
+        //    else
+        //        Program.steamID[ctx.User.Username] = id;
+        //    StreamWriter sw = new StreamWriter("SteamIds.txt");
+        //    foreach (var user in Program.steamID)
+        //    {
+        //        sw.WriteLine(user.Key + "," + user.Value);
+        //    }
+        //    sw.Close();
+        //    await ctx.RespondAsync($"Steam Id {id} saved for {ctx.User.Mention}");
 
-        }
+        //}
 
         [Command("animesearch")]
         [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
