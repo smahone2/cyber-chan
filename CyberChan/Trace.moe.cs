@@ -11,22 +11,21 @@ namespace CyberChan
 
     class Trace
     {
-        private TraceMoeClient client;
         public SearchResult searchResult;
 
         public Trace()
         {
-            client = new TraceMoeClient();
         }
 
         public bool ImageSearch(string imageUrl)
         {
-            PerformSearch(imageUrl).ConfigureAwait(false).GetAwaiter().GetResult();
+            PerformSearch(imageUrl).ConfigureAwait(true).GetAwaiter().GetResult();
             return searchResult == null ? false:true;
         }
 
         async private Task PerformSearch(string imageUrl)
         {
+            using var client = new TraceMoeClient();
             var dataList = await client.SearchByURLAsync(imageUrl);
             foreach (var item in dataList.Results)
             {

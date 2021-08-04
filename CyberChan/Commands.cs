@@ -89,7 +89,7 @@ namespace CyberChan
 
         [Command("lookup")]
         [Description("Find anime based on linked image. Usage (reply to message with image): !lookup")]
-        [Aliases("find", "get")]
+        [Aliases("find", "get", "trace")]
         public async Task LookupAnime(CommandContext ctx)
         {
             var message = ctx.Message;
