@@ -12,6 +12,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.VoiceNext;
 using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
+using Newtonsoft.Json.Linq;
 using Steam.Models.SteamEconomy;
 using TenorSharp;
 
@@ -98,27 +99,22 @@ namespace CyberChan
                 var reply = message.ReferencedMessage;
                 if (reply.Embeds.Count > 0)
                 {
-                    var link = reply.Embeds[0].Url.ToString();
+                    Console.WriteLine(reply.Embeds.Count);
+                    Console.WriteLine(reply.Embeds[0].Image.Url.ToString());
+                    var link = reply.Embeds[0].Image.Url.ToString();
 
                     if (Program.trace.ImageSearch(link))
                     {
                         var searchResults = Trace.searchResult;
-                        var extra = Trace.extra;
 
-                        await ctx.RespondAsync($"Hit");
-                        await ctx.RespondAsync(searchResults.Filename);
-                        await ctx.RespondAsync(extra.title.native);
-                        await ctx.RespondAsync(extra.isAdult.ToString());
-                        await ctx.RespondAsync(searchResults.Similarity.ToString());
-                        await ctx.RespondAsync(searchResults.Episode);
+                        var english = searchResults.Value<JToken>("anilist").Value<JToken>("title").Value<string>("english");
+                        var title = english != null ? english : searchResults.Value<JToken>("anilist").Value<JToken>("title").Value<string>("romaji");
+                        var episode = searchResults.Value<int>("episode").ToString();
+                        var sceneStart = TimeSpan.FromSeconds(searchResults.Value<double>("from"));
+                        var sceneStartString = sceneStart.ToString("c");
+                        var mal = searchResults.Value<JToken>("anilist").Value<int>("idMal").ToString();
 
-                        var title = extra.title.english != null ? extra.title.english : extra.title.romaji;
-                        var episode = searchResults.Episode.ToString();
-                        var sceneStart = TimeSpan.FromSeconds((double)searchResults.From);
-                        var sceneStartString = sceneStart.ToString();
-                        var mal = extra.idMal.ToString();
-
-                        await ctx.RespondAsync($"Title:{title}\nEpisode:{episode}\nTimestamp:{sceneStartString}\nMAL link:https://myanimelist.net/anime/{mal}");
+                        await ctx.RespondAsync($"Title: {title}\nEpisode: {episode}\nTimestamp: {sceneStartString}\nMAL: https://myanimelist.net/anime/{mal}");
                     }
                     else
                     {
@@ -134,7 +130,6 @@ namespace CyberChan
             }
 
             Trace.searchResult = null;
-            Trace.extra = null;
         }
 
         //[Command("db")]

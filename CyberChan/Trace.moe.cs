@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-//using Slko.TraceMoeNET;
-//using Slko.TraceMoeNET.Models;
-using IO.Swagger.Api;
-using IO.Swagger.Model;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CyberChan
 {
 
     class Trace
     {
-        public static Result searchResult;
-        public static Extra extra;
+        public static JToken searchResult;
 
         public Trace()
         {
@@ -27,33 +24,22 @@ namespace CyberChan
             return searchResult == null ? false : true;
         }
 
-        public class Extra
-        {
-            public int id;
-            public int idMal;
-            public Title title;
-            public string synonyms;
-            public bool isAdult;
-        } 
-
-        public class Title
-        {
-            public string native;
-            public string romaji;
-            public string english;
-        }
-
         async private Task PerformSearch(string imageUrl)
         {
-            //using var client = new TraceMoeClient();
-            var client = new DefaultApi();
-            var dataList = await client.SearchGetAsync(imageUrl,"");
-            //var dataList = await client.SearchByURLAsync(imageUrl);
-            dataList.Result.OrderByDescending(item => item.Similarity).ToList();
-            foreach (var item in dataList.Result)
+
+            var client = new HttpClient();
+            var request = new HttpRequestMessage
             {
-                extra = JsonConvert.DeserializeObject<Extra>(item.Anilist);
-                if (!extra.isAdult)
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://api.trace.moe/search?anilistInfo&url={imageUrl}"),
+            };
+            var response = await client.SendAsync(request).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JObject.Parse(responseBody);
+            foreach (var item in json.Value<JToken>("result"))
+            {
+                if (!item.Value<JToken>("anilist").Value<bool>("isAdult"))
                 {
                     searchResult = item;
                     break;
