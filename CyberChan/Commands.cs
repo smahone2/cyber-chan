@@ -102,12 +102,13 @@ namespace CyberChan
 
                     if (Program.trace.ImageSearch(link))
                     {
-                        var searchResults = Program.trace.searchResult;
-                        var title = searchResults.TitleEnglish;
-                        var episode = searchResults.Episode;
-                        var sceneStart = searchResults.SceneStart;
+                        var searchResults = Trace.searchResult;
+                        var extra = Trace.extra;
+                        var title = extra.title.english != null ? extra.title.english : extra.title.romaji;
+                        var episode = searchResults.Episode.ToString();
+                        var sceneStart = TimeSpan.FromSeconds((double)searchResults.From);
                         var sceneStartString = sceneStart.ToString();
-                        var mal = searchResults.MyAnimeListID;
+                        var mal = extra.idMal.ToString();
 
                         await ctx.RespondAsync($"Title:{title}\nEpisode:{episode}\nTimestamp:{sceneStartString}\nMAL link:https://myanimelist.net/anime/{mal}");
                     }
@@ -123,6 +124,9 @@ namespace CyberChan
             {
                 await ctx.RespondAsync($"Respond to the message containing the image you want to lookup.");
             }
+
+            Trace.searchResult = null;
+            Trace.extra = null;
         }
 
         //[Command("db")]
