@@ -23,7 +23,7 @@ namespace CyberChan
 
         public bool ImageSearch(string imageUrl)
         {
-            PerformSearch(imageUrl).ConfigureAwait(true).GetAwaiter().GetResult();
+            PerformSearch(imageUrl).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult == null ? false : true;
         }
 
@@ -53,7 +53,6 @@ namespace CyberChan
             foreach (var item in dataList.Result)
             {
                 extra = JsonConvert.DeserializeObject<Extra>(item.Anilist);
-
                 if (!extra.isAdult)
                 {
                     searchResult = item;

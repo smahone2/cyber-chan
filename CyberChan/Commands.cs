@@ -104,6 +104,14 @@ namespace CyberChan
                     {
                         var searchResults = Trace.searchResult;
                         var extra = Trace.extra;
+
+                        await ctx.RespondAsync($"Hit");
+                        await ctx.RespondAsync(searchResults.Filename);
+                        await ctx.RespondAsync(extra.title.native);
+                        await ctx.RespondAsync(extra.isAdult.ToString());
+                        await ctx.RespondAsync(searchResults.Similarity.ToString());
+                        await ctx.RespondAsync(searchResults.Episode);
+
                         var title = extra.title.english != null ? extra.title.english : extra.title.romaji;
                         var episode = searchResults.Episode.ToString();
                         var sceneStart = TimeSpan.FromSeconds((double)searchResults.From);
