@@ -58,6 +58,8 @@ namespace CyberChan
         [Description("Let me find your waifu!")]
         public async Task Waifu(CommandContext ctx)
         {
+            await ctx.TriggerTypingAsync();
+
             var rand = new Random();
             var search = Program.tenor.Search($"Anime Girl", 10, rand.Next(0,1000));
             var image = search.GifResults[rand.Next(0, 10)];
@@ -74,6 +76,8 @@ namespace CyberChan
         [Description("Search for any ol' gif! Usage: !gif <search term>")]
         public async Task Gif(CommandContext ctx)
         {
+            await ctx.TriggerTypingAsync();
+
             var rand = new Random();
             var extraText = ctx.Message.Content.Replace("!gif ", "");
             extraText = extraText.Length > 0 ? extraText : "random";
@@ -102,6 +106,8 @@ namespace CyberChan
                     Console.WriteLine(reply.Embeds.Count);
                     Console.WriteLine(reply.Embeds[0].Image.Url.ToString());
                     var link = reply.Embeds[0].Image.Url.ToString();
+
+                    await ctx.TriggerTypingAsync();
 
                     if (Program.trace.ImageSearch(link))
                     {
