@@ -113,8 +113,9 @@ namespace CyberChan
                         var sceneStart = TimeSpan.FromSeconds(searchResults.Value<double>("from"));
                         var sceneStartString = sceneStart.ToString("c");
                         var mal = searchResults.Value<JToken>("anilist").Value<int>("idMal").ToString();
+                        var similarity = searchResults.Value<double>("similarity").ToString();
 
-                        await ctx.RespondAsync($"Title: {title}\nEpisode: {episode}\nTimestamp: {sceneStartString}\nMAL: https://myanimelist.net/anime/{mal}");
+                        await ctx.RespondAsync($"Similarity to image: {similarity}%\nTitle: {title}\nEpisode: {episode}\nTimestamp: {sceneStartString}\nMAL: https://myanimelist.net/anime/{mal}");
                     }
                     else
                     {
