@@ -98,14 +98,12 @@ namespace CyberChan
             discord.MessageCreated += AutoReplyToSean;
         }
 
-        static async Task AutoReplyToSean(DiscordClient d,MessageCreateEventArgs e)
+        static async Task AutoReplyToSean(DiscordClient d, MessageCreateEventArgs e)
         {
             //if (e.Author.Discriminator == "3638") //XPeteX47
             //    await e.Message.RespondAsync("~b-baka!~");
             if (e.Message.Content.ToLower().Contains("anime"))
                 await e.Message.RespondAsync("~b-baka!~");
         }
-
-
     }
 }
