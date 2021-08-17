@@ -24,7 +24,7 @@ namespace CyberChan
         //test text
         [Command("hi")]
         [Description("Just saying hello.")]
-        public async Task Hi(CommandContext ctx)
+        public async Task Hi(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -34,13 +34,13 @@ namespace CyberChan
             {
                 ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
             };
-            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
 
+            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
         }
         
         [Command("bye")]
         [Description("Just saying goodbye.")]
-        public async Task Bye(CommandContext ctx)
+        public async Task Bye(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -50,13 +50,13 @@ namespace CyberChan
             {
                 ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
             };
+            
             await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
-
         }
 
         [Command("waifu")]
         [Description("Let me find your waifu!")]
-        public async Task Waifu(CommandContext ctx)
+        public async Task Waifu(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.TriggerTypingAsync();
 
@@ -74,14 +74,14 @@ namespace CyberChan
 
         [Command("gif")]
         [Description("Search for any ol' gif! Usage: !gif <search term>")]
-        public async Task Gif(CommandContext ctx)
+        public async Task Gif(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             await ctx.TriggerTypingAsync();
 
             var rand = new Random();
-            var extraText = ctx.Message.Content.Replace("!gif ", "");
-            extraText = extraText.Length > 0 ? extraText : "random";
-            var search = Program.tenor.Search(extraText, 10, rand.Next(0, extraText.Length > 0 ? 50 : 1000));
+            // var extraText = ctx.Message.Content.Replace("!gif ", "");
+            searchText = searchText.Length > 0 ? searchText : "random";
+            var search = Program.tenor.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 1000));
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -95,7 +95,7 @@ namespace CyberChan
         [Command("lookup")]
         [Description("Find anime based on linked image. Usage (reply to message with image): !lookup")]
         [Aliases("find", "get", "trace")]
-        public async Task LookupAnime(CommandContext ctx)
+        public async Task LookupAnime(CommandContext ctx, [RemainingText] string extraText = "")
         {
             var message = ctx.Message;
             if (message.MessageType == MessageType.Reply)
@@ -213,16 +213,16 @@ namespace CyberChan
         [Command("animesearch")]
         [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
         [Aliases("as", "mal", "asearch")]
-        public async Task AnimeSearch(CommandContext ctx)
+        public async Task AnimeSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
                 //var search = ctx.Command.Arguments.ToString();
-                var search = ctx.Message.Content.Replace("!mal ", "");
-                search = search.Replace("!asearch ", "");
-                search = search.Replace("!as ", "");
-                search = search.Replace("!animesearch ", "");
-                await ctx.RespondAsync($"https://kitsu.io/anime/{ Program.kitsu.AnimeSearch(search)}");
+                // var search = ctx.Message.Content.Replace("!mal ", "");
+                // search = search.Replace("!asearch ", "");
+                // search = search.Replace("!as ", "");
+                // search = search.Replace("!animesearch ", "");
+                await ctx.RespondAsync($"https://kitsu.io/anime/{ Program.kitsu.AnimeSearch(searchText)}");
             }
             catch
             {
@@ -233,14 +233,14 @@ namespace CyberChan
         [Command("mangasearch")]
         [Description("Search Kitsu for a manga. Usage: !mangasearch <search term>")]
         [Aliases("ms", "msearch")]
-        public async Task MangaSearch(CommandContext ctx)
+        public async Task MangaSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
-                var search = ctx.Message.Content.Replace("!mangasearch ", "");
-                search = search.Replace("!msearch ", "");
-                search = search.Replace("!ms ", "");
-                await ctx.RespondAsync($"https://kitsu.io/manga/{ Program.kitsu.MangaSearch(search)}");
+                // var search = ctx.Message.Content.Replace("!mangasearch ", "");
+                // search = search.Replace("!msearch ", "");
+                // search = search.Replace("!ms ", "");
+                await ctx.RespondAsync($"https://kitsu.io/manga/{ Program.kitsu.MangaSearch(searchText)}");
             }
             catch
             {
@@ -250,7 +250,7 @@ namespace CyberChan
 
         [Command("roll")]
         [Description("Roll some dice. Usage: !roll <[#]d#>")]
-        public async Task DiceRoll(CommandContext ctx)
+        public async Task DiceRoll(CommandContext ctx, [Description("How many dice and how many faces."), RemainingText] string diceText)
         {
             try
             {
@@ -258,8 +258,8 @@ namespace CyberChan
                 int sum = 0;
                 var result = "";
 
-                var num_die = Int32.Parse(ctx.Message.Content.Split(" ")[1].Split("d")[0]);
-                var die_sides = Int32.Parse(ctx.Message.Content.Split(" ")[1].Split("d")[1]);
+                var num_die = Int32.Parse(diceText.Split("d")[0]);
+                var die_sides = Int32.Parse(diceText.Split("d")[1]);
                 for (int i = 0; i < num_die; i++)
                 {
                     int roll = rand.Next(1, die_sides + 1);
@@ -296,7 +296,7 @@ namespace CyberChan
 
         [Command("flip")]
         [Description("Flip a coin. Usage: !flip")]
-        public async Task CoinFlip(CommandContext ctx)
+        public async Task CoinFlip(CommandContext ctx, [RemainingText] string extraText = "")
         {
             try
             {
@@ -322,11 +322,49 @@ namespace CyberChan
 
         [Command("source")]
         [Description("Link to the source code.")]
-        public async Task SourceCode(CommandContext ctx)
+        public async Task SourceCode(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.RespondAsync($"https://bitbucket.org/sean_mahoney/cyber-chan/src/master/");
 
         }
 
+        [Command("eightball")]
+        [Aliases("8ball")]
+        [Description("Place important decisions in the hands of RNGesus")]
+        public async Task EightBall(CommandContext ctx, [Description("Question you want CyberButler to answer."), RemainingText] string _question)
+        {
+            var responses = new List<string>
+            {
+                "It is certain",
+                "It is decidedly so",
+                "Without a doubt",
+                "Yes definitely",
+                "You may rely on it",
+                "As I see it, yes",
+                "Most likely",
+                "Outlook good",
+                "Yes",
+                "Signs point to yes",
+                "Reply hazy try again",
+                "Ask again later",
+                "Better not tell you now",
+                "Cannot predict now",
+                "Concentrate and ask again",
+                "Don't count on it",
+                "My reply is no",
+                "My sources say no",
+                "Outlook not so good",
+                "Very doubtful"
+            };
+
+            var random = new Random();
+            var embed = new DiscordEmbedBuilder();
+            var url = @"https://emojipedia-us.s3.amazonaws.com/thumbs/120/microsoft/135/billiards_1f3b1.png";
+            embed.WithThumbnail(url);
+            embed.AddField("Question:", _question);
+            embed.AddField("CyberButler Says:", responses[random.Next(responses.Count)]);
+
+            await ctx.RespondAsync(embed: embed);
+        }
     }
 }
