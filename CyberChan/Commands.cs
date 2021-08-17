@@ -24,7 +24,7 @@ namespace CyberChan
         //test text
         [Command("hi")]
         [Description("Just saying hello.")]
-        public async Task Hi(CommandContext ctx, string otherText)
+        public async Task Hi(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -40,7 +40,7 @@ namespace CyberChan
         
         [Command("bye")]
         [Description("Just saying goodbye.")]
-        public async Task Bye(CommandContext ctx, string otherText)
+        public async Task Bye(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -56,7 +56,7 @@ namespace CyberChan
 
         [Command("waifu")]
         [Description("Let me find your waifu!")]
-        public async Task Waifu(CommandContext ctx, string otherText)
+        public async Task Waifu(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.TriggerTypingAsync();
 
@@ -74,14 +74,14 @@ namespace CyberChan
 
         [Command("gif")]
         [Description("Search for any ol' gif! Usage: !gif <search term>")]
-        public async Task Gif(CommandContext ctx, string searchTerm)
+        public async Task Gif(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             await ctx.TriggerTypingAsync();
 
             var rand = new Random();
             // var extraText = ctx.Message.Content.Replace("!gif ", "");
-            searchTerm = searchTerm.Length > 0 ? searchTerm : "random";
-            var search = Program.tenor.Search(searchTerm, 10, rand.Next(0, searchTerm.Length > 0 ? 50 : 1000));
+            searchText = searchText.Length > 0 ? searchText : "random";
+            var search = Program.tenor.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 1000));
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -95,7 +95,7 @@ namespace CyberChan
         [Command("lookup")]
         [Description("Find anime based on linked image. Usage (reply to message with image): !lookup")]
         [Aliases("find", "get", "trace")]
-        public async Task LookupAnime(CommandContext ctx, string otherText)
+        public async Task LookupAnime(CommandContext ctx, [RemainingText] string extraText = "")
         {
             var message = ctx.Message;
             if (message.MessageType == MessageType.Reply)
@@ -213,7 +213,7 @@ namespace CyberChan
         [Command("animesearch")]
         [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
         [Aliases("as", "mal", "asearch")]
-        public async Task AnimeSearch(CommandContext ctx, string searchTerm)
+        public async Task AnimeSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
@@ -222,7 +222,7 @@ namespace CyberChan
                 // search = search.Replace("!asearch ", "");
                 // search = search.Replace("!as ", "");
                 // search = search.Replace("!animesearch ", "");
-                await ctx.RespondAsync($"https://kitsu.io/anime/{ Program.kitsu.AnimeSearch(searchTerm)}");
+                await ctx.RespondAsync($"https://kitsu.io/anime/{ Program.kitsu.AnimeSearch(searchText)}");
             }
             catch
             {
@@ -233,14 +233,14 @@ namespace CyberChan
         [Command("mangasearch")]
         [Description("Search Kitsu for a manga. Usage: !mangasearch <search term>")]
         [Aliases("ms", "msearch")]
-        public async Task MangaSearch(CommandContext ctx, string searchTerm)
+        public async Task MangaSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
                 // var search = ctx.Message.Content.Replace("!mangasearch ", "");
                 // search = search.Replace("!msearch ", "");
                 // search = search.Replace("!ms ", "");
-                await ctx.RespondAsync($"https://kitsu.io/manga/{ Program.kitsu.MangaSearch(searchTerm)}");
+                await ctx.RespondAsync($"https://kitsu.io/manga/{ Program.kitsu.MangaSearch(searchText)}");
             }
             catch
             {
@@ -250,7 +250,7 @@ namespace CyberChan
 
         [Command("roll")]
         [Description("Roll some dice. Usage: !roll <[#]d#>")]
-        public async Task DiceRoll(CommandContext ctx, string diceText)
+        public async Task DiceRoll(CommandContext ctx, [Description("How many dice and how many faces."), RemainingText] string diceText)
         {
             try
             {
@@ -296,7 +296,7 @@ namespace CyberChan
 
         [Command("flip")]
         [Description("Flip a coin. Usage: !flip")]
-        public async Task CoinFlip(CommandContext ctx, string otherText)
+        public async Task CoinFlip(CommandContext ctx, [RemainingText] string extraText = "")
         {
             try
             {
@@ -322,7 +322,7 @@ namespace CyberChan
 
         [Command("source")]
         [Description("Link to the source code.")]
-        public async Task SourceCode(CommandContext ctx, string otherText)
+        public async Task SourceCode(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.RespondAsync($"https://bitbucket.org/sean_mahoney/cyber-chan/src/master/");
 
