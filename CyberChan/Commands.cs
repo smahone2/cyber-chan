@@ -331,7 +331,7 @@ namespace CyberChan
         [Command("eightball")]
         [Aliases("8ball")]
         [Description("Place important decisions in the hands of RNGesus")]
-        public async Task EightBall(CommandContext ctx, [Description("Question you want CyberButler to answer."), RemainingText] string _question)
+        public async Task EightBall(CommandContext ctx, [Description("Question you want Cyber-Chan to answer."), RemainingText] string _question)
         {
             var responses = new List<string>
             {
@@ -362,7 +362,7 @@ namespace CyberChan
             var url = @"https://emojipedia-us.s3.amazonaws.com/thumbs/120/microsoft/135/billiards_1f3b1.png";
             embed.WithThumbnail(url);
             embed.AddField("Question:", _question);
-            embed.AddField("CyberButler Says:", responses[random.Next(responses.Count)]);
+            embed.AddField("Cyber-Chan Says:", responses[random.Next(responses.Count)]);
 
             await ctx.RespondAsync(embed: embed);
         }
