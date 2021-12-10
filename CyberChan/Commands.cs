@@ -61,7 +61,7 @@ namespace CyberChan
             await ctx.TriggerTypingAsync();
 
             var rand = new Random();
-            var search = Program.tenor.Search($"Anime Girl", 10, rand.Next(0, 200));
+            var search = Program.tenor.Search($"Anime Girl", 10, rand.Next(0, 190));
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -81,7 +81,7 @@ namespace CyberChan
             var rand = new Random();
             // var extraText = ctx.Message.Content.Replace("!gif ", "");
             searchText = searchText.Length > 0 ? searchText : "random";
-            var search = Program.tenor.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 200));
+            var search = Program.tenor.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 190));
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -114,14 +114,15 @@ namespace CyberChan
                         var searchResults = Trace.searchResult;
 
                         var english = searchResults.Value<JToken>("anilist").Value<JToken>("title").Value<string>("english");
-                        var title = english != null ? english : searchResults.Value<JToken>("anilist").Value<JToken>("title").Value<string>("romaji");
+                        var romaji = searchResults.Value<JToken>("anilist").Value<JToken>("title").Value<string>("romaji");
+                        var title = english != null ? english : romaji;
                         var episode = searchResults.Value<int>("episode").ToString();
                         var sceneStart = TimeSpan.FromSeconds(searchResults.Value<double>("from"));
                         var sceneStartString = sceneStart.ToString("c");
                         var mal = searchResults.Value<JToken>("anilist").Value<int>("idMal").ToString();
                         var similarity = searchResults.Value<double>("similarity").ToString();
 
-                        await ctx.RespondAsync($"Similarity to image: {similarity}%\nTitle: {title}\nEpisode: {episode}\nTimestamp: {sceneStartString}\nMAL: https://myanimelist.net/anime/{mal}");
+                        await ctx.RespondAsync($"Similarity to image: {similarity:P2}\nTitle: {title}\nEpisode: {episode}\nTimestamp: {sceneStartString}\nMAL: https://myanimelist.net/anime/{mal}");
                     }
                     else
                     {
