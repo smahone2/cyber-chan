@@ -32,7 +32,7 @@ namespace CyberChan
             };
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
-                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
+                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
             };
 
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
@@ -48,7 +48,7 @@ namespace CyberChan
             };
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
-                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.ImageUrl
+                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
             };
             
             await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
@@ -366,6 +366,22 @@ namespace CyberChan
             embed.AddField("Cyber-chan Says:", responses[random.Next(responses.Count)]);
 
             await ctx.RespondAsync(embed: embed);
+        }
+
+        [Command("dalle")]
+        [Aliases("genimg", "generateimage", "genimage")]
+        [Description("Generate an image with DALL-E.")]
+        public async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
+        {
+            await ctx.TriggerTypingAsync();
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                ImageUrl = Program.aITools.GenerateImage(query, ctx.User.Mention)
+            };
+
+            await ctx.RespondAsync(embed);
+
         }
     }
 }

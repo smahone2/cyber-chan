@@ -24,6 +24,7 @@ namespace CyberChan
         public static Giphy giphy;
         public static TenorClient tenor;
         public static Trace trace;
+        public static AITools aITools;
 
         static void Main(string[] args)
         {
@@ -85,6 +86,7 @@ namespace CyberChan
             giphy = new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]);
             tenor = new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]);
             trace = new Trace();
+            aITools = new AITools();
         }
 
         static void Events()
