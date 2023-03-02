@@ -42,7 +42,7 @@ namespace CyberChan
             var imageResult = await openAiService.Image.CreateImage(new ImageCreateRequest
             {
                 Prompt = query,
-                N = 2,
+                N = 1,
                 Size = StaticValues.ImageStatics.Size.Size256,
                 ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
                 User = user
