@@ -14,6 +14,7 @@ using OpenAI.GPT3.Tokenizer.GPT3;
 using SteamWebAPI2.Utilities;
 using OpenAI.GPT3.ObjectModels.RequestModels;
 using OpenAI.GPT3.ObjectModels;
+using Slko.TraceMoeNET.Models;
 
 namespace CyberChan
 {
@@ -62,24 +63,28 @@ namespace CyberChan
 
         async private Task GPT3PromptTask(string query, string user)
         {
-            var completionResult = await openAiService.Completions.CreateCompletion(new CompletionCreateRequest()
+            var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
             {
                 Prompt = query,
                 Model = Models.TextDavinciV3,
                 User = user
             });
 
-            if (completionResult.Successful)
+            searchResult = "";
+            await foreach (var completion in completionResult)
             {
-                searchResult = completionResult.Choices.FirstOrDefault().Text;
-            }
-            else
-            {
-                if (completionResult.Error == null)
+                if (completion.Successful)
                 {
-                    searchResult = "Unknown Error";
+                    searchResult += completion.Choices.FirstOrDefault()?.Text;
                 }
-                searchResult = $"{completionResult.Error.Code}: {completionResult.Error.Message}";
+                else
+                {
+                    if (completion.Error == null)
+                    {
+                        searchResult = "Unknown Error";
+                    }
+                    searchResult += $"{completion.Error.Code}: {completion.Error.Message}";
+                }
             }
         }
     }
