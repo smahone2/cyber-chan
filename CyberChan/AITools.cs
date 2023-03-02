@@ -66,8 +66,10 @@ namespace CyberChan
             var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
             {
                 Prompt = query,
+                MaxTokens = 1000,
                 Model = Models.TextDavinciV3,
                 User = user
+                
             });
 
             searchResult = "";
@@ -86,6 +88,27 @@ namespace CyberChan
                     searchResult += $"{completion.Error.Code}: {completion.Error.Message}";
                 }
             }
+        }
+
+        public string Moderation(string query)
+        {
+            ModerationTask(query).ConfigureAwait(false).GetAwaiter().GetResult();
+            return searchResult;
+        }
+
+        async private Task ModerationTask(string query)
+        {
+            var moderationResponse = await openAiService.Moderation.CreateModeration(new CreateModerationRequest()
+            {
+                Input = query
+            });
+
+            if (moderationResponse.Results.FirstOrDefault()?.Flagged != true)
+            {
+                searchResult = "Fail";
+            }
+
+            searchResult = "Pass";
         }
     }
 }

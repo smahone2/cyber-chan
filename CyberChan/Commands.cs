@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper.Execution;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -375,13 +376,18 @@ namespace CyberChan
         {
             await ctx.TriggerTypingAsync();
 
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            if (Program.aITools.Moderation(query) == "Pass")
             {
-                ImageUrl = Program.aITools.GenerateImage(query, ctx.User.Mention)
-            };
-
-            await ctx.RespondAsync(embed);
-
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                {
+                    ImageUrl = Program.aITools.GenerateImage(query, ctx.User.Mention)
+                };
+                await ctx.RespondAsync(embed);
+            }
+            else
+            {
+                await ctx.RespondAsync("Query failed to pass content moderation");
+            }
         }
 
         [Command("gpt3")]
@@ -391,11 +397,18 @@ namespace CyberChan
         {
             await ctx.TriggerTypingAsync();
 
-            var embed = new DiscordEmbedBuilder();
-            embed.AddField("Question:", query);
-            embed.AddField("Cyber-chan Says:", Program.aITools.GPT3Prompt(query, ctx.User.Mention));
+            if (Program.aITools.Moderation(query) == "Pass")
+            {
+                var embed = new DiscordEmbedBuilder();
+                embed.AddField("Question:", query);
+                embed.AddField("Cyber-chan Says:", Program.aITools.GPT3Prompt(query, ctx.User.Mention));
 
-            await ctx.RespondAsync(embed);
+                await ctx.RespondAsync(embed);
+            }
+            else
+            {
+                await ctx.RespondAsync("Query failed to pass content moderation");
+            }
 
         }
     }
