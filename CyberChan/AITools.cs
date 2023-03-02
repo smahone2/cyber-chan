@@ -144,12 +144,14 @@ namespace CyberChan
                 Input = query
             });
 
-            if (moderationResponse.Results.FirstOrDefault()?.Flagged != true)
+            if (moderationResponse.Results.FirstOrDefault()?.Flagged == true)
             {
                 searchResult = "Fail";
             }
-
-            searchResult = "Pass";
+            else
+            {
+                searchResult = "Pass";
+            }
         }
     }
 }

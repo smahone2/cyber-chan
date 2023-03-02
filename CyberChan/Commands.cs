@@ -387,7 +387,7 @@ namespace CyberChan
             }
             else
             {
-                await ctx.RespondAsync("Query failed to pass content moderation");
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
             }
         }
 
@@ -412,7 +412,7 @@ namespace CyberChan
             }
             else
             {
-                await ctx.RespondAsync("Query failed to pass content moderation");
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
             }
 
         }
@@ -438,7 +438,7 @@ namespace CyberChan
             }
             else
             {
-                await ctx.RespondAsync("Query failed to pass content moderation");
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
             }
 
         }
