@@ -44,7 +44,7 @@ namespace CyberChan
             {
                 Prompt = query,
                 N = 1,
-                Size = StaticValues.ImageStatics.Size.Size256,
+                Size = StaticValues.ImageStatics.Size.Size1024,
                 ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
                 User = user
             });
