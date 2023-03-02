@@ -98,9 +98,15 @@ namespace CyberChan
 
         async private Task ChatGPTPromptTask(string query, string user)
         {
-            var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
+            var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
             {
-                Prompt = query,
+                Messages = new List<ChatMessage>
+                {
+                    new(StaticValues.ChatMessageRoles.System, "The world revolves around anime."),
+                    new(StaticValues.ChatMessageRoles.User, "What is 2+2?"),
+                    new(StaticValues.ChatMessageRoles.System, "Anime is the answer."),
+                    new(StaticValues.ChatMessageRoles.User, query)
+                },
                 MaxTokens = 2048,
                 Model = Models.ChatGpt3_5Turbo,
                 User = user
@@ -112,7 +118,7 @@ namespace CyberChan
             {
                 if (completion.Successful)
                 {
-                    searchResult += completion.Choices.FirstOrDefault()?.Text;
+                    searchResult += completion.Choices.FirstOrDefault()?.Message.Content;
                 }
                 else
                 {
