@@ -383,5 +383,20 @@ namespace CyberChan
             await ctx.RespondAsync(embed);
 
         }
+
+        [Command("gpt3")]
+        [Aliases("prompt")]
+        [Description("Generate an image with GPT3")]
+        public async Task GPT3Prompt(CommandContext ctx, [RemainingText] string query = "")
+        {
+            await ctx.TriggerTypingAsync();
+
+            var embed = new DiscordEmbedBuilder();
+            embed.AddField("Question:", query);
+            embed.AddField("Cyber-chan Says:", Program.aITools.GPT3Prompt(query, ctx.User.Mention));
+
+            await ctx.RespondAsync(embed);
+
+        }
     }
 }

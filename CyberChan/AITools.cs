@@ -33,18 +33,16 @@ namespace CyberChan
 
         public string GenerateImage(string query, string user)
         {
-            
             GenerateImageTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
         async private Task GenerateImageTask(string query, string user)
         {
-
             var imageResult = await openAiService.Image.CreateImage(new ImageCreateRequest
             {
                 Prompt = query,
-                N = 1,
+                N = 2,
                 Size = StaticValues.ImageStatics.Size.Size256,
                 ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
                 User = user
@@ -53,6 +51,35 @@ namespace CyberChan
             if (imageResult.Successful)
             {
                 searchResult = string.Join("\n", imageResult.Results.Select(r => r.Url));
+            }
+        }
+
+        public string GPT3Prompt(string query, string user)
+        {
+            GPT3PromptTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
+            return searchResult;
+        }
+
+        async private Task GPT3PromptTask(string query, string user)
+        {
+            var completionResult = await openAiService.Completions.CreateCompletion(new CompletionCreateRequest()
+            {
+                Prompt = query,
+                Model = Models.TextDavinciV3,
+                User = user
+            });
+
+            if (completionResult.Successful)
+            {
+                searchResult = completionResult.Choices.FirstOrDefault().Text;
+            }
+            else
+            {
+                if (completionResult.Error == null)
+                {
+                    searchResult = "Unknown Error";
+                }
+                searchResult = $"{completionResult.Error.Code}: {completionResult.Error.Message}";
             }
         }
     }

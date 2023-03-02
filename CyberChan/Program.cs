@@ -64,9 +64,11 @@ namespace CyberChan
             discord = new DiscordClient(new DiscordConfiguration
             {
                 Token = ConfigurationManager.AppSettings["DiscordToken"],
-                TokenType = TokenType.Bot
-                
+                TokenType = TokenType.Bot,
+                Intents = DiscordIntents.All
+
             });
+            
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { "!" }
