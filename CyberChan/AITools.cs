@@ -109,7 +109,8 @@ namespace CyberChan
                 },
                 MaxTokens = 2048,
                 Model = Models.ChatGpt3_5Turbo,
-                User = user
+                User = user,
+                
 
             });
 

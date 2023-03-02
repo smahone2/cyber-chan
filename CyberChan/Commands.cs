@@ -401,7 +401,10 @@ namespace CyberChan
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
-                embed.AddField("Cyber-chan Says:", Program.aITools.GPT3Prompt(query, ctx.User.Mention));
+                foreach (var chunk in Program.aITools.GPT3Prompt(query, ctx.User.Mention).SplitBy(1024))
+                {
+                    embed.AddField("Cyber-chan Says:", chunk);
+                }
 
                 await ctx.RespondAsync(embed);
             }
@@ -423,7 +426,11 @@ namespace CyberChan
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
-                embed.AddField("Cyber-chan Says:", Program.aITools.ChatGPTPrompt(query, ctx.User.Mention));
+
+                foreach (var chunk in Program.aITools.ChatGPTPrompt(query, ctx.User.Mention).SplitBy(1024))
+                {
+                    embed.AddField("Cyber-chan Says:", chunk);
+                }
 
                 await ctx.RespondAsync(embed);
             }
