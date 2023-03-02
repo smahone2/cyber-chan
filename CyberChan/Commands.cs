@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper.Execution;
@@ -401,11 +402,10 @@ namespace CyberChan
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
-                embed.AddField("Cyber-chan Says:", "");
 
                 foreach (var chunk in Program.aITools.GPT3Prompt(query, ctx.User.Mention).SplitBy(1024))
                 {
-                    embed.AddField("", chunk);
+                    embed.AddField("Cyber-chan Says:", chunk);
                 }
 
                 await ctx.RespondAsync(embed);
@@ -428,11 +428,10 @@ namespace CyberChan
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
-                embed.AddField("Cyber-chan Says:", "");
 
                 foreach (var chunk in Program.aITools.ChatGPTPrompt(query, ctx.User.Mention).SplitBy(1024))
                 {
-                    embed.AddField("", chunk);
+                    embed.AddField("Cyber-chan Says:", chunk);
                 }
 
                 await ctx.RespondAsync(embed);
