@@ -90,6 +90,41 @@ namespace CyberChan
             }
         }
 
+        public string ChatGPTPrompt(string query, string user)
+        {
+            ChatGPTPromptTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
+            return searchResult;
+        }
+
+        async private Task ChatGPTPromptTask(string query, string user)
+        {
+            var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
+            {
+                Prompt = query,
+                MaxTokens = 2048,
+                Model = Models.ChatGpt3_5Turbo,
+                User = user
+
+            });
+
+            searchResult = "";
+            await foreach (var completion in completionResult)
+            {
+                if (completion.Successful)
+                {
+                    searchResult += completion.Choices.FirstOrDefault()?.Text;
+                }
+                else
+                {
+                    if (completion.Error == null)
+                    {
+                        searchResult = "Unknown Error";
+                    }
+                    searchResult += $"{completion.Error.Code}: {completion.Error.Message}";
+                }
+            }
+        }
+
         public string Moderation(string query)
         {
             ModerationTask(query).ConfigureAwait(false).GetAwaiter().GetResult();
