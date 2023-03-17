@@ -99,7 +99,7 @@ namespace CyberChan
                     //new(StaticValues.ChatMessageRoles.System, "I will always split my replies into 1024 character chunks for clean formatting in discord embed fields."),
                     new(StaticValues.ChatMessageRoles.User, query)
                 },
-                MaxTokens = 8192,
+                MaxTokens = 7068,
                 Model = Models.Gpt4,
                 User = user,
 
