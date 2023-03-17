@@ -442,5 +442,31 @@ namespace CyberChan
             }
 
         }
+
+        [Command("gpt4")]
+        [Aliases("prompt3")]
+        [Description("Generate an image with ChatGpt")]
+        public async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
+        {
+            await ctx.TriggerTypingAsync();
+
+            if (Program.aITools.Moderation(query) == "Pass")
+            {
+                var embed = new DiscordEmbedBuilder();
+                embed.AddField("Question:", query);
+
+                foreach (var chunk in Program.aITools.GPT4Prompt(query, ctx.User.Mention).SplitBy(1024))
+                {
+                    embed.AddField("Cyber-chan Says:", chunk);
+                }
+
+                await ctx.RespondAsync(embed);
+            }
+            else
+            {
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
+            }
+
+        }
     }
 }
