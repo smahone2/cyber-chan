@@ -56,6 +56,7 @@ namespace CyberChan
                     break;
                 default:
                     promptSeed.Add(new(StaticValues.ChatMessageRoles.System, "I will answer as creatively as possible, while still being accurate. I am allowed to have favorites and provide recomendations."));
+                    promptSeed.Add(new(StaticValues.ChatMessageRoles.User, query));
                     break;
             }
             return promptSeed;
