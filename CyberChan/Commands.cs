@@ -426,9 +426,10 @@ namespace CyberChan
 
             var seed = "";
 
-            if (query.Contains(">"))
+            if (query.StartsWith("<") && query.Contains(">"))
             {
                 seed = query.Split("> ")[0].Replace("<", "");
+                query = query.Split("> ")[1].Trim();
             }
 
             if (Program.aITools.Moderation(query) == "Pass")
@@ -459,9 +460,10 @@ namespace CyberChan
 
             var seed = "";
 
-            if (query.Contains(">"))
+            if (query.StartsWith("<") && query.Contains(">"))
             {
                 seed = query.Split("> ")[0].Replace("<", "");
+                query = query.Split("> ")[1].Trim();
             }
 
             if (Program.aITools.Moderation(query) == "Pass")
