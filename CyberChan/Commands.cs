@@ -450,12 +450,19 @@ namespace CyberChan
         {
             await ctx.TriggerTypingAsync();
 
+            var seed = "";
+
+            if (query.Contains(">"))
+            {
+                seed = query.Split("> ")[0].Replace("<", "");
+            }
+
             if (Program.aITools.Moderation(query) == "Pass")
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
 
-                foreach (var chunk in Program.aITools.GPT4Prompt(query, ctx.User.Mention).SplitBy(1024))
+                foreach (var chunk in Program.aITools.GPT4Prompt(query, ctx.User.Mention, seed).SplitBy(1024))
                 {
                     embed.AddField("Cyber-chan Says:", chunk);
                 }
