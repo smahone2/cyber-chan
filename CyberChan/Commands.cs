@@ -372,7 +372,7 @@ namespace CyberChan
 
         [Command("dalle")]
         [Aliases("genimg", "generateimage", "genimage")]
-        [Description("Generate an image with DALL-E.")]
+        [Description("Generate an image with DALL-E. Usage: !dalle test")]
         public async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
@@ -393,7 +393,7 @@ namespace CyberChan
 
         [Command("gpt3")]
         [Aliases("prompt")]
-        [Description("Generate an image with GPT3")]
+        [Description("Generate an text with GPT3. Usage: !gpt3 test")]
         public async Task GPT3Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
@@ -419,17 +419,24 @@ namespace CyberChan
 
         [Command("chatgpt")]
         [Aliases("prompt2")]
-        [Description("Generate an image with ChatGpt")]
+        [Description("Generate an text with ChatGpt. Seeds are hackerman, code, evil, dev, steve, and dude. Usage: !chatgpt <hackerman> test")]
         public async Task ChatGptPrompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
+
+            var seed = "";
+
+            if (query.Contains(">"))
+            {
+                seed = query.Split("> ")[0].Replace("<", "");
+            }
 
             if (Program.aITools.Moderation(query) == "Pass")
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
 
-                foreach (var chunk in Program.aITools.ChatGPTPrompt(query, ctx.User.Mention).SplitBy(1024))
+                foreach (var chunk in Program.aITools.ChatGPTPrompt(query, ctx.User.Mention, seed).SplitBy(1024))
                 {
                     embed.AddField("Cyber-chan Says:", chunk);
                 }
@@ -445,7 +452,7 @@ namespace CyberChan
 
         [Command("gpt4")]
         [Aliases("prompt3")]
-        [Description("Generate an image with ChatGpt")]
+        [Description("Generate an text with GPT4. Seeds are hackerman, code, evil, dev, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
