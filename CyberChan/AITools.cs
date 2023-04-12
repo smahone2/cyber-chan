@@ -9,6 +9,7 @@ using OpenAI.GPT3.ObjectModels;
 using System;
 using System.Threading.Tasks.Dataflow;
 using System.Collections;
+using Slko.TraceMoeNET.Models;
 
 namespace CyberChan
 {
@@ -16,7 +17,7 @@ namespace CyberChan
     class AITools
     {
         public static OpenAIService openAiService;
-        public static string searchResult;
+        //public static string searchResult;
 
         public AITools()
         {
@@ -87,11 +88,11 @@ namespace CyberChan
 
         public string GPT3Prompt(string query, string user)
         {
-            GPT3PromptTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = GPT3PromptTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
-        async private Task GPT3PromptTask(string query, string user)
+        async private Task<String> GPT3PromptTask(string query, string user)
         {
             var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
             {
@@ -102,7 +103,7 @@ namespace CyberChan
                 
             });
 
-            searchResult = "";
+            var searchResult = "";
             await foreach (var completion in completionResult)
             {
                 if (completion.Successful)
@@ -118,15 +119,16 @@ namespace CyberChan
                     searchResult += $"{completion.Error.Code}: {completion.Error.Message}";
                 }
             }
+            return searchResult;
         }
 
         public string GPT4Prompt(string query, string user, string seed)
         {
-            GPT4PromptTask(query, user, seed).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = GPT4PromptTask(query, user, seed).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
-        async private Task GPT4PromptTask(string query, string user, string seed)
+        async private Task<String> GPT4PromptTask(string query, string user, string seed)
         {
             var promptSeed = SelectSeed(query, seed);
 
@@ -138,7 +140,7 @@ namespace CyberChan
                 User = user
             });
            
-            searchResult = "";
+            var searchResult = "";
             await foreach (var completion in completionResult)
             {
                 if (completion.Successful)
@@ -154,15 +156,16 @@ namespace CyberChan
                     searchResult += $"{completion.Error.Code}: {completion.Error.Message}";
                 }
             }
+            return searchResult;
         }
 
         public string ChatGPTPrompt(string query, string user, string seed)
         {
-            ChatGPTPromptTask(query, user, seed).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
-        async private Task ChatGPTPromptTask(string query, string user, string seed)
+        async private Task<String> ChatGPTPromptTask(string query, string user, string seed)
         {
             var promptSeed = SelectSeed(query, seed);
 
@@ -176,7 +179,7 @@ namespace CyberChan
 
             });
 
-            searchResult = "";
+            var searchResult = "";
             await foreach (var completion in completionResult)
             {
                 if (completion.Successful)
@@ -192,21 +195,23 @@ namespace CyberChan
                     searchResult += $"{completion.Error.Code}: {completion.Error.Message}";
                 }
             }
+            return searchResult;
         }
 
         public string Moderation(string query)
         {
-            ModerationTask(query).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ModerationTask(query).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
-        async private Task ModerationTask(string query)
+        async private Task<String> ModerationTask(string query)
         {
             var moderationResponse = await openAiService.Moderation.CreateModeration(new CreateModerationRequest()
             {
                 Input = query
             });
 
+            string searchResult;
             if (moderationResponse.Results.FirstOrDefault()?.Flagged == true)
             {
                 searchResult = "Fail";
@@ -215,6 +220,7 @@ namespace CyberChan
             {
                 searchResult = "Pass";
             }
+            return searchResult;
         }
     }
 }
