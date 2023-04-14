@@ -65,11 +65,11 @@ namespace CyberChan
 
         public string GenerateImage(string query, string user)
         {
-            GenerateImageTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = GenerateImageTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
-        async private Task GenerateImageTask(string query, string user)
+        async private Task<String> GenerateImageTask(string query, string user)
         {
             var imageResult = await openAiService.Image.CreateImage(new ImageCreateRequest
             {
@@ -80,10 +80,12 @@ namespace CyberChan
                 User = user
             });
 
+            var searchResult = "";
             if (imageResult.Successful)
             {
                 searchResult = string.Join("\n", imageResult.Results.Select(r => r.Url));
             }
+            return searchResult;
         }
 
         public string GPT3Prompt(string query, string user)
