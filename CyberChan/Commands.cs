@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
@@ -379,11 +382,17 @@ namespace CyberChan
 
             if (Program.aITools.Moderation(query) == "Pass")
             {
-                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-                {
-                    ImageUrl = Program.aITools.GenerateImage(query, ctx.User.Mention)
-                };
+                HttpClient client = new HttpClient();
+                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage(query, ctx.User.Mention));
+
+                DiscordMessageBuilder embed = new DiscordMessageBuilder();
+                embed.AddFile("dalle.png", stream);
+
                 await ctx.RespondAsync(embed);
+
+                client.Dispose();
+                stream.Close();
+
             }
             else
             {
@@ -484,5 +493,6 @@ namespace CyberChan
             }
 
         }
+        
     }
 }

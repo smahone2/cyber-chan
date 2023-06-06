@@ -2,10 +2,10 @@
 using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenAI.GPT3.Managers;
-using OpenAI.GPT3;
-using OpenAI.GPT3.ObjectModels.RequestModels;
-using OpenAI.GPT3.ObjectModels;
+using OpenAI.Managers;
+using OpenAI;
+using OpenAI.ObjectModels.RequestModels;
+using OpenAI.ObjectModels;
 using System;
 using System.Threading.Tasks.Dataflow;
 using System.Collections;
@@ -138,7 +138,7 @@ namespace CyberChan
             {
                 Messages = promptSeed,
                 MaxTokens = 7068,
-                Model = Models.Gpt4,
+                Model = Models.Gpt_4,
                 User = user
             });
            
@@ -174,7 +174,7 @@ namespace CyberChan
             var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
             {
                 Messages = promptSeed,
-                MaxTokens = 2048,
+                MaxTokens = 3072,
                 Model = Models.ChatGpt3_5Turbo,
                 User = user,
                 
