@@ -428,7 +428,7 @@ namespace CyberChan
 
         [Command("chatgpt")]
         [Aliases("prompt2")]
-        [Description("Generate an text with ChatGpt. Seeds are hackerman, code, evil, dev, steve, and dude. Usage: !chatgpt <hackerman> test")]
+        [Description("Generate an text with ChatGpt. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
         public async Task ChatGptPrompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
@@ -462,7 +462,7 @@ namespace CyberChan
 
         [Command("gpt4")]
         [Aliases("prompt3")]
-        [Description("Generate an text with GPT4. Seeds are hackerman, code, evil, dev, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Generate an text with GPT4. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
