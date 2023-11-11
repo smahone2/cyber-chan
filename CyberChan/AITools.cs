@@ -28,7 +28,7 @@ namespace CyberChan
             });
         }
 
-        private List<ChatMessage> SelectSeed(string query, string seed)
+        private List<ChatMessage> ChatSeed(string query, string seed)
         {
             var promptSeed = new List<ChatMessage>();
 
@@ -69,18 +69,34 @@ namespace CyberChan
             return promptSeed;
         }
 
-        public string GenerateImage(string query, string user)
+        private string DalleSeed(string query, string seed)
         {
-            var searchResult = GenerateImageTask(query, user, Models.Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
+            switch (seed.ToLower().Trim())
+            {
+                case "simple":
+                    query = "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: " + query; 
+                    break;
+                case "detailed":
+                    query = "My prompt has full detail so no need to add more: " + query;
+                    break;
+                default:
+                    break;
+            }
+            return query;
+        }
+
+        public string GenerateImage(string query, string user, string seed)
+        {
+            var searchResult = GenerateImageTask(query, user, seed, Models.Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
-        public string GenerateImage2(string query, string user)
+        public string GenerateImage2(string query, string user, string seed)
         {
-            var searchResult = GenerateImageTask(query, user, Models.Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = GenerateImageTask(query, user, seed, Models.Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
-        async private Task<String> GenerateImageTask(string query, string user, String model)
+        async private Task<String> GenerateImageTask(string query, string user, string seed, String model)
         {
             var imageResult = await openAiService.Image.CreateImage(new ImageCreateRequest
             {
@@ -91,6 +107,7 @@ namespace CyberChan
                 User = user,
                 Model = model,
                 Quality = "hd"
+
             });
 
             var searchResult = "";
@@ -145,7 +162,7 @@ namespace CyberChan
 
         async private Task<String> GPT4PromptTask(string query, string user, string seed)
         {
-            var promptSeed = SelectSeed(query, seed);
+            var promptSeed = ChatSeed(query, seed);
 
             var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
             {
@@ -182,7 +199,7 @@ namespace CyberChan
 
         async private Task<String> ChatGPTPromptTask(string query, string user, string seed)
         {
-            var promptSeed = SelectSeed(query, seed);
+            var promptSeed = ChatSeed(query, seed);
 
             var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
             {

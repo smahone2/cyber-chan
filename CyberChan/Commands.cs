@@ -374,15 +374,24 @@ namespace CyberChan
         }
 
         [Command("dalle2")]
+        [Aliases("dalle")]
         [Description("Generate an image with DALL-E. Usage: !dalle2 test")]
         public async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
 
+            var seed = "";
+
+            if (query.StartsWith("<") && query.Contains(">"))
+            {
+                seed = query.Split("> ")[0].Replace("<", "");
+                query = query.Split("> ")[1].Trim();
+            }
+
             if (Program.aITools.Moderation(query) == "Pass")
             {
                 HttpClient client = new HttpClient();
-                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage(query, ctx.User.Mention));
+                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage(query, ctx.User.Mention, seed));
 
                 DiscordMessageBuilder embed = new DiscordMessageBuilder();
                 embed.AddFile("dalle2.png", stream);
@@ -401,16 +410,23 @@ namespace CyberChan
 
 
         [Command("dalle3")]
-        [Aliases("dalle")]
         [Description("Generate an image with DALL-E. Usage: !dalle3 test")]
         public async Task GenerateImage2(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
 
+            var seed = "";
+
+            if (query.StartsWith("<") && query.Contains(">"))
+            {
+                seed = query.Split("> ")[0].Replace("<", "");
+                query = query.Split("> ")[1].Trim();
+            }
+
             if (Program.aITools.Moderation(query) == "Pass")
             {
                 HttpClient client = new HttpClient();
-                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage2(query, ctx.User.Mention));
+                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage2(query, ctx.User.Mention, seed));
 
                 DiscordMessageBuilder embed = new DiscordMessageBuilder();
                 embed.AddFile("dalle3.png", stream);
