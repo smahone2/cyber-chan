@@ -10,6 +10,7 @@ using System;
 using System.Threading.Tasks.Dataflow;
 using System.Collections;
 using Slko.TraceMoeNET.Models;
+using System.Drawing.Drawing2D;
 
 namespace CyberChan
 {
@@ -70,11 +71,16 @@ namespace CyberChan
 
         public string GenerateImage(string query, string user)
         {
-            var searchResult = GenerateImageTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = GenerateImageTask(query, user, Models.Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
+            return searchResult;
+        }
+        public string GenerateImage2(string query, string user)
+        {
+            var searchResult = GenerateImageTask(query, user, Models.Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
-        async private Task<String> GenerateImageTask(string query, string user)
+        async private Task<String> GenerateImageTask(string query, string user, String model)
         {
             var imageResult = await openAiService.Image.CreateImage(new ImageCreateRequest
             {
@@ -82,7 +88,9 @@ namespace CyberChan
                 N = 1,
                 Size = StaticValues.ImageStatics.Size.Size1024,
                 ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
-                User = user
+                User = user,
+                Model = model,
+                Quality = "hd"
             });
 
             var searchResult = "";
@@ -180,7 +188,7 @@ namespace CyberChan
             {
                 Messages = promptSeed,
                 MaxTokens = 3072,
-                Model = Models.ChatGpt3_5Turbo,
+                Model = Models.Gpt_3_5_Turbo,
                 User = user,
                 
 

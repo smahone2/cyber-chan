@@ -373,9 +373,8 @@ namespace CyberChan
             await ctx.RespondAsync(embed: embed);
         }
 
-        [Command("dalle")]
-        [Aliases("genimg", "generateimage", "genimage")]
-        [Description("Generate an image with DALL-E. Usage: !dalle test")]
+        [Command("dalle2")]
+        [Description("Generate an image with DALL-E. Usage: !dalle2 test")]
         public async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
@@ -386,7 +385,35 @@ namespace CyberChan
                 Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage(query, ctx.User.Mention));
 
                 DiscordMessageBuilder embed = new DiscordMessageBuilder();
-                embed.AddFile("dalle.png", stream);
+                embed.AddFile("dalle2.png", stream);
+
+                await ctx.RespondAsync(embed);
+
+                client.Dispose();
+                stream.Close();
+
+            }
+            else
+            {
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
+            }
+        }
+
+
+        [Command("dalle3")]
+        [Aliases("dalle")]
+        [Description("Generate an image with DALL-E. Usage: !dalle3 test")]
+        public async Task GenerateImage2(CommandContext ctx, [RemainingText] string query = "")
+        {
+            await ctx.TriggerTypingAsync();
+
+            if (Program.aITools.Moderation(query) == "Pass")
+            {
+                HttpClient client = new HttpClient();
+                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage2(query, ctx.User.Mention));
+
+                DiscordMessageBuilder embed = new DiscordMessageBuilder();
+                embed.AddFile("dalle3.png", stream);
 
                 await ctx.RespondAsync(embed);
 
