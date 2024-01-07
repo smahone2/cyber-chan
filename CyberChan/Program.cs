@@ -10,6 +10,9 @@ using System.IO;
 using System.Configuration;
 using GiphyDotNet.Manager;
 using TenorSharp;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Interactivity;
 
 namespace CyberChan
 {
@@ -74,6 +77,12 @@ namespace CyberChan
                 StringPrefixes = new[] { "!" }
             });
             commands.RegisterCommands<Commands>();
+
+            discord.UseInteractivity(new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromSeconds(30)
+            });
 
             //var tenorConfig = new TenorConfiguration()
             //{

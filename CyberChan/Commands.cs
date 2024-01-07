@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.ConstrainedExecution;
@@ -14,12 +15,15 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.VoiceNext;
 using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
 using Newtonsoft.Json.Linq;
 using Steam.Models.SteamEconomy;
 using TenorSharp;
+using static CyberChan.AITools;
 
 namespace CyberChan
 {
@@ -378,40 +382,20 @@ namespace CyberChan
         [Description("Generate an image with DALL-E. Usage: !dalle2 test")]
         public async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
         {
-            await ctx.TriggerTypingAsync();
-
-            var seed = "";
-
-            if (query.StartsWith("<") && query.Contains(">"))
-            {
-                seed = query.Split("> ")[0].Replace("<", "");
-                query = query.Split("> ")[1].Trim();
-            }
-
-            if (Program.aITools.Moderation(query) == "Pass")
-            {
-                HttpClient client = new HttpClient();
-                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage(query, ctx.User.Mention, seed));
-
-                DiscordMessageBuilder embed = new DiscordMessageBuilder();
-                embed.AddFile("dalle2.png", stream);
-
-                await ctx.RespondAsync(embed);
-
-                client.Dispose();
-                stream.Close();
-
-            }
-            else
-            {
-                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
-            }
+            await GenerateImageCommon(Program.aITools.GenerateImage, ctx, query, "dalle2.png");
         }
 
 
         [Command("dalle3")]
-        [Description("Generate an image with DALL-E. Seeds to prevent prompt rewriting are simple and detailed. Usage: !dalle3 <simple> test")]
+        [Description("Generate an image with DALL-E. Seeds to prevent prompt rewriting are simple and detailed. Seeds to adjust image style are natural and vivid (This is always after a comma). Usage: !dalle3 <simple,natural> test")]
         public async Task GenerateImage2(CommandContext ctx, [RemainingText] string query = "")
+        {
+            
+            await GenerateImageCommon(Program.aITools.GenerateImage2, ctx, query, "dalle3.png");
+
+        }
+
+        private async Task GenerateImageCommon(Func<string,string,string,ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
             await ctx.TriggerTypingAsync();
 
@@ -426,12 +410,22 @@ namespace CyberChan
             if (Program.aITools.Moderation(query) == "Pass")
             {
                 HttpClient client = new HttpClient();
-                Stream stream = await client.GetStreamAsync(Program.aITools.GenerateImage2(query, ctx.User.Mention, seed));
+                var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
+                Stream stream = await client.GetStreamAsync(imageResponse.url);
 
-                DiscordMessageBuilder embed = new DiscordMessageBuilder();
-                embed.AddFile("dalle3.png", stream);
+                DiscordMessageBuilder msg = new DiscordMessageBuilder();
 
-                await ctx.RespondAsync(embed);
+                var embed = new DiscordEmbedBuilder();
+                embed.AddField("Original Prompt:", query);
+                if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
+                {
+                    embed.AddField("Revised Prompt:", imageResponse.revisedPrompt);
+                }
+
+                msg.AddFile(baseFilename, stream);
+                msg.AddEmbed(embed);
+
+                await ctx.RespondAsync(msg);
 
                 client.Dispose();
                 stream.Close();
@@ -445,7 +439,7 @@ namespace CyberChan
 
         [Command("gpt3")]
         [Aliases("prompt")]
-        [Description("Generate an text with GPT3. Usage: !gpt3 test")]
+        [Description("Generate text with GPT3. Usage: !gpt3 test")]
         public async Task GPT3Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
@@ -471,42 +465,29 @@ namespace CyberChan
 
         [Command("chatgpt")]
         [Aliases("prompt2")]
-        [Description("Generate an text with ChatGpt. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
+        [Description("Generate text with ChatGpt. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
         public async Task ChatGptPrompt(CommandContext ctx, [RemainingText] string query = "")
         {
-            await ctx.TriggerTypingAsync();
-
-            var seed = "";
-
-            if (query.StartsWith("<") && query.Contains(">"))
-            {
-                seed = query.Split("> ")[0].Replace("<", "");
-                query = query.Split("> ")[1].Trim();
-            }
-
-            if (Program.aITools.Moderation(query) == "Pass")
-            {
-                var embed = new DiscordEmbedBuilder();
-                embed.AddField("Question:", query);
-
-                foreach (var chunk in Program.aITools.ChatGPTPrompt(query, ctx.User.Mention, seed).SplitBy(1024))
-                {
-                    embed.AddField("Cyber-chan Says:", chunk);
-                }
-
-                await ctx.RespondAsync(embed);
-            }
-            else
-            {
-                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
-            }
-
+            await GPTPromptCommon(Program.aITools.GPT35Prompt, ctx, query);
         }
 
         [Command("gpt4")]
         [Aliases("prompt3")]
-        [Description("Generate an text with GPT4. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Generate text with GPT4. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
+        {
+            await GPTPromptCommon(Program.aITools.GPT4Prompt, ctx, query);
+        }
+
+        [Command("gpt4p")]
+        [Aliases("prompt4", "gpt4preview")]
+        [Description("Generate text with GPT4 Preview. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        public async Task GPT4PreviewPrompt(CommandContext ctx, [RemainingText] string query = "")
+        {
+            await GPTPromptCommon(Program.aITools.GPT4PreviewPrompt, ctx, query);
+        }
+
+        private async Task GPTPromptCommon(Func<string,string,string,string> modelDelegate, CommandContext ctx, string query)
         {
             await ctx.TriggerTypingAsync();
 
@@ -522,8 +503,7 @@ namespace CyberChan
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
-
-                foreach (var chunk in Program.aITools.GPT4Prompt(query, ctx.User.Mention, seed).SplitBy(1024))
+                foreach (var chunk in modelDelegate(query, ctx.User.Mention, seed).SplitBy(1024))
                 {
                     embed.AddField("Cyber-chan Says:", chunk);
                 }
@@ -536,6 +516,6 @@ namespace CyberChan
             }
 
         }
-        
+
     }
 }
