@@ -409,27 +409,33 @@ namespace CyberChan
 
             if (Program.aITools.Moderation(query) == "Pass")
             {
-                HttpClient client = new HttpClient();
-                var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
-                Stream stream = await client.GetStreamAsync(imageResponse.url);
-
                 DiscordMessageBuilder msg = new DiscordMessageBuilder();
-
+                var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
                 var embed = new DiscordEmbedBuilder();
+
                 embed.AddField("Original Prompt:", query);
                 if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
                 {
                     embed.AddField("Revised Prompt:", imageResponse.revisedPrompt);
                 }
 
-                msg.AddFile(baseFilename, stream);
-                msg.AddEmbed(embed);
+                if (!string.IsNullOrEmpty(imageResponse.url))
+                {
+                    HttpClient client = new HttpClient();
+                    Stream stream = await client.GetStreamAsync(imageResponse.url);
+                    msg.AddFile(baseFilename, stream);
 
-                await ctx.RespondAsync(msg);
+                    msg.AddEmbed(embed);
+                    await ctx.RespondAsync(msg);
 
-                client.Dispose();
-                stream.Close();
-
+                    stream.Dispose();
+                    client.Dispose();
+                }
+                else
+                {
+                    msg.AddEmbed(embed);
+                    await ctx.RespondAsync(msg);
+                }
             }
             else
             {
