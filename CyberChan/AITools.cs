@@ -218,7 +218,7 @@ namespace CyberChan
 
         public string GPT4PreviewPrompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Models.Gpt_4_1106_preview, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, Models.Gpt_4_turbo_preview, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
