@@ -413,10 +413,18 @@ namespace CyberChan
                 var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
                 var embed = new DiscordEmbedBuilder();
 
-                embed.AddField("Original Prompt:", query);
+                
+                foreach (var chunk in query.SplitBy(1024))
+                {
+                    embed.AddField("Original Prompt:", chunk);
+                }
+
                 if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
                 {
-                    embed.AddField("Revised Prompt:", imageResponse.revisedPrompt);
+                    foreach (var chunk in imageResponse.revisedPrompt.SplitBy(1024))
+                    {
+                        embed.AddField("Revised Prompt:", chunk);
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(imageResponse.url))
