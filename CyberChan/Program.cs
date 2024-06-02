@@ -30,15 +30,15 @@ namespace CyberChan
 
         static void Main(string[] args)
         {
-            String fileName = ConfigurationManager.AppSettings["SteamIDFile"];
+            string fileName = ConfigurationManager.AppSettings["SteamIDFile"];
    
             // Create Steam ID file if it doesn't exist
-            FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate);
-            fs.Close();
+            using FileStream fs = new(fileName, FileMode.OpenOrCreate);
 
             // Load Steam ID File
-            StreamReader sr = new StreamReader(fileName);
-            steamID = new Dictionary<string, string>();
+            using StreamReader sr = new(fileName);
+            steamID = [];
+
             while (!sr.EndOfStream)
             {
                 string line;

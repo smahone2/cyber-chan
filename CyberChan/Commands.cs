@@ -21,7 +21,7 @@ namespace CyberChan
         //test text
         [Command(nameof(Hi))]
         [Description("Just saying hello.")]
-        public async Task Hi(CommandContext ctx, [RemainingText] string extraText = "")
+        public static async Task Hi(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -37,7 +37,7 @@ namespace CyberChan
         
         [Command(nameof(Bye))]
         [Description("Just saying goodbye.")]
-        public async Task Bye(CommandContext ctx, [RemainingText] string extraText = "")
+        public static async Task Bye(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -53,7 +53,7 @@ namespace CyberChan
 
         [Command(nameof(Waifu))]
         [Description("Let me find your waifu!")]
-        public async Task Waifu(CommandContext ctx, [RemainingText] string extraText = "")
+        public static async Task Waifu(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.TriggerTypingAsync();
 
@@ -71,7 +71,7 @@ namespace CyberChan
 
         [Command(nameof(Gif))]
         [Description("Search for any ol' gif! Usage: !gif <search term>")]
-        public async Task Gif(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
+        public static async Task Gif(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             await ctx.TriggerTypingAsync();
 
@@ -92,7 +92,7 @@ namespace CyberChan
         [Command("lookup")]
         [Description("Find anime based on linked image. Usage (reply to message with image): !lookup")]
         [Aliases("find", "get", "trace")]
-        public async Task LookupAnime(CommandContext ctx, [RemainingText] string extraText = "")
+        public static async Task LookupAnime(CommandContext ctx, [RemainingText] string extraText = "")
         {
             var message = ctx.Message;
             if (message.MessageType == MessageType.Reply)
@@ -211,7 +211,7 @@ namespace CyberChan
         [Command(nameof(AnimeSearch))]
         [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
         [Aliases("as", "mal", "asearch")]
-        public async Task AnimeSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
+        public static async Task AnimeSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
@@ -231,7 +231,7 @@ namespace CyberChan
         [Command(nameof(MangaSearch))]
         [Description("Search Kitsu for a manga. Usage: !mangasearch <search term>")]
         [Aliases("ms", "msearch")]
-        public async Task MangaSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
+        public static async Task MangaSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
@@ -248,7 +248,7 @@ namespace CyberChan
 
         [Command("roll")]
         [Description("Roll some dice. Usage: !roll <[#]d#>")]
-        public async Task DiceRoll(CommandContext ctx, [Description("How many dice and how many faces."), RemainingText] string diceText)
+        public static async Task DiceRoll(CommandContext ctx, [Description("How many dice and how many faces."), RemainingText] string diceText)
         {
             try
             {
@@ -294,7 +294,7 @@ namespace CyberChan
 
         [Command("flip")]
         [Description("Flip a coin. Usage: !flip")]
-        public async Task CoinFlip(CommandContext ctx, [RemainingText] string extraText = "")
+        public static async Task CoinFlip(CommandContext ctx, [RemainingText] string extraText = "")
         {
             try
             {
@@ -320,7 +320,7 @@ namespace CyberChan
 
         [Command("source")]
         [Description("Link to the source code.")]
-        public async Task SourceCode(CommandContext ctx, [RemainingText] string extraText = "")
+        public static async Task SourceCode(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.RespondAsync($"https://bitbucket.org/sean_mahoney/cyber-chan/src/master/");
 
@@ -329,7 +329,7 @@ namespace CyberChan
         [Command(nameof(EightBall))]
         [Aliases("8ball")]
         [Description("Place important decisions in the hands of RNGesus")]
-        public async Task EightBall(CommandContext ctx, [Description("Question you want Cyber-chan to answer."), RemainingText] string _question)
+        public static async Task EightBall(CommandContext ctx, [Description("Question you want Cyber-chan to answer."), RemainingText] string _question)
         {
             var responses = new List<string>
             {
@@ -368,7 +368,7 @@ namespace CyberChan
         [Command("dalle2")]
         [Aliases("dalle")]
         [Description("Generate an image with DALL-E. Usage: !dalle2 test")]
-        public async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
+        public static async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
         {
             await GenerateImageCommon(Program.aITools.GenerateImage, ctx, query, "dalle2.png");
         }
@@ -376,7 +376,7 @@ namespace CyberChan
 
         [Command("dalle3")]
         [Description("Generate an image with DALL-E. Seeds to prevent prompt rewriting are simple and detailed. Seeds to adjust image style are natural and vivid (This is always after a comma). Usage: !dalle3 <simple,natural> test")]
-        public async Task GenerateImage2(CommandContext ctx, [RemainingText] string query = "")
+        public static async Task GenerateImage2(CommandContext ctx, [RemainingText] string query = "")
         {
             
             await GenerateImageCommon(Program.aITools.GenerateImage2, ctx, query, "dalle3.png");
@@ -386,7 +386,7 @@ namespace CyberChan
         [Command("gpt3")]
         [Aliases("prompt")]
         [Description("Generate text with GPT3. Usage: !gpt3 test")]
-        public async Task GPT3Prompt(CommandContext ctx, [RemainingText] string query = "")
+        public static async Task GPT3Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
 
@@ -412,7 +412,7 @@ namespace CyberChan
         [Command("chatgpt")]
         [Aliases("prompt2")]
         [Description("Generate text with ChatGpt. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
-        public async Task ChatGptPrompt(CommandContext ctx, [RemainingText] string query = "")
+        public static async Task ChatGptPrompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await GPTPromptCommon(Program.aITools.GPT35Prompt, ctx, query);
         }
@@ -420,7 +420,7 @@ namespace CyberChan
         [Command("gpt4")]
         [Aliases("prompt3")]
         [Description("Generate text with GPT4. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
+        public static async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await GPTPromptCommon(Program.aITools.GPT4Prompt, ctx, query);
         }
@@ -428,7 +428,7 @@ namespace CyberChan
         [Command("gpt4p")]
         [Aliases("prompt4", "gpt4preview")]
         [Description("Generate text with GPT4 Preview. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public async Task GPT4PreviewPrompt(CommandContext ctx, [RemainingText] string query = "")
+        public static async Task GPT4PreviewPrompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await GPTPromptCommon(Program.aITools.GPT4PreviewPrompt, ctx, query);
         }

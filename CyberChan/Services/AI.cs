@@ -1,24 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using CyberChan.Extensions;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
+using OpenAI;
+using OpenAI.Managers;
+using OpenAI.ObjectModels;
+using static OpenAI.ObjectModels.Models;
+using OpenAI.ObjectModels.RequestModels;
+using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
-using OpenAI.Managers;
-using OpenAI;
-using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels;
-using System;
-using System.Threading.Tasks.Dataflow;
-using System.Collections;
-using Slko.TraceMoeNET.Models;
-using System.Drawing.Drawing2D;
-using OpenAI.ObjectModels.ResponseModels.ImageResponseModel;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
-using CyberChan.Extensions;
 
 namespace CyberChan.Services
 {
-
     class AI
     {
         public static OpenAIService openAiService;
@@ -123,12 +118,12 @@ namespace CyberChan.Services
 
         public ImageRepsonse GenerateImage(string query, string user, string seed)
         {
-            var imageResponse = GenerateImageTask(query, user, seed, Models.Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
+            var imageResponse = GenerateImageTask(query, user, seed, Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
             return imageResponse;
         }
         public ImageRepsonse GenerateImage2(string query, string user, string seed)
         {
-            var imageResponse = GenerateImageTask(query, user, seed, Models.Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
+            var imageResponse = GenerateImageTask(query, user, seed, Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
             return imageResponse;
         }
 
@@ -184,7 +179,7 @@ namespace CyberChan.Services
             {
                 Prompt = query,
                 MaxTokens = 1000,
-                Model = Models.TextDavinciV3,
+                Model = TextDavinciV3,
                 User = user
 
             });
@@ -209,19 +204,19 @@ namespace CyberChan.Services
         }
         public string GPT35Prompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Models.Gpt_3_5_Turbo_16k, 15360).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_3_5_Turbo_16k, 15360).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
         public string GPT4Prompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Models.Gpt_4, 7168).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_4, 7168).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
         public string GPT4PreviewPrompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Models.Gpt_4_turbo_preview, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_4_turbo_preview, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 

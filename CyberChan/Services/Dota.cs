@@ -9,7 +9,7 @@ namespace CyberChan.Services
     class Dota
     {
         //SteamUser config;
-        DOTA2Match match;
+        private readonly DOTA2Match match = new(null,null);
         private string matchID = "";
 
         public Dota()
