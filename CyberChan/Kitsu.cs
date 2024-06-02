@@ -12,7 +12,7 @@ namespace CyberChan
 {
     class Kitsu
     {
-        string searchResult;
+        private string searchResult;
 
         private enum SearchType
         {
@@ -38,9 +38,9 @@ namespace CyberChan
 
         async private Task PerformSearch(string searchName, SearchType type)
         {
-            switch ((int)type)
+            switch (type)
             {
-                case 0:
+                case SearchType.Anime:
                     var dataList = await Anime.GetAnimeAsync(searchName);
                     foreach (var item in dataList.Data)
                     {
@@ -48,7 +48,7 @@ namespace CyberChan
                         break;
                     }
                     break;
-                case 1:
+                case SearchType.Manga:
                     var dataList2 = await Manga.GetMangaAsync(searchName);
                     foreach (var item in dataList2.Data)
                     {
@@ -60,7 +60,6 @@ namespace CyberChan
             
             
         }
-
 
     }
 }

@@ -10,19 +10,24 @@ using System.IO;
 using System.Configuration;
 using GiphyDotNet.Manager;
 using TenorSharp;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Interactivity;
 
 namespace CyberChan
 {
     class Program
     {
         static DiscordClient discord;
-        static CommandsNextModule commands;
+        static CommandsNextExtension commands;
         public static Dota dota;
         public static Dictionary<String,String> steamID;
         public static Kitsu kitsu;
         public static Steam steam;
         public static Giphy giphy;
         public static TenorClient tenor;
+        public static Trace trace;
+        public static AITools aITools;
 
         static void Main(string[] args)
         {
@@ -62,14 +67,22 @@ namespace CyberChan
             discord = new DiscordClient(new DiscordConfiguration
             {
                 Token = ConfigurationManager.AppSettings["DiscordToken"],
-                TokenType = TokenType.Bot
-                
+                TokenType = TokenType.Bot,
+                Intents = DiscordIntents.All
+
             });
+            
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefix = "!"
+                StringPrefixes = new[] { "!" }
             });
             commands.RegisterCommands<Commands>();
+
+            discord.UseInteractivity(new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromSeconds(30)
+            });
 
             //var tenorConfig = new TenorConfiguration()
             //{
@@ -83,6 +96,8 @@ namespace CyberChan
             steam = new Steam();
             giphy = new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]);
             tenor = new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]);
+            trace = new Trace();
+            aITools = new AITools();
         }
 
         static void Events()
@@ -96,14 +111,12 @@ namespace CyberChan
             discord.MessageCreated += AutoReplyToSean;
         }
 
-        static async Task AutoReplyToSean(MessageCreateEventArgs e)
+        static async Task AutoReplyToSean(DiscordClient d, MessageCreateEventArgs e)
         {
             //if (e.Author.Discriminator == "3638") //XPeteX47
             //    await e.Message.RespondAsync("~b-baka!~");
             if (e.Message.Content.ToLower().Contains("anime"))
                 await e.Message.RespondAsync("~b-baka!~");
         }
-
-
     }
 }

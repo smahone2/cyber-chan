@@ -3,7 +3,7 @@
 #  This template allows you to validate your .NET Core package.
 #  The workflow allows running tests and code linting on the default branch.
 
-image: mcr.microsoft.com/dotnet/core/sdk:3.1
+image: mcr.microsoft.com/dotnet/sdk:6.0
 
 definitions: 
   steps:
@@ -12,6 +12,7 @@ definitions:
         caches:
           - dotnetcore
         script:
+          - dotnet clean -o Build
           - dotnet restore
           - dotnet build --no-restore --configuration Release -o Build
         artifacts:
