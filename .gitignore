@@ -8,6 +8,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.vscode
 SteamIds.txt
 CyberChan.dll.config
 

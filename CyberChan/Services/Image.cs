@@ -1,0 +1,73 @@
+﻿using CyberChan.Extensions;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using static CyberChan.Services.AI;
+
+namespace CyberChan.Services
+{
+    internal class Image
+    {
+        public static async Task GenerateImageCommon(Func<string, string, string, ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
+        {
+            await ctx.TriggerTypingAsync();
+
+            var seed = "";
+
+            if (query.StartsWith("<") && query.Contains(">"))
+            {
+                seed = query.Split("> ")[0].Replace("<", "");
+                query = query.Split("> ")[1].Trim();
+            }
+
+            if (Program.aITools.Moderation(query) == "Pass")
+            {
+                DiscordMessageBuilder msg = new DiscordMessageBuilder();
+                var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
+                var embed = new DiscordEmbedBuilder();
+
+
+                foreach (var chunk in query.SplitBy(1024))
+                {
+                    embed.AddField("Original Prompt:", chunk);
+                }
+
+                if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
+                {
+                    foreach (var chunk in imageResponse.revisedPrompt.SplitBy(1024))
+                    {
+                        embed.AddField("Revised Prompt:", chunk);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(imageResponse.url))
+                {
+                    HttpClient client = new HttpClient();
+                    Stream stream = await client.GetStreamAsync(imageResponse.url);
+                    msg.AddFile(baseFilename, stream);
+
+                    msg.AddEmbed(embed);
+                    await ctx.RespondAsync(msg);
+
+                    stream.Dispose();
+                    client.Dispose();
+                }
+                else
+                {
+                    msg.AddEmbed(embed);
+                    await ctx.RespondAsync(msg);
+                }
+            }
+            else
+            {
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
+            }
+        }
+    }
+}

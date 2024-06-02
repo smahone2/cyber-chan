@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Betalgo.OpenAI" Version="7.4.6" />
+    <PackageReference Include="Betalgo.OpenAI" Version="8.2.2" />
     <PackageReference Include="DSharpPlus" Version="4.4.6" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.4.6" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.6" />
@@ -20,11 +20,10 @@
     <PackageReference Include="JsonSubTypes" Version="2.0.1" />
     <PackageReference Include="Kitsu" Version="1.4.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="RestSharp" Version="107.3.0" />
     <PackageReference Include="Slko.TraceMoeNET" Version="2.1.0" />
     <PackageReference Include="SteamWebAPI2" Version="4.4.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
-    <PackageReference Include="TenorSharp" Version="1.6.1" />
+    <PackageReference Include="TenorSharp" Version="1.6.4" />
   </ItemGroup>
 
   <ItemGroup>

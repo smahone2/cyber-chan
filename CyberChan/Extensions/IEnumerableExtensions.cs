@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace CyberChan
+namespace CyberChan.Extensions
 {
-    public static class EnumerableEx
+    public static class IEnumerableExtensions
     {
+        public static IEnumerable<string> Split(this string str, int maxChunkSize)
+        {
+            for (int i = 0; i < str.Length; i += maxChunkSize)
+                yield return str.Substring(i, Math.Min(maxChunkSize, str.Length - i));
+        }
+
         public static IEnumerable<string> SplitBy(this string str, int chunkLength)
         {
-            if (String.IsNullOrEmpty(str)) throw new ArgumentException();
+            if (string.IsNullOrEmpty(str)) throw new ArgumentException();
             if (chunkLength < 1) throw new ArgumentException();
 
             for (int i = 0; i < str.Length; i += chunkLength)

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 
-namespace CyberChan
+namespace CyberChan.Services
 {
     class Dota
     {

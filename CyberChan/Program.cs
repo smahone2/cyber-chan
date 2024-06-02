@@ -1,18 +1,17 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using CyberChan.Services;
 using DSharpPlus;
-using DSharpPlus.EventArgs;
-using DSharpPlus.VoiceNext;
 using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using System.Collections.Generic;
-using System.IO;
-using System.Configuration;
-using GiphyDotNet.Manager;
-using TenorSharp;
+using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.Interactivity;
+using GiphyDotNet.Manager;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
+using System.Threading.Tasks;
+using TenorSharp;
 
 namespace CyberChan
 {
@@ -22,12 +21,12 @@ namespace CyberChan
         static CommandsNextExtension commands;
         public static Dota dota;
         public static Dictionary<String,String> steamID;
-        public static Kitsu kitsu;
-        public static Steam steam;
+        public static Services.Kitsu kitsu;
+        public static Services.Steam steam;
         public static Giphy giphy;
         public static TenorClient tenor;
         public static Trace trace;
-        public static AITools aITools;
+        public static AI aITools;
 
         static void Main(string[] args)
         {
@@ -92,12 +91,12 @@ namespace CyberChan
             //};
 
             dota = new Dota();
-            kitsu = new Kitsu();
-            steam = new Steam();
+            kitsu = new Services.Kitsu();
+            steam = new Services.Steam();
             giphy = new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]);
             tenor = new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]);
             trace = new Trace();
-            aITools = new AITools();
+            aITools = new AI();
         }
 
         static void Events()

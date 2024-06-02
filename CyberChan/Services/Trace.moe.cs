@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace CyberChan
+namespace CyberChan.Services
 {
 
     class Trace
@@ -21,7 +21,7 @@ namespace CyberChan
         public bool ImageSearch(string imageUrl)
         {
             PerformSearch(imageUrl).ConfigureAwait(false).GetAwaiter().GetResult();
-            return searchResult == null ? false : true;
+            return searchResult != null;
         }
 
         async private Task PerformSearch(string imageUrl)
@@ -43,7 +43,8 @@ namespace CyberChan
                 {
                     searchResult = item;
                     break;
-                } else
+                }
+                else
                 {
                     searchResult = null;
                 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.Design;
 using Kitsu.Manga;
 
-namespace CyberChan
+namespace CyberChan.Services
 {
     class Kitsu
     {
@@ -57,8 +57,8 @@ namespace CyberChan
                     }
                     break;
             }
-            
-            
+
+
         }
 
     }

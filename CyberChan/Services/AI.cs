@@ -12,16 +12,19 @@ using System.Collections;
 using Slko.TraceMoeNET.Models;
 using System.Drawing.Drawing2D;
 using OpenAI.ObjectModels.ResponseModels.ImageResponseModel;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
+using CyberChan.Extensions;
 
-namespace CyberChan
+namespace CyberChan.Services
 {
 
-    class AITools
+    class AI
     {
         public static OpenAIService openAiService;
         //public static string searchResult;
 
-        public AITools()
+        public AI()
         {
             openAiService = new OpenAIService(new OpenAiOptions()
             {
@@ -86,7 +89,7 @@ namespace CyberChan
             DalleParam param = new DalleParam();
             param.query = query;
 
-            if (seed.Split(',').Length == 1) 
+            if (seed.Split(',').Length == 1)
             {
                 seed = seed + ",";
             }
@@ -135,7 +138,7 @@ namespace CyberChan
             public string revisedPrompt;
         }
 
-        async private Task<ImageRepsonse> GenerateImageTask(string query, string user, string seed, String model)
+        private async Task<ImageRepsonse> GenerateImageTask(string query, string user, string seed, string model)
         {
             DalleParam param = DalleSeed(query, seed);
 
@@ -148,7 +151,7 @@ namespace CyberChan
                 User = user,
                 Model = model,
                 Quality = StaticValues.ImageStatics.Quality.Hd,
-                Style = param.style             
+                Style = param.style
             });
 
             ImageRepsonse imageResponse = new ImageRepsonse(); ;
@@ -157,7 +160,7 @@ namespace CyberChan
             {
                 imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
                 imageResponse.revisedPrompt = string.Join("\n", imageResult.Results.Select(r => r.RevisedPrompt));
-            } 
+            }
             else
             {
                 if (imageResult.Error == null)
@@ -175,7 +178,7 @@ namespace CyberChan
             return searchResult;
         }
 
-        async private Task<String> GPT3PromptTask(string query, string user)
+        private async Task<string> GPT3PromptTask(string query, string user)
         {
             var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
             {
@@ -183,7 +186,7 @@ namespace CyberChan
                 MaxTokens = 1000,
                 Model = Models.TextDavinciV3,
                 User = user
-                
+
             });
 
             var searchResult = "";
@@ -222,7 +225,7 @@ namespace CyberChan
             return searchResult;
         }
 
-        async private Task<String> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
+        private async Task<string> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
         {
             var promptSeed = ChatSeed(query, seed);
 
@@ -233,7 +236,7 @@ namespace CyberChan
                 Model = model,
                 User = user
             });
-           
+
             var searchResult = "";
             await foreach (var completion in completionResult)
             {
@@ -259,7 +262,7 @@ namespace CyberChan
             return searchResult;
         }
 
-        async private Task<String> ModerationTask(string query)
+        private async Task<string> ModerationTask(string query)
         {
             var moderationResponse = await openAiService.Moderation.CreateModeration(new CreateModerationRequest()
             {
@@ -276,6 +279,36 @@ namespace CyberChan
                 searchResult = "Pass";
             }
             return searchResult;
+        }
+
+        public static async Task GPTPromptCommon(Func<string, string, string, string> modelDelegate, CommandContext ctx, string query)
+        {
+            await ctx.TriggerTypingAsync();
+
+            var seed = "";
+
+            if (query.StartsWith("<") && query.Contains(">"))
+            {
+                seed = query.Split("> ")[0].Replace("<", "");
+                query = query.Split("> ")[1].Trim();
+            }
+
+            if (Program.aITools.Moderation(query) == "Pass")
+            {
+                var embed = new DiscordEmbedBuilder();
+                embed.AddField("Question:", query);
+                foreach (var chunk in modelDelegate(query, ctx.User.Mention, seed).SplitBy(1024))
+                {
+                    embed.AddField("Cyber-chan Says:", chunk);
+                }
+
+                await ctx.RespondAsync(embed);
+            }
+            else
+            {
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
+            }
+
         }
     }
 }

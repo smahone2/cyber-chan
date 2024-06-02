@@ -1,29 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper.Execution;
+﻿using CyberChan.Extensions;
+using CyberChan.Services;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.VoiceNext;
-using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
 using Newtonsoft.Json.Linq;
-using Steam.Models.SteamEconomy;
-using TenorSharp;
-using static CyberChan.AITools;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using static CyberChan.Services.AI;
+using static CyberChan.Services.Image;
 
 namespace CyberChan
 {
@@ -31,7 +19,7 @@ namespace CyberChan
 
     {
         //test text
-        [Command("hi")]
+        [Command(nameof(Hi))]
         [Description("Just saying hello.")]
         public async Task Hi(CommandContext ctx, [RemainingText] string extraText = "")
         {
@@ -47,7 +35,7 @@ namespace CyberChan
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
         }
         
-        [Command("bye")]
+        [Command(nameof(Bye))]
         [Description("Just saying goodbye.")]
         public async Task Bye(CommandContext ctx, [RemainingText] string extraText = "")
         {
@@ -63,14 +51,14 @@ namespace CyberChan
             await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
         }
 
-        [Command("waifu")]
+        [Command(nameof(Waifu))]
         [Description("Let me find your waifu!")]
         public async Task Waifu(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.TriggerTypingAsync();
 
             var rand = new Random();
-            var search = Program.tenor.Search($"Anime Girl", 10, rand.Next(0, 190));
+            var search = Program.tenor.Search($"Anime Girl", 10, rand.Next(0, 190).ToString());
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -81,7 +69,7 @@ namespace CyberChan
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", embed);
         }
 
-        [Command("gif")]
+        [Command(nameof(Gif))]
         [Description("Search for any ol' gif! Usage: !gif <search term>")]
         public async Task Gif(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
@@ -90,7 +78,7 @@ namespace CyberChan
             var rand = new Random();
             // var extraText = ctx.Message.Content.Replace("!gif ", "");
             searchText = searchText.Length > 0 ? searchText : "random";
-            var search = Program.tenor.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 190));
+            var search = Program.tenor.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 190).ToString());
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -220,7 +208,7 @@ namespace CyberChan
 
         //}
 
-        [Command("animesearch")]
+        [Command(nameof(AnimeSearch))]
         [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
         [Aliases("as", "mal", "asearch")]
         public async Task AnimeSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
@@ -240,7 +228,7 @@ namespace CyberChan
             }
         }
 
-        [Command("mangasearch")]
+        [Command(nameof(MangaSearch))]
         [Description("Search Kitsu for a manga. Usage: !mangasearch <search term>")]
         [Aliases("ms", "msearch")]
         public async Task MangaSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
@@ -338,7 +326,7 @@ namespace CyberChan
 
         }
 
-        [Command("eightball")]
+        [Command(nameof(EightBall))]
         [Aliases("8ball")]
         [Description("Place important decisions in the hands of RNGesus")]
         public async Task EightBall(CommandContext ctx, [Description("Question you want Cyber-chan to answer."), RemainingText] string _question)
@@ -395,62 +383,6 @@ namespace CyberChan
 
         }
 
-        private async Task GenerateImageCommon(Func<string,string,string,ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
-        {
-            await ctx.TriggerTypingAsync();
-
-            var seed = "";
-
-            if (query.StartsWith("<") && query.Contains(">"))
-            {
-                seed = query.Split("> ")[0].Replace("<", "");
-                query = query.Split("> ")[1].Trim();
-            }
-
-            if (Program.aITools.Moderation(query) == "Pass")
-            {
-                DiscordMessageBuilder msg = new DiscordMessageBuilder();
-                var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
-                var embed = new DiscordEmbedBuilder();
-
-                
-                foreach (var chunk in query.SplitBy(1024))
-                {
-                    embed.AddField("Original Prompt:", chunk);
-                }
-
-                if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
-                {
-                    foreach (var chunk in imageResponse.revisedPrompt.SplitBy(1024))
-                    {
-                        embed.AddField("Revised Prompt:", chunk);
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(imageResponse.url))
-                {
-                    HttpClient client = new HttpClient();
-                    Stream stream = await client.GetStreamAsync(imageResponse.url);
-                    msg.AddFile(baseFilename, stream);
-
-                    msg.AddEmbed(embed);
-                    await ctx.RespondAsync(msg);
-
-                    stream.Dispose();
-                    client.Dispose();
-                }
-                else
-                {
-                    msg.AddEmbed(embed);
-                    await ctx.RespondAsync(msg);
-                }
-            }
-            else
-            {
-                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
-            }
-        }
-
         [Command("gpt3")]
         [Aliases("prompt")]
         [Description("Generate text with GPT3. Usage: !gpt3 test")]
@@ -500,36 +432,5 @@ namespace CyberChan
         {
             await GPTPromptCommon(Program.aITools.GPT4PreviewPrompt, ctx, query);
         }
-
-        private async Task GPTPromptCommon(Func<string,string,string,string> modelDelegate, CommandContext ctx, string query)
-        {
-            await ctx.TriggerTypingAsync();
-
-            var seed = "";
-
-            if (query.StartsWith("<") && query.Contains(">"))
-            {
-                seed = query.Split("> ")[0].Replace("<", "");
-                query = query.Split("> ")[1].Trim();
-            }
-
-            if (Program.aITools.Moderation(query) == "Pass")
-            {
-                var embed = new DiscordEmbedBuilder();
-                embed.AddField("Question:", query);
-                foreach (var chunk in modelDelegate(query, ctx.User.Mention, seed).SplitBy(1024))
-                {
-                    embed.AddField("Cyber-chan Says:", chunk);
-                }
-
-                await ctx.RespondAsync(embed);
-            }
-            else
-            {
-                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
-            }
-
-        }
-
     }
 }
