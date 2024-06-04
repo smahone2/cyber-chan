@@ -64,12 +64,13 @@ namespace CyberChan
                     ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"]
                 }))
                 .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
+                .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
                 .AddTransient<AiService>()
+                .AddTransient<ImageService>()
                 .AddTransient<DotaService>()
                 .AddTransient<KitsuService>()
                 .AddTransient<SteamService>()
-                .AddTransient<TraceDotMoeService>()
-                .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"]);
+                .AddTransient<TraceDotMoeService>();
 
             //var tenorConfig = new TenorConfiguration()
             //{

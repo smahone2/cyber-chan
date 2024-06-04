@@ -32,7 +32,6 @@ namespace CyberChan.Services
                 var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
                 var embed = new DiscordEmbedBuilder();
 
-
                 foreach (var chunk in query.SplitBy(1024))
                 {
                     embed.AddField("Original Prompt:", chunk);
