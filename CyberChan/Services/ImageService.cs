@@ -12,7 +12,7 @@ using static CyberChan.Services.AiService;
 
 namespace CyberChan.Services
 {
-    internal class ImageService(AiService aiService)
+    internal class ImageService(HttpClient httpClient, AiService aiService)
     {
         internal async Task GenerateImageCommon(Func<string, string, string, ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
@@ -48,15 +48,11 @@ namespace CyberChan.Services
 
                 if (!string.IsNullOrEmpty(imageResponse.url))
                 {
-                    HttpClient client = new HttpClient();
-                    Stream stream = await client.GetStreamAsync(imageResponse.url);
+                    using Stream stream = await httpClient.GetStreamAsync(imageResponse.url);
                     msg.AddFile(baseFilename, stream);
 
                     msg.AddEmbed(embed);
                     await ctx.RespondAsync(msg);
-
-                    stream.Dispose();
-                    client.Dispose();
                 }
                 else
                 {
