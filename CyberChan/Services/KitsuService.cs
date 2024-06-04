@@ -10,33 +10,25 @@ using Kitsu.Manga;
 
 namespace CyberChan.Services
 {
-    class Kitsu
+    internal class KitsuService
     {
-        private string searchResult;
-
         private enum SearchType
         {
             Anime = 0,
             Manga = 1
         }
 
-        public Kitsu()
+        public async Task<string> AnimeSearch(string animeName)
         {
+            return await PerformSearch(animeName, SearchType.Anime);
         }
 
-        public string AnimeSearch(string animeName)
+        public async Task<string> MangaSearch(string mangaName)
         {
-            PerformSearch(animeName, SearchType.Anime).ConfigureAwait(false).GetAwaiter().GetResult();
-            return searchResult;
+            return await PerformSearch(mangaName, SearchType.Manga);
         }
 
-        public string MangaSearch(string mangaName)
-        {
-            PerformSearch(mangaName, SearchType.Manga).ConfigureAwait(false).GetAwaiter().GetResult();
-            return searchResult;
-        }
-
-        async private Task PerformSearch(string searchName, SearchType type)
+        private async Task<string> PerformSearch(string searchName, SearchType type)
         {
             switch (type)
             {
@@ -44,22 +36,19 @@ namespace CyberChan.Services
                     var dataList = await Anime.GetAnimeAsync(searchName);
                     foreach (var item in dataList.Data)
                     {
-                        searchResult = item.Id;
-                        break;
+                        return item.Id;
                     }
                     break;
                 case SearchType.Manga:
                     var dataList2 = await Manga.GetMangaAsync(searchName);
                     foreach (var item in dataList2.Data)
                     {
-                        searchResult = item.Id;
-                        break;
+                        return item.Id;
                     }
                     break;
             }
 
-
+            return string.Empty;
         }
-
     }
 }

@@ -14,19 +14,8 @@ using System.Threading.Tasks;
 
 namespace CyberChan.Services
 {
-    class AI
+    internal class AiService(OpenAIService openAiService)
     {
-        public static OpenAIService openAiService;
-        //public static string searchResult;
-
-        public AI()
-        {
-            openAiService = new OpenAIService(new OpenAiOptions()
-            {
-                ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"]
-            });
-        }
-
         private List<ChatMessage> ChatSeed(string query, string seed)
         {
             var promptSeed = new List<ChatMessage>();
@@ -121,6 +110,7 @@ namespace CyberChan.Services
             var imageResponse = GenerateImageTask(query, user, seed, Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
             return imageResponse;
         }
+
         public ImageRepsonse GenerateImage2(string query, string user, string seed)
         {
             var imageResponse = GenerateImageTask(query, user, seed, Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -251,10 +241,9 @@ namespace CyberChan.Services
             return searchResult;
         }
 
-        public string Moderation(string query)
+        public async Task<string> Moderation(string query)
         {
-            var searchResult = ModerationTask(query).ConfigureAwait(false).GetAwaiter().GetResult();
-            return searchResult;
+            return await ModerationTask(query);
         }
 
         private async Task<string> ModerationTask(string query)
@@ -276,7 +265,7 @@ namespace CyberChan.Services
             return searchResult;
         }
 
-        public static async Task GPTPromptCommon(Func<string, string, string, string> modelDelegate, CommandContext ctx, string query)
+        public async Task GPTPromptCommon(Func<string, string, string, string> modelDelegate, CommandContext ctx, string query)
         {
             await ctx.TriggerTypingAsync();
 
@@ -288,7 +277,7 @@ namespace CyberChan.Services
                 query = query.Split("> ")[1].Trim();
             }
 
-            if (Program.aITools.Moderation(query) == "Pass")
+            if (await Moderation(query) == "Pass")
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);

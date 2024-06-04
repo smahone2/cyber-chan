@@ -10,18 +10,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static CyberChan.Services.AI;
-using static CyberChan.Services.Image;
+using GiphyDotNet.Manager;
+using TenorSharp;
 
 namespace CyberChan
 {
-    public class Commands : BaseCommandModule
-
+    internal class Commands(Giphy giphy, TenorClient tenorClient, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : BaseCommandModule
     {
         //test text
         [Command(nameof(Hi))]
         [Description("Just saying hello.")]
-        public static async Task Hi(CommandContext ctx, [RemainingText] string extraText = "")
+        public async Task Hi(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -29,7 +28,7 @@ namespace CyberChan
             };
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
-                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
+                ImageUrl = giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
             };
 
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
@@ -37,7 +36,7 @@ namespace CyberChan
         
         [Command(nameof(Bye))]
         [Description("Just saying goodbye.")]
-        public static async Task Bye(CommandContext ctx, [RemainingText] string extraText = "")
+        public async Task Bye(CommandContext ctx, [RemainingText] string extraText = "")
         {
             RandomParameter giphyParameters = new RandomParameter()
             {
@@ -45,7 +44,7 @@ namespace CyberChan
             };
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
-                ImageUrl = Program.giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
+                ImageUrl = giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
             };
             
             await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
@@ -53,12 +52,12 @@ namespace CyberChan
 
         [Command(nameof(Waifu))]
         [Description("Let me find your waifu!")]
-        public static async Task Waifu(CommandContext ctx, [RemainingText] string extraText = "")
+        public async Task Waifu(CommandContext ctx, [RemainingText] string extraText = "")
         {
             await ctx.TriggerTypingAsync();
 
             var rand = new Random();
-            var search = Program.tenor.Search($"Anime Girl", 10, rand.Next(0, 190).ToString());
+            var search = tenorClient.Search($"Anime Girl", 10, rand.Next(0, 190).ToString());
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -71,14 +70,14 @@ namespace CyberChan
 
         [Command(nameof(Gif))]
         [Description("Search for any ol' gif! Usage: !gif <search term>")]
-        public static async Task Gif(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
+        public async Task Gif(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             await ctx.TriggerTypingAsync();
 
             var rand = new Random();
             // var extraText = ctx.Message.Content.Replace("!gif ", "");
             searchText = searchText.Length > 0 ? searchText : "random";
-            var search = Program.tenor.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 190).ToString());
+            var search = tenorClient.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 190).ToString());
             var image = search.GifResults[rand.Next(0, 10)];
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
@@ -92,7 +91,7 @@ namespace CyberChan
         [Command("lookup")]
         [Description("Find anime based on linked image. Usage (reply to message with image): !lookup")]
         [Aliases("find", "get", "trace")]
-        public static async Task LookupAnime(CommandContext ctx, [RemainingText] string extraText = "")
+        public async Task LookupAnime(CommandContext ctx, [RemainingText] string extraText = "")
         {
             var message = ctx.Message;
             if (message.MessageType == MessageType.Reply)
@@ -106,10 +105,10 @@ namespace CyberChan
 
                     await ctx.TriggerTypingAsync();
 
-                    if (Program.trace.ImageSearch(link))
-                    {
-                        var searchResults = Trace.searchResult;
+                    var searchResults = await traceDotMoeService.ImageSearch(link);
 
+                    if (searchResults != null)
+                    {
                         var english = searchResults.Value<JToken>("anilist").Value<JToken>("title").Value<string>("english");
                         var romaji = searchResults.Value<JToken>("anilist").Value<JToken>("title").Value<string>("romaji");
                         var title = english != null ? english : romaji;
@@ -134,7 +133,7 @@ namespace CyberChan
                 await ctx.RespondAsync($"Respond to the message containing the image you want to lookup.");
             }
 
-            Trace.searchResult = null;
+            //Trace.searchResult = null;
         }
 
         //[Command("db")]
@@ -211,7 +210,7 @@ namespace CyberChan
         [Command(nameof(AnimeSearch))]
         [Description("Search Kitsu for an anime. Usage: !animesearch <search term>")]
         [Aliases("as", "mal", "asearch")]
-        public static async Task AnimeSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
+        public async Task AnimeSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
@@ -220,7 +219,7 @@ namespace CyberChan
                 // search = search.Replace("!asearch ", "");
                 // search = search.Replace("!as ", "");
                 // search = search.Replace("!animesearch ", "");
-                await ctx.RespondAsync($"https://kitsu.io/anime/{ Program.kitsu.AnimeSearch(searchText)}");
+                await ctx.RespondAsync($"https://kitsu.io/anime/{ kitsuService.AnimeSearch(searchText)}");
             }
             catch
             {
@@ -231,14 +230,14 @@ namespace CyberChan
         [Command(nameof(MangaSearch))]
         [Description("Search Kitsu for a manga. Usage: !mangasearch <search term>")]
         [Aliases("ms", "msearch")]
-        public static async Task MangaSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
+        public async Task MangaSearch(CommandContext ctx, [Description("Search term."), RemainingText] string searchText)
         {
             try
             {
                 // var search = ctx.Message.Content.Replace("!mangasearch ", "");
                 // search = search.Replace("!msearch ", "");
                 // search = search.Replace("!ms ", "");
-                await ctx.RespondAsync($"https://kitsu.io/manga/{ Program.kitsu.MangaSearch(searchText)}");
+                await ctx.RespondAsync($"https://kitsu.io/manga/{ kitsuService.MangaSearch(searchText)}");
             }
             catch
             {
@@ -368,34 +367,34 @@ namespace CyberChan
         [Command("dalle2")]
         [Aliases("dalle")]
         [Description("Generate an image with DALL-E. Usage: !dalle2 test")]
-        public static async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
+        public async Task GenerateImage(CommandContext ctx, [RemainingText] string query = "")
         {
-            await GenerateImageCommon(Program.aITools.GenerateImage, ctx, query, "dalle2.png");
+            await imageService.GenerateImageCommon(aiService.GenerateImage, ctx, query, "dalle2.png");
         }
 
 
         [Command("dalle3")]
         [Description("Generate an image with DALL-E. Seeds to prevent prompt rewriting are simple and detailed. Seeds to adjust image style are natural and vivid (This is always after a comma). Usage: !dalle3 <simple,natural> test")]
-        public static async Task GenerateImage2(CommandContext ctx, [RemainingText] string query = "")
+        public async Task GenerateImage2(CommandContext ctx, [RemainingText] string query = "")
         {
             
-            await GenerateImageCommon(Program.aITools.GenerateImage2, ctx, query, "dalle3.png");
+            await imageService.GenerateImageCommon(aiService.GenerateImage2, ctx, query, "dalle3.png");
 
         }
 
         [Command("gpt3")]
         [Aliases("prompt")]
         [Description("Generate text with GPT3. Usage: !gpt3 test")]
-        public static async Task GPT3Prompt(CommandContext ctx, [RemainingText] string query = "")
+        public async Task GPT3Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
             await ctx.TriggerTypingAsync();
 
-            if (Program.aITools.Moderation(query) == "Pass")
+            if (await aiService.Moderation(query) == "Pass")
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
 
-                foreach (var chunk in Program.aITools.GPT3Prompt(query, ctx.User.Mention).SplitBy(1024))
+                foreach (var chunk in aiService.GPT3Prompt(query, ctx.User.Mention).SplitBy(1024))
                 {
                     embed.AddField("Cyber-chan Says:", chunk);
                 }
@@ -412,25 +411,25 @@ namespace CyberChan
         [Command("chatgpt")]
         [Aliases("prompt2")]
         [Description("Generate text with ChatGpt. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
-        public static async Task ChatGptPrompt(CommandContext ctx, [RemainingText] string query = "")
+        public async Task ChatGptPrompt(CommandContext ctx, [RemainingText] string query = "")
         {
-            await GPTPromptCommon(Program.aITools.GPT35Prompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.GPT35Prompt, ctx, query);
         }
 
         [Command("gpt4")]
         [Aliases("prompt3")]
         [Description("Generate text with GPT4. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public static async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
+        public async Task GPT4Prompt(CommandContext ctx, [RemainingText] string query = "")
         {
-            await GPTPromptCommon(Program.aITools.GPT4Prompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.GPT4Prompt, ctx, query);
         }
 
         [Command("gpt4p")]
         [Aliases("prompt4", "gpt4preview")]
         [Description("Generate text with GPT4 Preview. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public static async Task GPT4PreviewPrompt(CommandContext ctx, [RemainingText] string query = "")
+        public async Task GPT4PreviewPrompt(CommandContext ctx, [RemainingText] string query = "")
         {
-            await GPTPromptCommon(Program.aITools.GPT4PreviewPrompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.GPT4PreviewPrompt, ctx, query);
         }
     }
 }

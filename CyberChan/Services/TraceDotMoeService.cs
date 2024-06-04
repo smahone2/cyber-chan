@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -10,30 +11,22 @@ using Newtonsoft.Json.Linq;
 namespace CyberChan.Services
 {
 
-    class Trace
+    internal class TraceDotMoeService(HttpClient httpClient)
     {
-        public static JToken searchResult;
-
-        public Trace()
+        public async Task<JToken> ImageSearch(string imageUrl)
         {
+            return await PerformSearch(imageUrl);
         }
 
-        public bool ImageSearch(string imageUrl)
+        async private Task<JToken> PerformSearch(string imageUrl)
         {
-            PerformSearch(imageUrl).ConfigureAwait(false).GetAwaiter().GetResult();
-            return searchResult != null;
-        }
-
-        async private Task PerformSearch(string imageUrl)
-        {
-
-            var client = new HttpClient();
+            JToken searchResult = null;
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
                 RequestUri = new Uri($"https://api.trace.moe/search?anilistInfo&url={imageUrl}"),
             };
-            var response = await client.SendAsync(request).ConfigureAwait(false);
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = JObject.Parse(responseBody);
@@ -48,8 +41,8 @@ namespace CyberChan.Services
                 {
                     searchResult = null;
                 }
-
             }
+            return searchResult;
         }
     }
 }

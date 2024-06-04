@@ -1,4 +1,6 @@
-﻿using CyberChan.Services;
+﻿using CsvHelper;
+using CyberChan.Models;
+using CyberChan.Services;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
@@ -6,82 +8,68 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using GiphyDotNet.Manager;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OpenAI.Managers;
+using OpenAI;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using TenorSharp;
+using SteamWebAPI2.Utilities;
+using SteamWebAPI2.Interfaces;
+using System.Net.Http;
 
 namespace CyberChan
 {
     class Program
     {
-        static DiscordClient discord;
-        static CommandsNextExtension commands;
-        public static Dota dota;
-        public static Dictionary<String,String> steamID;
-        public static Services.Kitsu kitsu;
-        public static Services.Steam steam;
-        public static Giphy giphy;
-        public static TenorClient tenor;
-        public static Trace trace;
-        public static AI aITools;
-
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            string fileName = ConfigurationManager.AppSettings["SteamIDFile"];
+            HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+
+            // Get Steam Id filename
+            string filename = ConfigurationManager.AppSettings["SteamIDFile"];
    
-            // Create Steam ID file if it doesn't exist
-            using FileStream fs = new(fileName, FileMode.OpenOrCreate);
+            // Create Steam Id file if it doesn't exist
+            using FileStream fs = new(filename, FileMode.OpenOrCreate);
 
-            // Load Steam ID File
-            using StreamReader sr = new(fileName);
-            steamID = [];
+            // Load Steam Id File
+            using StreamReader sr = new(fs);
+            using CsvReader csv = new(sr, CultureInfo.InvariantCulture);
 
-            while (!sr.EndOfStream)
-            {
-                string line;
-                line = sr.ReadLine();
-                steamID.Add(line.Split(",")[0], line.Split(",")[1]);
-            }
-            sr.Close();
+            // Use Steam Id records for something
 
-            // Start Main Loop
-            MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
+            // Get Steam Id records
+            csv.GetRecords<SteamId>();
+
+            // Configure host services (dependency injection classes)
+            await ConfigureServices(builder.Services);
+
+            // Build host
+            using IHost host = builder.Build();
+
+            // Start host
+            await host.StartAsync();
         }
 
-        static async Task MainAsync(string[] args)
+        private static async Task ConfigureServices(IServiceCollection services)
         {
-            LoadModules();
-
-            Events();
-
-            await discord.ConnectAsync();
-            await Task.Delay(-1);
-        }
-
-        static void LoadModules()
-        {
-            discord = new DiscordClient(new DiscordConfiguration
-            {
-                Token = ConfigurationManager.AppSettings["DiscordToken"],
-                TokenType = TokenType.Bot,
-                Intents = DiscordIntents.All
-
-            });
-            
-            commands = discord.UseCommandsNext(new CommandsNextConfiguration
-            {
-                StringPrefixes = new[] { "!" }
-            });
-            commands.RegisterCommands<Commands>();
-
-            discord.UseInteractivity(new InteractivityConfiguration()
-            {
-                PollBehaviour = PollBehaviour.KeepEmojis,
-                Timeout = TimeSpan.FromSeconds(30)
-            });
+            services.AddHttpClient()
+                .AddSingleton(await ConfigureDiscord())
+                .AddSingleton(new OpenAIService(new OpenAiOptions()
+                {
+                    ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"]
+                }))
+                .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
+                .AddTransient<AiService>()
+                .AddTransient<DotaService>()
+                .AddTransient<KitsuService>()
+                .AddTransient<SteamService>()
+                .AddTransient<TraceDotMoeService>()
+                .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"]);
 
             //var tenorConfig = new TenorConfiguration()
             //{
@@ -90,31 +78,42 @@ namespace CyberChan
             //    ContentFilter = TenorSharp.Enums.ContentFilter.low
             //};
 
-            dota = new Dota();
-            kitsu = new Services.Kitsu();
-            steam = new Services.Steam();
-            giphy = new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]);
-            tenor = new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]);
-            trace = new Trace();
-            aITools = new AI();
+            services.AddTransient(x => new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]));
         }
 
-        static void Events()
+        private async static Task<DiscordClient> ConfigureDiscord()
         {
-            //discord.MessageCreated += async e =>
-            //{
-             //   if (e.Message.Content.ToLower().StartsWith("ping"))
-            //        await e.Message.RespondAsync("pong!");
-            //};
+            var discord = new DiscordClient(new DiscordConfiguration
+            {
+                Token = ConfigurationManager.AppSettings["DiscordToken"],
+                TokenType = TokenType.Bot,
+                Intents = DiscordIntents.All
+            });
+
+            discord.UseInteractivity(new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromSeconds(30)
+            });
+
+            var commands = discord.UseCommandsNext(new CommandsNextConfiguration
+            {
+                StringPrefixes = ["!"]
+            });
+            commands.RegisterCommands<Commands>();
 
             discord.MessageCreated += AutoReplyToSean;
+
+            await discord.ConnectAsync();
+
+            return discord;
         }
 
         static async Task AutoReplyToSean(DiscordClient d, MessageCreateEventArgs e)
         {
             //if (e.Author.Discriminator == "3638") //XPeteX47
             //    await e.Message.RespondAsync("~b-baka!~");
-            if (e.Message.Content.ToLower().Contains("anime"))
+            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
                 await e.Message.RespondAsync("~b-baka!~");
         }
     }

@@ -8,25 +8,25 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using static CyberChan.Services.AI;
+using static CyberChan.Services.AiService;
 
 namespace CyberChan.Services
 {
-    internal class Image
+    internal class ImageService(AiService aiService)
     {
-        public static async Task GenerateImageCommon(Func<string, string, string, ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
+        internal async Task GenerateImageCommon(Func<string, string, string, ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
             await ctx.TriggerTypingAsync();
 
             var seed = "";
 
-            if (query.StartsWith("<") && query.Contains(">"))
+            if (query.StartsWith('<') && query.Contains('>'))
             {
                 seed = query.Split("> ")[0].Replace("<", "");
                 query = query.Split("> ")[1].Trim();
             }
 
-            if (Program.aITools.Moderation(query) == "Pass")
+            if (await aiService.Moderation(query) == "Pass")
             {
                 DiscordMessageBuilder msg = new DiscordMessageBuilder();
                 var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
