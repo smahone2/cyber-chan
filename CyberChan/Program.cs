@@ -2,7 +2,6 @@
 using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
-using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
@@ -21,6 +20,16 @@ using TenorSharp;
 using SteamWebAPI2.Utilities;
 using SteamWebAPI2.Interfaces;
 using System.Net.Http;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using DSharpPlus.Commands;
+using DSharpPlus.Extensions;
+using DSharpPlus.Commands.Processors.TextCommands;
+using DSharpPlus.Entities;
+using DSharpPlus.Commands.Processors.TextCommands.Parsing;
+using System.Linq;
+using System.Threading;
+using System.Net.Http.Headers;
+using DSharpPlus.Commands.ContextChecks;
 
 namespace CyberChan
 {
@@ -32,7 +41,7 @@ namespace CyberChan
 
             // Get Steam Id filename
             string filename = ConfigurationManager.AppSettings["SteamIDFile"];
-   
+
             // Create Steam Id file if it doesn't exist
             using FileStream fs = new(filename, FileMode.OpenOrCreate);
 
@@ -45,20 +54,30 @@ namespace CyberChan
             // Get Steam Id records
             csv.GetRecords<SteamId>();
 
-            // Configure host services (dependency injection classes)
-            await ConfigureServices(builder.Services);
+            // Configure services
+            await builder.Services.ConfigureDiscord();
 
             // Build host
             using IHost host = builder.Build();
 
             // Start host
-            await host.StartAsync();
+            await host.RunAsync();
         }
 
-        private static async Task ConfigureServices(IServiceCollection services)
+        public static async Task AutoReplyToSean(DiscordClient d, MessageCreatedEventArgs e)
         {
-            services.AddHttpClient()
-                .AddSingleton(await ConfigureDiscord())
+            //if (e.Author.Discriminator == "3638") //XPeteX47
+            //    await e.Message.RespondAsync("~b-baka!~");
+            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
+                await e.Message.RespondAsync("~b-baka!~");
+        }
+    }
+
+    public static class ServicesExtensions
+    {
+        public static IServiceCollection ConfigureServices(this IServiceCollection services)
+        {
+            return services.AddHttpClient()
                 .AddSingleton(new OpenAIService(new OpenAiOptions()
                 {
                     ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"]
@@ -70,7 +89,9 @@ namespace CyberChan
                 .AddTransient<DotaService>()
                 .AddTransient<KitsuService>()
                 .AddTransient<SteamService>()
-                .AddTransient<TraceDotMoeService>();
+                .AddTransient<TraceDotMoeService>()
+                .AddTransient(x => new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]))
+                .AddSingleton<CommandsService>();
 
             //var tenorConfig = new TenorConfiguration()
             //{
@@ -78,44 +99,50 @@ namespace CyberChan
             //    MediaFilter = TenorSharp.Enums.MediaFilter.minimal,
             //    ContentFilter = TenorSharp.Enums.ContentFilter.low
             //};
-
-            services.AddTransient(x => new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]));
         }
 
-        private async static Task<DiscordClient> ConfigureDiscord()
+        public static async Task ConfigureDiscord(this IServiceCollection services)
         {
-            var discord = new DiscordClient(new DiscordConfiguration
+            var discordClient = DiscordClientBuilder.CreateDefault(ConfigurationManager.AppSettings["DiscordToken"], DiscordIntents.All)
+                .ConfigureEventHandlers(x =>
+                {
+                    x.HandleMessageCreated(Program.AutoReplyToSean);
+                })
+                .ConfigureServices(services =>
+                {
+                    services.ConfigureServices();
+                })
+                .Build();
+
+            // Register extensions outside of the service provider lambda since these involve asynchronous operations
+            CommandsExtension commandsExtension = discordClient.UseCommands(new CommandsConfiguration()
             {
-                Token = ConfigurationManager.AppSettings["DiscordToken"],
-                TokenType = TokenType.Bot,
-                Intents = DiscordIntents.All
+                DebugGuildId = ulong.Parse(Environment.GetEnvironmentVariable("DEBUG_GUILD_ID") ?? "0"),
+                // The default value, however it's shown here for clarity
+                RegisterDefaultCommandProcessors = true
             });
 
-            discord.UseInteractivity(new InteractivityConfiguration()
+            // Add all commands
+            commandsExtension.AddCommands(typeof(CommandsService));
+            TextCommandProcessor textCommandProcessor = new(new()
             {
-                PollBehaviour = PollBehaviour.KeepEmojis,
-                Timeout = TimeSpan.FromSeconds(30)
+                // The default behavior is that the bot reacts to direct mentions
+                // and to the "!" prefix.
+                // If you want to change it, you first set if the bot should react to mentions
+                // and then you can provide as many prefixes as you want.
+                PrefixResolver = new DefaultPrefixResolver(true, "!").ResolvePrefixAsync
             });
 
-            var commands = discord.UseCommandsNext(new CommandsNextConfiguration
-            {
-                StringPrefixes = ["!"]
-            });
-            commands.RegisterCommands<Commands>();
+            // Add text commands with a custom prefix (!)
+            await commandsExtension.AddProcessorsAsync(textCommandProcessor);
 
-            discord.MessageCreated += AutoReplyToSean;
+            // We can specify a status for our bot. Let's set it to "playing" and set the activity to "with fire".
+            DiscordActivity status = new("Overthrowing the human race", DiscordActivityType.Custom);
 
-            await discord.ConnectAsync();
+            // Now we connect and log in.
+            await discordClient.ConnectAsync(status, DiscordUserStatus.Online);
 
-            return discord;
-        }
-
-        static async Task AutoReplyToSean(DiscordClient d, MessageCreateEventArgs e)
-        {
-            //if (e.Author.Discriminator == "3638") //XPeteX47
-            //    await e.Message.RespondAsync("~b-baka!~");
-            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
-                await e.Message.RespondAsync("~b-baka!~");
+            services.AddSingleton(discordClient);
         }
     }
 }

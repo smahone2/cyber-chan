@@ -1,5 +1,5 @@
 ﻿using CyberChan.Extensions;
-using DSharpPlus.CommandsNext;
+using DSharpPlus.Commands;
 using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace CyberChan.Services
     {
         internal async Task GenerateImageCommon(Func<string, string, string, ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
-            await ctx.TriggerTypingAsync();
+            //await ctx.TriggerTypingAsync();
 
             var seed = "";
 

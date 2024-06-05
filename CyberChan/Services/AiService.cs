@@ -1,5 +1,4 @@
 ﻿using CyberChan.Extensions;
-using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using OpenAI;
 using OpenAI.Managers;
@@ -11,6 +10,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.Commands;
 
 namespace CyberChan.Services
 {
@@ -267,7 +267,7 @@ namespace CyberChan.Services
 
         public async Task GPTPromptCommon(Func<string, string, string, string> modelDelegate, CommandContext ctx, string query)
         {
-            await ctx.TriggerTypingAsync();
+            //await ctx.TriggerTypingAsync();
 
             var seed = "";
 
