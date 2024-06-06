@@ -1,6 +1,7 @@
 ﻿using AutoMapper.Execution;
 using CyberChan.Extensions;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.ArgumentModifiers;
 using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands.Trees.Metadata;
 using DSharpPlus.Entities;
@@ -20,28 +21,51 @@ namespace CyberChan.Services
 {
     internal class CommandsService(Giphy giphy, TenorClient tenorClient, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : Commands
     {
-        public override async Task Help(TextCommandContext ctx)
+        public override async Task Help(TextCommandContext ctx, string command = "", [RemainingText] string extraText = "")
         {
-            DiscordEmbedBuilder embed = new()
+            if (string.IsNullOrWhiteSpace(command))
             {
-                Color = DiscordColor.Azure,
-                Title = "Help",
-                Description = "Listing all top-level commands and groups. Specify a command to see more information.\n\n"
-            };
-
-            var methodList = GetType().GetMethods().ToList();
-            var commandText = methodList
-                .Where(method => method.GetCustomAttributes(typeof(CommandAttribute), true).FirstOrDefault() != null)
-                .Select(method =>
+                DiscordEmbedBuilder embed = new()
                 {
-                    var textAliasAttribute = method.GetCustomAttributes(typeof(TextAliasAttribute), true).FirstOrDefault() as TextAliasAttribute;
+                    Color = DiscordColor.Azure,
+                    Title = "Help",
+                    Description = "Listing all top-level commands and groups. Specify a command to see more information.\n\n"
+                };
 
-                    return ("`" + textAliasAttribute?.Aliases.FirstOrDefault() ?? method.Name) + "`";
-                });
+                var methodList = GetType().GetMethods().ToList();
+                var commandText = methodList
+                    .Where(method => method.GetCustomAttributes(typeof(CommandAttribute), true).FirstOrDefault() != null)
+                    .Select(method =>
+                    {
+                        var textAliasAttribute = method.GetCustomAttributes(typeof(TextAliasAttribute), true).FirstOrDefault() as TextAliasAttribute;
 
-            embed.AddField("Commands", string.Join(", ", commandText));
+                        return ("`" + textAliasAttribute?.Aliases.FirstOrDefault() ?? method.Name) + "`";
+                    });
 
-            await ctx.RespondAsync(embed);
+                embed.AddField("Commands", string.Join(", ", commandText));
+
+                await ctx.RespondAsync(embed);
+            }
+            else
+            {
+                //DiscordEmbedBuilder embed = new()
+                //{
+                //    Color = DiscordColor.Azure,
+                //    Title = "Help"
+                //};
+
+                //var methodList = GetType().GetMethods().ToList();
+                //var commandText = methodList
+                //    .Where(method => method.GetCustomAttributes(typeof(CommandAttribute), true).FirstOrDefault() != null)
+                //    .Select(method =>
+                //    {
+                //        var textAliasAttribute = method.GetCustomAttributes(typeof(TextAliasAttribute), true).FirstOrDefault() as TextAliasAttribute;
+
+                //        return ("`" + textAliasAttribute?.Aliases.FirstOrDefault() ?? method.Name) + "`";
+                //    });
+
+                await ctx.RespondAsync("Not implemented yet");
+            }
         }
 
         public override async Task Hi(TextCommandContext ctx, string extraText = "")

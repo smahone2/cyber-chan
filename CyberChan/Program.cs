@@ -37,7 +37,7 @@ namespace CyberChan
     {
         static async Task Main(string[] args)
         {
-            HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+            //HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
             // Get Steam Id filename
             string filename = ConfigurationManager.AppSettings["SteamIDFile"];
@@ -55,53 +55,11 @@ namespace CyberChan
             csv.GetRecords<SteamId>();
 
             // Configure services
-            await builder.Services.ConfigureDiscord();
+            await ConfigureDiscord();
 
-            // Build host
-            using IHost host = builder.Build();
-
-            // Start host
-            await host.RunAsync();
+            await Task.Delay(-1);
         }
-
-        public static async Task AutoReplyToSean(DiscordClient d, MessageCreatedEventArgs e)
-        {
-            //if (e.Author.Discriminator == "3638") //XPeteX47
-            //    await e.Message.RespondAsync("~b-baka!~");
-            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
-                await e.Message.RespondAsync("~b-baka!~");
-        }
-    }
-
-    public static class ServicesExtensions
-    {
-        public static IServiceCollection ConfigureServices(this IServiceCollection services)
-        {
-            return services.AddHttpClient()
-                .AddSingleton(new OpenAIService(new OpenAiOptions()
-                {
-                    ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"]
-                }))
-                .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
-                .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
-                .AddTransient<AiService>()
-                .AddTransient<ImageService>()
-                .AddTransient<DotaService>()
-                .AddTransient<KitsuService>()
-                .AddTransient<SteamService>()
-                .AddTransient<TraceDotMoeService>()
-                .AddTransient(x => new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]))
-                .AddSingleton<CommandsService>();
-
-            //var tenorConfig = new TenorConfiguration()
-            //{
-            //    ApiKey = ConfigurationManager.AppSettings["TenorAPI"],
-            //    MediaFilter = TenorSharp.Enums.MediaFilter.minimal,
-            //    ContentFilter = TenorSharp.Enums.ContentFilter.low
-            //};
-        }
-
-        public static async Task ConfigureDiscord(this IServiceCollection services)
+        public static async Task<DiscordClient> ConfigureDiscord()
         {
             var discordClient = DiscordClientBuilder.CreateDefault(ConfigurationManager.AppSettings["DiscordToken"], DiscordIntents.All)
                 .ConfigureEventHandlers(x =>
@@ -148,7 +106,46 @@ namespace CyberChan
             // Now we connect and log in.
             await discordClient.ConnectAsync(status, DiscordUserStatus.Online);
 
-            services.AddSingleton(discordClient);
+            return discordClient;
         }
+
+        public static async Task AutoReplyToSean(DiscordClient d, MessageCreatedEventArgs e)
+        {
+            //if (e.Author.Discriminator == "3638") //XPeteX47
+            //    await e.Message.RespondAsync("~b-baka!~");
+            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
+                await e.Message.RespondAsync("~b-baka!~");
+        }
+    }
+
+    public static class ServicesExtensions
+    {
+        public static IServiceCollection ConfigureServices(this IServiceCollection services)
+        {
+            return services.AddHttpClient()
+                .AddSingleton(new OpenAIService(new OpenAiOptions()
+                {
+                    ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"]
+                }))
+                .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
+                .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
+                .AddSingleton<AiService>()
+                .AddSingleton<ImageService>()
+                .AddSingleton<DotaService>()
+                .AddSingleton<KitsuService>()
+                .AddSingleton<SteamService>()
+                .AddSingleton<TraceDotMoeService>()
+                .AddSingleton(x => new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]))
+                .AddSingleton<CommandsService>();
+
+            //var tenorConfig = new TenorConfiguration()
+            //{
+            //    ApiKey = ConfigurationManager.AppSettings["TenorAPI"],
+            //    MediaFilter = TenorSharp.Enums.MediaFilter.minimal,
+            //    ContentFilter = TenorSharp.Enums.ContentFilter.low
+            //};
+        }
+
+        
     }
 }

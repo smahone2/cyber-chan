@@ -13,7 +13,7 @@ namespace CyberChan
         [Command(nameof(Help))]
         [TextAlias("help", "h")]
         [Description("Get Help")]
-        public abstract Task Help(TextCommandContext ctx);
+        public abstract Task Help(TextCommandContext ctx, string command, [RemainingText] string extraText = "");
 
         [Command(nameof(Hi))] 
         [TextAlias("hi")]
