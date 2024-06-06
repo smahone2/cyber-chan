@@ -114,6 +114,12 @@ namespace CyberChan
                 })
                 .Build();
 
+            discordClient.UseInteractivity(new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromSeconds(30)
+            });
+
             // Register extensions outside of the service provider lambda since these involve asynchronous operations
             CommandsExtension commandsExtension = discordClient.UseCommands(new CommandsConfiguration()
             {

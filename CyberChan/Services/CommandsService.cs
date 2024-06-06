@@ -1,12 +1,18 @@
-﻿using CyberChan.Extensions;
+﻿using AutoMapper.Execution;
+using CyberChan.Extensions;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.TextCommands;
+using DSharpPlus.Commands.Trees.Metadata;
 using DSharpPlus.Entities;
 using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
+using GiphyDotNet.Model.Web;
 using Newtonsoft.Json.Linq;
+using OpenAI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using TenorSharp;
 
@@ -14,6 +20,30 @@ namespace CyberChan.Services
 {
     internal class CommandsService(Giphy giphy, TenorClient tenorClient, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : Commands
     {
+        public override async Task Help(TextCommandContext ctx)
+        {
+            DiscordEmbedBuilder embed = new()
+            {
+                Color = DiscordColor.Azure,
+                Title = "Help",
+                Description = "Listing all top-level commands and groups. Specify a command to see more information.\n\n"
+            };
+
+            var methodList = GetType().GetMethods().ToList();
+            var commandText = methodList
+                .Where(method => method.GetCustomAttributes(typeof(CommandAttribute), true).FirstOrDefault() != null)
+                .Select(method =>
+                {
+                    var textAliasAttribute = method.GetCustomAttributes(typeof(TextAliasAttribute), true).FirstOrDefault() as TextAliasAttribute;
+
+                    return ("`" + textAliasAttribute?.Aliases.FirstOrDefault() ?? method.Name) + "`";
+                });
+
+            embed.AddField("Commands", string.Join(", ", commandText));
+
+            await ctx.RespondAsync(embed);
+        }
+
         public override async Task Hi(TextCommandContext ctx, string extraText = "")
         {
             RandomParameter giphyParameters = new()
@@ -48,7 +78,9 @@ namespace CyberChan.Services
 
             var rand = new Random();
             var search = tenorClient.Search($"Anime Girl", 10, rand.Next(0, 190).ToString());
-            var image = search.GifResults[rand.Next(0, 10)];
+            var image = search.GifResults?[rand.Next(0, 10)];
+
+            ArgumentNullException.ThrowIfNull(image);
 
             DiscordEmbedBuilder embed = new()
             {
@@ -66,7 +98,9 @@ namespace CyberChan.Services
             // var extraText = ctx.Message.Content.Replace("!gif ", "");
             searchText = searchText.Length > 0 ? searchText : "random";
             var search = tenorClient.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 190).ToString());
-            var image = search.GifResults[rand.Next(0, 10)];
+            var image = search.GifResults?[rand.Next(0, 10)];
+
+            ArgumentNullException.ThrowIfNull(image);
 
             DiscordEmbedBuilder embed = new()
             {
