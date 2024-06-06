@@ -3,7 +3,7 @@ using DSharpPlus.Entities;
 using OpenAI;
 using OpenAI.Managers;
 using OpenAI.ObjectModels;
-using static OpenAI.ObjectModels.Models;
+using GptModels = OpenAI.ObjectModels.Models;
 using OpenAI.ObjectModels.RequestModels;
 using System;
 using System.Collections.Generic;
@@ -107,13 +107,13 @@ namespace CyberChan.Services
 
         public ImageRepsonse GenerateImage(string query, string user, string seed)
         {
-            var imageResponse = GenerateImageTask(query, user, seed, Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
+            var imageResponse = GenerateImageTask(query, user, seed, GptModels.Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
             return imageResponse;
         }
 
         public ImageRepsonse GenerateImage2(string query, string user, string seed)
         {
-            var imageResponse = GenerateImageTask(query, user, seed, Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
+            var imageResponse = GenerateImageTask(query, user, seed, GptModels.Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
             return imageResponse;
         }
 
@@ -169,7 +169,7 @@ namespace CyberChan.Services
             {
                 Prompt = query,
                 MaxTokens = 1000,
-                Model = TextDavinciV3,
+                Model = GptModels.TextDavinciV3,
                 User = user
 
             });
@@ -194,25 +194,25 @@ namespace CyberChan.Services
         }
         public string GPT35Prompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_3_5_Turbo_16k, 15360).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_3_5_Turbo_16k, 15360).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
         public string GPT4Prompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_4, 7168).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4, 7168).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
         public string GPT4PreviewPrompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_4_turbo_preview, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4_turbo_preview, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
         public string GPT4OmniPrompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_4o, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4o, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
             return searchResult;
         }
 
