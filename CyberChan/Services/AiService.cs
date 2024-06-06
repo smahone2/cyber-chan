@@ -210,6 +210,12 @@ namespace CyberChan.Services
             return searchResult;
         }
 
+        public string GPT4OmniPrompt(string query, string user, string seed)
+        {
+            var searchResult = ChatGPTPromptTask(query, user, seed, Gpt_4o, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
+            return searchResult;
+        }
+
         private async Task<string> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
         {
             var promptSeed = ChatSeed(query, seed);
