@@ -116,6 +116,11 @@ namespace CyberChan
         [Description("Generate text with GPT4 Preview. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public abstract Task GPT4PreviewPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
+        [Command(nameof(GPT4OmniPrompt))]
+        [TextAlias("gpt4o", "prompt5", "gpt4omni")]
+        [Description("Generate text with GPT4 Omni. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        public abstract Task GPT4OmniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+
         //[Command("db")]
         //[Description("Just saying hello.")]
         //public async Task Db(CommandContext ctx)

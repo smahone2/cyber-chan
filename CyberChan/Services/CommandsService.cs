@@ -349,6 +349,11 @@ namespace CyberChan.Services
         {
             await aiService.GPTPromptCommon(aiService.GPT4PreviewPrompt, ctx, query);
         }
+
+        public override async Task GPT4OmniPrompt(TextCommandContext ctx, string query = "")
+        {
+            await aiService.GPTPromptCommon(aiService.GPT4OmniPrompt, ctx, query);
+        }
     }
 }
 
