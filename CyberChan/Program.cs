@@ -35,6 +35,7 @@ namespace CyberChan
 {
     class Program
     {
+        public DiscordClient _client;
         static async Task Main(string[] args)
         {
             //HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
@@ -55,7 +56,7 @@ namespace CyberChan
             csv.GetRecords<SteamId>();
 
             // Configure services
-            await ConfigureDiscord();
+            _client = await ConfigureDiscord();
 
             await Task.Delay(-1);
         }
