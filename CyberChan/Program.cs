@@ -35,7 +35,8 @@ namespace CyberChan
 {
     class Program
     {
-        public DiscordClient _client;
+        public static DiscordClient _client;
+
         static async Task Main(string[] args)
         {
             //HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
