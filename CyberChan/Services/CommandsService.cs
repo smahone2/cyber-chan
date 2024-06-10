@@ -1,5 +1,4 @@
-﻿using AutoMapper.Execution;
-using CyberChan.Extensions;
+﻿using CyberChan.Extensions;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ArgumentModifiers;
 using DSharpPlus.Commands.Processors.TextCommands;
@@ -7,13 +6,10 @@ using DSharpPlus.Commands.Trees.Metadata;
 using DSharpPlus.Entities;
 using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
-using GiphyDotNet.Model.Web;
 using Newtonsoft.Json.Linq;
-using OpenAI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using TenorSharp;
 
@@ -21,7 +17,7 @@ namespace CyberChan.Services
 {
     internal class CommandsService(Giphy giphy, TenorClient tenorClient, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : Commands
     {
-        public override async Task Help(TextCommandContext ctx, string command = "", [RemainingText] string extraText = "")
+        public override async ValueTask Help(TextCommandContext ctx, string command = "", [RemainingText] string extraText = "")
         {
             if (string.IsNullOrWhiteSpace(command))
             {
@@ -68,40 +64,45 @@ namespace CyberChan.Services
             }
         }
 
-        public override async Task Hi(TextCommandContext ctx, string extraText = "")
+        public override async ValueTask Hi(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             RandomParameter giphyParameters = new()
             {
                 Tag = "Hi"
             };
+
             DiscordEmbedBuilder embed = new()
             {
-                ImageUrl = giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
+                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.EmbedUrl
             };
 
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
         }
 
-        public override async Task Bye(TextCommandContext ctx, string extraText = "")
+        public override async ValueTask Bye(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             RandomParameter giphyParameters = new()
             {
                 Tag = "Bye"
             };
             DiscordEmbedBuilder embed = new()
             {
-                ImageUrl = giphy.RandomGif(giphyParameters).Result.Data.EmbedUrl
+                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.EmbedUrl
             };
 
             await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
         }
 
-        public override async Task Waifu(TextCommandContext ctx, string extraText = "")
+        public override async ValueTask Waifu(TextCommandContext ctx, string extraText = "")
         {
-            //await ctx.TriggerTypingAsync();
+            await ctx.Channel.TriggerTypingAsync();
 
             var rand = new Random();
-            var search = tenorClient.Search($"Anime Girl", 10, rand.Next(0, 190).ToString());
+            var search = await tenorClient.SearchAsync($"Anime Girl", 10, rand.Next(0, 190).ToString());
             var image = search.GifResults?[rand.Next(0, 10)];
 
             ArgumentNullException.ThrowIfNull(image);
@@ -114,9 +115,9 @@ namespace CyberChan.Services
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", embed);
         }
 
-        public override async Task Gif(TextCommandContext ctx, string searchText)
+        public override async ValueTask Gif(TextCommandContext ctx, string searchText)
         {
-            //await ctx.TriggerTypingAsync();
+            await ctx.Channel.TriggerTypingAsync();
 
             var rand = new Random();
             // var extraText = ctx.Message.Content.Replace("!gif ", "");
@@ -134,8 +135,10 @@ namespace CyberChan.Services
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your gif!", embed);
         }
 
-        public override async Task LookupAnime(TextCommandContext ctx, string extraText = "")
+        public override async ValueTask LookupAnime(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             var message = ctx.Message;
             if (message.MessageType == DiscordMessageType.Reply)
             {
@@ -181,8 +184,10 @@ namespace CyberChan.Services
             //Trace.searchResult = null;
         }
 
-        public override async Task AnimeSearch(TextCommandContext ctx, string searchText)
+        public override async ValueTask AnimeSearch(TextCommandContext ctx, string searchText)
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             try
             {
                 //var search = ctx.Command.Arguments.ToString();
@@ -198,8 +203,10 @@ namespace CyberChan.Services
             }
         }
 
-        public override async Task MangaSearch(TextCommandContext ctx, string searchText)
+        public override async ValueTask MangaSearch(TextCommandContext ctx, string searchText)
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             try
             {
                 // var search = ctx.Message.Content.Replace("!mangasearch ", "");
@@ -213,8 +220,10 @@ namespace CyberChan.Services
             }
         }
 
-        public override async Task DiceRoll(TextCommandContext ctx, string diceText)
+        public override async ValueTask DiceRoll(TextCommandContext ctx, string diceText)
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             try
             {
                 var rand = new Random();
@@ -258,8 +267,10 @@ namespace CyberChan.Services
             }
         }
 
-        public override async Task CoinFlip(TextCommandContext ctx, string extraText = "")
+        public override async ValueTask CoinFlip(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             try
             {
                 var rand = new Random();
@@ -282,14 +293,17 @@ namespace CyberChan.Services
             }
         }
 
-        public override async Task SourceCode(TextCommandContext ctx, string extraText = "")
+        public override async ValueTask SourceCode(TextCommandContext ctx, string extraText = "")
         {
-            await ctx.RespondAsync($"https://bitbucket.org/sean_mahoney/cyber-chan/src/master/");
+            await ctx.Channel.TriggerTypingAsync();
 
+            await ctx.RespondAsync($"https://bitbucket.org/sean_mahoney/cyber-chan/src/master/");
         }
 
-        public override async Task EightBall(TextCommandContext ctx, string _question)
+        public override async ValueTask EightBall(TextCommandContext ctx, string _question)
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             var responses = new List<string>
                 {
                     "It is certain",
@@ -324,21 +338,24 @@ namespace CyberChan.Services
             await ctx.RespondAsync(embed: embed);
         }
 
-        public override async Task GenerateImage(TextCommandContext ctx, string query = "")
+        public override async ValueTask GenerateImage(TextCommandContext ctx, string query = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             await imageService.GenerateImageCommon(aiService.GenerateImage, ctx, query, "dalle2.png");
         }
 
-        public override async Task GenerateImage2(TextCommandContext ctx, string query = "")
+        public override async ValueTask GenerateImage2(TextCommandContext ctx, string query = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
 
             await imageService.GenerateImageCommon(aiService.GenerateImage2, ctx, query, "dalle3.png");
 
         }
 
-        public override async Task GPT3Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask GPT3Prompt(TextCommandContext ctx, string query = "")
         {
-            //await ctx.TriggerTypingAsync();
+            await ctx.Channel.TriggerTypingAsync();
 
             if (await aiService.Moderation(query) == "Pass")
             {
@@ -359,23 +376,31 @@ namespace CyberChan.Services
 
         }
 
-        public override async Task ChatGptPrompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask ChatGptPrompt(TextCommandContext ctx, string query = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             await aiService.GPTPromptCommon(aiService.GPT35Prompt, ctx, query);
         }
 
-        public override async Task GPT4Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask GPT4Prompt(TextCommandContext ctx, string query = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             await aiService.GPTPromptCommon(aiService.GPT4Prompt, ctx, query);
         }
 
-        public override async Task GPT4PreviewPrompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask GPT4PreviewPrompt(TextCommandContext ctx, string query = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             await aiService.GPTPromptCommon(aiService.GPT4PreviewPrompt, ctx, query);
         }
 
-        public override async Task GPT4OmniPrompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask GPT4OmniPrompt(TextCommandContext ctx, string query = "")
         {
+            await ctx.Channel.TriggerTypingAsync();
+
             await aiService.GPTPromptCommon(aiService.GPT4OmniPrompt, ctx, query);
         }
     }
