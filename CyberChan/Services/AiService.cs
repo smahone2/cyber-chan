@@ -68,10 +68,12 @@ namespace CyberChan.Services
             public string style;
         }
 
-        private DalleParam DalleSeed(string query, string seed)
+        private static DalleParam DalleSeed(string query, string seed)
         {
-            DalleParam param = new DalleParam();
-            param.query = query;
+            DalleParam param = new()
+            {
+                query = query
+            };
 
             if (seed.Split(',').Length == 1)
             {
@@ -273,7 +275,7 @@ namespace CyberChan.Services
 
         public async Task GPTPromptCommon(Func<string, string, string, string> modelDelegate, CommandContext ctx, string query)
         {
-            //await ctx.TriggerTypingAsync();
+            await ctx.Channel.TriggerTypingAsync();
 
             var seed = "";
 

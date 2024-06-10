@@ -41,6 +41,16 @@ namespace CyberChan
         {
             //HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
+            GetSteamRecords();
+
+            // Configure services
+            _client = await ConfigureDiscord();
+
+            await Task.Delay(-1);
+        }
+
+        public static void GetSteamRecords()
+        {
             // Get Steam Id filename
             string filename = ConfigurationManager.AppSettings["SteamIDFile"];
 
@@ -55,12 +65,8 @@ namespace CyberChan
 
             // Get Steam Id records
             csv.GetRecords<SteamId>();
-
-            // Configure services
-            _client = await ConfigureDiscord();
-
-            await Task.Delay(-1);
         }
+
         public static async Task<DiscordClient> ConfigureDiscord()
         {
             var discordClient = DiscordClientBuilder.CreateDefault(ConfigurationManager.AppSettings["DiscordToken"], DiscordIntents.All)
@@ -125,10 +131,7 @@ namespace CyberChan
         public static IServiceCollection ConfigureServices(this IServiceCollection services)
         {
             return services.AddHttpClient()
-                .AddSingleton(new OpenAIService(new OpenAiOptions()
-                {
-                    ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"]
-                }))
+                .AddSingleton(new OpenAIService(new OpenAiOptions { ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"] }))
                 .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
                 .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
                 .AddSingleton<AiService>()

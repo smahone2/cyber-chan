@@ -75,7 +75,7 @@ namespace CyberChan.Services
 
             DiscordEmbedBuilder embed = new()
             {
-                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.EmbedUrl
+                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.Images.Downsized.Url
             };
 
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
@@ -91,7 +91,7 @@ namespace CyberChan.Services
             };
             DiscordEmbedBuilder embed = new()
             {
-                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.EmbedUrl
+                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.Images.Downsized.Url
             };
 
             await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
@@ -340,15 +340,11 @@ namespace CyberChan.Services
 
         public override async ValueTask GenerateImage(TextCommandContext ctx, string query = "")
         {
-            await ctx.Channel.TriggerTypingAsync();
-
             await imageService.GenerateImageCommon(aiService.GenerateImage, ctx, query, "dalle2.png");
         }
 
         public override async ValueTask GenerateImage2(TextCommandContext ctx, string query = "")
         {
-            await ctx.Channel.TriggerTypingAsync();
-
             await imageService.GenerateImageCommon(aiService.GenerateImage2, ctx, query, "dalle3.png");
 
         }
@@ -378,29 +374,21 @@ namespace CyberChan.Services
 
         public override async ValueTask ChatGptPrompt(TextCommandContext ctx, string query = "")
         {
-            await ctx.Channel.TriggerTypingAsync();
-
             await aiService.GPTPromptCommon(aiService.GPT35Prompt, ctx, query);
         }
 
         public override async ValueTask GPT4Prompt(TextCommandContext ctx, string query = "")
         {
-            await ctx.Channel.TriggerTypingAsync();
-
             await aiService.GPTPromptCommon(aiService.GPT4Prompt, ctx, query);
         }
 
         public override async ValueTask GPT4PreviewPrompt(TextCommandContext ctx, string query = "")
         {
-            await ctx.Channel.TriggerTypingAsync();
-
             await aiService.GPTPromptCommon(aiService.GPT4PreviewPrompt, ctx, query);
         }
 
         public override async ValueTask GPT4OmniPrompt(TextCommandContext ctx, string query = "")
         {
-            await ctx.Channel.TriggerTypingAsync();
-
             await aiService.GPTPromptCommon(aiService.GPT4OmniPrompt, ctx, query);
         }
     }
