@@ -72,6 +72,7 @@ namespace CyberChan
                 {
                     services.ConfigureServices();
                 })
+                .SetLogLevel(Microsoft.Extensions.Logging.LogLevel.Trace)
                 .Build();
 
             discordClient.UseInteractivity(new InteractivityConfiguration()
