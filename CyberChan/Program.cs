@@ -2,6 +2,7 @@
 using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
+using DSharpPlus.EventArgs;
 using DSharpPlus.Extensions;
 using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ using OpenAI;
 using OpenAI.Managers;
 using Serilog;
 using SteamWebAPI2.Utilities;
+using System;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
@@ -34,8 +36,9 @@ namespace CyberChan
                 .UseConsoleLifetime()
                 .ConfigureServices((context, services) => 
                 {
-                    services.AddLogging(logging => logging.ClearProviders().AddSerilog());
-                    services.ConfigureServices();
+                    services.AddLogging(logging => logging.ClearProviders().AddSerilog())
+                        .ConfigureServices()
+                        .ConfigureEventHandlers(b => b.HandleMessageCreated(AutoReplyToSean));
                 })
                 .RunConsoleAsync();
 
@@ -57,6 +60,14 @@ namespace CyberChan
             // Use Steam Id records for something
             // Get Steam Id records
             csv.GetRecords<SteamId>();
+        }
+
+        public static async Task AutoReplyToSean(DiscordClient d, MessageCreatedEventArgs e)
+        {
+            //if (e.Author.Discriminator == "3638") //XPeteX47
+            //    await e.Message.RespondAsync("~b-baka!~");
+            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
+                await e.Message.RespondAsync("~b-baka!~");
         }
     }
 

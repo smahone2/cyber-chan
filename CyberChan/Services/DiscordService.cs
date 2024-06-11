@@ -23,10 +23,6 @@ namespace CyberChan.Services
     {
         public async Task StartAsync(CancellationToken token)
         {
-            #pragma warning disable DSP0001 // Type or member is obsolete
-            discordClient.MessageCreated += AutoReplyToSean;
-            #pragma warning restore DSP0001 // Type or member is obsolete
-
             // Add interactivity
             discordClient.UseInteractivity(new InteractivityConfiguration()
             {
@@ -67,14 +63,6 @@ namespace CyberChan.Services
         {
             await discordClient.DisconnectAsync();
             // More cleanup possibly here
-        }
-
-        public static async Task AutoReplyToSean(DiscordClient d, MessageCreatedEventArgs e)
-        {
-            //if (e.Author.Discriminator == "3638") //XPeteX47
-            //    await e.Message.RespondAsync("~b-baka!~");
-            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
-                await e.Message.RespondAsync("~b-baka!~");
         }
     }
 }
