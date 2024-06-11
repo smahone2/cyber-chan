@@ -7,6 +7,7 @@ using DSharpPlus.Entities;
 using GiphyDotNet.Manager;
 using GiphyDotNet.Model.Parameters;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,6 +66,8 @@ namespace CyberChan.Services
 
         public override async ValueTask Hi(TextCommandContext ctx, string extraText = "")
         {
+            Log.Information("Hi command initiated");
+
             await ctx.Channel.TriggerTypingAsync();
 
             RandomParameter giphyParameters = new()
@@ -78,10 +81,14 @@ namespace CyberChan.Services
             };
 
             await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
+
+            Log.Information("Hi command finished");
         }
 
         public override async ValueTask Bye(TextCommandContext ctx, string extraText = "")
         {
+            Log.Information("Bye command initiated");
+
             await ctx.Channel.TriggerTypingAsync();
 
             RandomParameter giphyParameters = new()
@@ -94,6 +101,8 @@ namespace CyberChan.Services
             };
 
             await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
+
+            Log.Information("Bye command finished");
         }
 
         public override async ValueTask Waifu(TextCommandContext ctx, string extraText = "")

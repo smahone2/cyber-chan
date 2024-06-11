@@ -50,9 +50,9 @@ namespace CyberChan.Services
 
             if (await aiService.Moderation(query) == "Pass")
             {
-                DiscordMessageBuilder msg = new DiscordMessageBuilder();
+                DiscordMessageBuilder msg = new ();
                 var imageResponse = modelDelegate(query, ctx.User.Mention, seed);
-                var embed = new DiscordEmbedBuilder();
+                DiscordEmbedBuilder embed = new ();
 
                 foreach (var chunk in query.SplitBy(1024))
                 {
