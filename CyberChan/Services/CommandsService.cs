@@ -11,11 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TenorSharp;
 
 namespace CyberChan.Services
 {
-    internal class CommandsService(Giphy giphy, TenorClient tenorClient, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : Commands
+    internal class CommandsService(Giphy giphy, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : Commands
     {
         public override async ValueTask Help(TextCommandContext ctx, string command = "", [RemainingText] string extraText = "")
         {
@@ -101,35 +100,25 @@ namespace CyberChan.Services
         {
             await ctx.Channel.TriggerTypingAsync();
 
-            var rand = new Random();
-            var search = await tenorClient.SearchAsync($"Anime Girl", 10, rand.Next(0, 190).ToString());
-            var image = search.GifResults?[rand.Next(0, 10)];
-
-            ArgumentNullException.ThrowIfNull(image);
+            var result = await imageService.TenorGifSearch("Anime Girl");
 
             DiscordEmbedBuilder embed = new()
             {
-                ImageUrl = image.Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
+                ImageUrl = result["media"][0]["gif"]["url"].ToString()
             };
 
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", embed);
         }
 
-        public override async ValueTask Gif(TextCommandContext ctx, string searchText)
+        public override async ValueTask Gif(TextCommandContext ctx, string searchText = null)
         {
             await ctx.Channel.TriggerTypingAsync();
 
-            var rand = new Random();
-            // var extraText = ctx.Message.Content.Replace("!gif ", "");
-            searchText = searchText.Length > 0 ? searchText : "random";
-            var search = tenorClient.Search(searchText, 10, rand.Next(0, searchText.Length > 0 ? 50 : 190).ToString());
-            var image = search.GifResults?[rand.Next(0, 10)];
-
-            ArgumentNullException.ThrowIfNull(image);
+            var result = await imageService.TenorGifSearch(string.IsNullOrWhiteSpace(searchText) ? "random" : searchText);
 
             DiscordEmbedBuilder embed = new()
             {
-                ImageUrl = image.Media[0][TenorSharp.Enums.GifFormat.gif].Url.AbsoluteUri
+                ImageUrl = result["media"][0]["gif"]["url"].ToString()
             };
 
             await ctx.RespondAsync($"{ctx.User.Mention}, here is your gif!", embed);

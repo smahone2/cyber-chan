@@ -2,34 +2,24 @@
 using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.TextCommands;
+using DSharpPlus.Commands.Processors.TextCommands.Parsing;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using OpenAI.Managers;
 using OpenAI;
+using OpenAI.Managers;
+using SteamWebAPI2.Utilities;
 using System;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using TenorSharp;
-using SteamWebAPI2.Utilities;
-using SteamWebAPI2.Interfaces;
-using System.Net.Http;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using DSharpPlus.Commands;
-using DSharpPlus.Extensions;
-using DSharpPlus.Commands.Processors.TextCommands;
-using DSharpPlus.Entities;
-using DSharpPlus.Commands.Processors.TextCommands.Parsing;
-using System.Linq;
-using System.Threading;
-using System.Net.Http.Headers;
-using DSharpPlus.Commands.ContextChecks;
 
 namespace CyberChan
 {
@@ -140,9 +130,8 @@ namespace CyberChan
                 .AddSingleton<KitsuService>()
                 .AddSingleton<SteamService>()
                 .AddSingleton<TraceDotMoeService>()
-                .AddSingleton(x => new TenorClient(ConfigurationManager.AppSettings["TenorAPI"]))
                 .AddSingleton<CommandsService>();
-
+            
             //var tenorConfig = new TenorConfiguration()
             //{
             //    ApiKey = ConfigurationManager.AppSettings["TenorAPI"],

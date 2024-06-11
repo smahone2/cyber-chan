@@ -36,7 +36,7 @@ namespace CyberChan
         [Command(nameof(Gif))]
         [TextAlias("gif")]
         [Description("Search for any ol' gif! Usage: !gif <search term>")]
-        public abstract ValueTask Gif(TextCommandContext ctx, [Description("Search term."), RemainingText] string searchText);
+        public abstract ValueTask Gif(TextCommandContext ctx, [Description("Search term."), RemainingText] string searchText = null);
 
 
         [Command(nameof(LookupAnime))]

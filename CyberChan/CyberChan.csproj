@@ -26,7 +26,6 @@
     <PackageReference Include="Slko.TraceMoeNET" Version="2.1.0" />
     <PackageReference Include="SteamWebAPI2" Version="4.4.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
-    <PackageReference Include="TenorSharp" Version="1.6.4" />
   </ItemGroup>
 
   <ItemGroup>
