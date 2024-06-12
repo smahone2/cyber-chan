@@ -89,7 +89,7 @@ namespace CyberChan
 
         [Command(nameof(GenerateImage2))]
         [TextAlias("dalle3")]
-        [Description("Generate an image with DALL-E. Seeds to prevent prompt rewriting are simple and detailed. Seeds to adjust image style are natural and vivid (This is always after a comma). Usage: !dalle3 <simple,natural> test")]
+        [Description("Generate an image with DALL-E. Usage: !dalle3 <simple,natural> test")]
         public abstract ValueTask GenerateImage2(TextCommandContext ctx, [RemainingText] string query = "");
 
 
@@ -101,24 +101,24 @@ namespace CyberChan
 
         [Command(nameof(ChatGptPrompt))]
         [TextAlias("chatgpt", "prompt2")]
-        [Description("Generate text with ChatGpt. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
         public abstract ValueTask ChatGptPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
         [Command(nameof(GPT4Prompt))]
         [TextAlias("gpt4", "prompt3")]
-        [Description("Generate text with GPT4. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public abstract ValueTask GPT4Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
         [Command(nameof(GPT4PreviewPrompt))]
         [TextAlias("gpt4p", "prompt4", "gpt4preview")]
-        [Description("Generate text with GPT4 Preview. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public abstract ValueTask GPT4PreviewPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GPT4OmniPrompt))]
         [TextAlias("gpt4o", "prompt5", "gpt4omni")]
-        [Description("Generate text with GPT4 Omni. Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public abstract ValueTask GPT4OmniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         //[Command("db")]

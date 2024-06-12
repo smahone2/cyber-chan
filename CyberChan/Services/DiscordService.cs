@@ -1,28 +1,24 @@
 ﻿using DSharpPlus;
-using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.TextCommands;
+using DSharpPlus.Commands.Processors.TextCommands.Parsing;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.Interactivity;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DSharpPlus.Commands.Processors.TextCommands.Parsing;
-using DSharpPlus.EventArgs;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CyberChan.Services
 {
-    internal class DiscordService(IHostApplicationLifetime applicationLifetime, DiscordClient discordClient) : IHostedService
+    internal class DiscordService(IHostApplicationLifetime applicationLifetime, IServiceProvider serviceProvider, DiscordClient discordClient) : IHostedService
     {
         public async Task StartAsync(CancellationToken token)
         {
+            discordClient.MessageCreated += Program.AutoReplyToSean;
+
             // Add interactivity
             discordClient.UseInteractivity(new InteractivityConfiguration()
             {
@@ -31,11 +27,10 @@ namespace CyberChan.Services
             });
 
             // Register extensions outside of the service provider lambda since these involve asynchronous operations
-            CommandsExtension commandsExtension = discordClient.UseCommands(new CommandsConfiguration()
+            CommandsExtension commandsExtension = discordClient.UseCommands(new CommandsConfiguration
             {
-                DebugGuildId = ulong.Parse(Environment.GetEnvironmentVariable("DEBUG_GUILD_ID") ?? "0"),
-                // The default value, however it's shown here for clarity
-                RegisterDefaultCommandProcessors = true
+                ServiceProvider = serviceProvider,
+                DebugGuildId = ulong.Parse(Environment.GetEnvironmentVariable("DEBUG_GUILD_ID") ?? "0")
             });
 
             // Add all commands
@@ -46,11 +41,11 @@ namespace CyberChan.Services
                 // and to the "!" prefix.
                 // If you want to change it, you first set if the bot should react to mentions
                 // and then you can provide as many prefixes as you want.
-                PrefixResolver = new DefaultPrefixResolver(true, "!").ResolvePrefixAsync
+                PrefixResolver = new DefaultPrefixResolver("!").ResolvePrefixAsync
             });
 
             // Add text commands with a custom prefix (!)
-            await commandsExtension.AddProcessorsAsync(textCommandProcessor);
+            await commandsExtension.AddProcessorAsync(textCommandProcessor);
 
             // We can specify a status for our bot. Let's set it to "playing" and set the activity to "with fire".
             DiscordActivity status = new("Overthrowing the human race", DiscordActivityType.Custom);

@@ -38,6 +38,7 @@ namespace CyberChan.Services
 
         internal async Task GenerateImageCommon(Func<string, string, string, ImageRepsonse> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             var seed = "";

@@ -3,7 +3,6 @@ using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
-using DSharpPlus.Extensions;
 using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,8 +36,8 @@ namespace CyberChan
                 .ConfigureServices((context, services) => 
                 {
                     services.AddLogging(logging => logging.ClearProviders().AddSerilog())
-                        .ConfigureServices()
-                        .ConfigureEventHandlers(b => b.HandleMessageCreated(AutoReplyToSean));
+                        .ConfigureServices();
+                        //.ConfigureEventHandlers(b => b.HandleMessageCreated(AutoReplyToSean));
                 })
                 .RunConsoleAsync();
 
@@ -62,7 +61,7 @@ namespace CyberChan
             csv.GetRecords<SteamId>();
         }
 
-        public static async Task AutoReplyToSean(DiscordClient d, MessageCreatedEventArgs e)
+        public static async Task AutoReplyToSean(DiscordClient d, MessageCreateEventArgs e)
         {
             //if (e.Author.Discriminator == "3638") //XPeteX47
             //    await e.Message.RespondAsync("~b-baka!~");
@@ -87,7 +86,12 @@ namespace CyberChan
                 .AddSingleton<TraceDotMoeService>()
                 .AddSingleton<CommandsService>()
                 .AddHostedService<DiscordService>()
-                .AddDiscordClient(ConfigurationManager.AppSettings["DiscordToken"], DiscordIntents.All);
+                .AddSingleton(new DiscordClient(new DiscordConfiguration 
+                { 
+                    TokenType = TokenType.Bot,
+                    Token = ConfigurationManager.AppSettings["DiscordToken"], 
+                    Intents = DiscordIntents.All 
+                }));
         }
 
         
