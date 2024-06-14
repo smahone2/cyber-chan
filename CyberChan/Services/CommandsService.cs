@@ -68,6 +68,7 @@ namespace CyberChan.Services
         {
             Log.Information("Hi command initiated");
 
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             RandomParameter giphyParameters = new()
@@ -89,6 +90,7 @@ namespace CyberChan.Services
         {
             Log.Information("Bye command initiated");
 
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             RandomParameter giphyParameters = new()
@@ -107,6 +109,7 @@ namespace CyberChan.Services
 
         public override async ValueTask Waifu(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             var result = await imageService.TenorGifSearch("Anime Girl");
@@ -121,6 +124,7 @@ namespace CyberChan.Services
 
         public override async ValueTask Gif(TextCommandContext ctx, string searchText = null)
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             var result = await imageService.TenorGifSearch(string.IsNullOrWhiteSpace(searchText) ? "random" : searchText);
@@ -135,6 +139,7 @@ namespace CyberChan.Services
 
         public override async ValueTask LookupAnime(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             var message = ctx.Message;
@@ -184,6 +189,7 @@ namespace CyberChan.Services
 
         public override async ValueTask AnimeSearch(TextCommandContext ctx, string searchText)
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             try
@@ -203,6 +209,7 @@ namespace CyberChan.Services
 
         public override async ValueTask MangaSearch(TextCommandContext ctx, string searchText)
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             try
@@ -220,6 +227,7 @@ namespace CyberChan.Services
 
         public override async ValueTask DiceRoll(TextCommandContext ctx, string diceText)
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             try
@@ -267,6 +275,7 @@ namespace CyberChan.Services
 
         public override async ValueTask CoinFlip(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             try
@@ -293,6 +302,7 @@ namespace CyberChan.Services
 
         public override async ValueTask SourceCode(TextCommandContext ctx, string extraText = "")
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             await ctx.RespondAsync($"https://bitbucket.org/sean_mahoney/cyber-chan/src/master/");
@@ -300,6 +310,7 @@ namespace CyberChan.Services
 
         public override async ValueTask EightBall(TextCommandContext ctx, string _question)
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             var responses = new List<string>
@@ -344,7 +355,6 @@ namespace CyberChan.Services
         public override async ValueTask GenerateImage2(TextCommandContext ctx, string query = "")
         {
             await imageService.GenerateImageCommon(aiService.GenerateImage2, ctx, query, "dalle3.png");
-
         }
 
         public override async ValueTask GPT3Prompt(TextCommandContext ctx, string query = "")
@@ -356,7 +366,7 @@ namespace CyberChan.Services
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
 
-                foreach (var chunk in aiService.GPT3Prompt(query, ctx.User.Mention).SplitBy(1024))
+                foreach (var chunk in (await aiService.GPT3Prompt(query, ctx.User.Mention)).SplitBy(1024))
                 {
                     embed.AddField("Cyber-chan Says:", chunk);
                 }

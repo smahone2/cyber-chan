@@ -107,15 +107,15 @@ namespace CyberChan.Services
             return param;
         }
 
-        public ImageRepsonse GenerateImage(string query, string user, string seed)
+        public async Task<ImageRepsonse> GenerateImage(string query, string user, string seed)
         {
-            var imageResponse = GenerateImageTask(query, user, seed, GptModels.Dall_e_2).ConfigureAwait(false).GetAwaiter().GetResult();
+            var imageResponse = await GenerateImageTask(query, user, seed, GptModels.Dall_e_2);
             return imageResponse;
         }
 
-        public ImageRepsonse GenerateImage2(string query, string user, string seed)
+        public async Task<ImageRepsonse> GenerateImage2(string query, string user, string seed)
         {
-            var imageResponse = GenerateImageTask(query, user, seed, GptModels.Dall_e_3).ConfigureAwait(false).GetAwaiter().GetResult();
+            var imageResponse = await GenerateImageTask(query, user, seed, GptModels.Dall_e_3);
             return imageResponse;
         }
 
@@ -159,9 +159,9 @@ namespace CyberChan.Services
             return imageResponse;
         }
 
-        public string GPT3Prompt(string query, string user)
+        public async Task<string> GPT3Prompt(string query, string user)
         {
-            var searchResult = GPT3PromptTask(query, user).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = await GPT3PromptTask(query, user);
             return searchResult;
         }
 
@@ -194,27 +194,27 @@ namespace CyberChan.Services
             }
             return searchResult;
         }
-        public string GPT35Prompt(string query, string user, string seed)
+        public async Task<string> GPT35Prompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_3_5_Turbo_16k, 15360).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_3_5_Turbo_16k, 15360);
             return searchResult;
         }
 
-        public string GPT4Prompt(string query, string user, string seed)
+        public async Task<string> GPT4Prompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4, 7168).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4, 7168);
             return searchResult;
         }
 
-        public string GPT4PreviewPrompt(string query, string user, string seed)
+        public async Task<string> GPT4PreviewPrompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4_turbo_preview, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4_turbo_preview, 3072);
             return searchResult;
         }
 
-        public string GPT4OmniPrompt(string query, string user, string seed)
+        public async Task<string> GPT4OmniPrompt(string query, string user, string seed)
         {
-            var searchResult = ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4o, 3072).ConfigureAwait(false).GetAwaiter().GetResult();
+            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4o, 3072);
             return searchResult;
         }
 
@@ -273,8 +273,9 @@ namespace CyberChan.Services
             return searchResult;
         }
 
-        public async Task GPTPromptCommon(Func<string, string, string, string> modelDelegate, CommandContext ctx, string query)
+        public async Task GPTPromptCommon(Func<string, string, string, Task<string>> modelDelegate, CommandContext ctx, string query)
         {
+            await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
             var seed = "";
@@ -289,7 +290,7 @@ namespace CyberChan.Services
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
-                foreach (var chunk in modelDelegate(query, ctx.User.Mention, seed).SplitBy(1024))
+                foreach (var chunk in (await modelDelegate(query, ctx.User.Mention, seed)).SplitBy(1024))
                 {
                     embed.AddField("Cyber-chan Says:", chunk);
                 }
