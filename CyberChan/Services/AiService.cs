@@ -217,6 +217,16 @@ namespace CyberChan.Services
             var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4o, 3072);
             return searchResult;
         }
+        
+        public async Task<string> GPTO1Prompt(string query, string user, string seed)
+
+        {
+
+            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.O1_Mini, 3072);
+
+            return searchResult;
+
+        }
 
         private async Task<string> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
         {
