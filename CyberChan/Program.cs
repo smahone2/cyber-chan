@@ -7,8 +7,7 @@ using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OpenAI;
-using OpenAI.Managers;
+using Betalgo.Ranul.OpenAI.Managers;
 using Serilog;
 using SteamWebAPI2.Utilities;
 using System;
@@ -16,6 +15,7 @@ using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Betalgo.Ranul.OpenAI;
 
 namespace CyberChan
 {
@@ -75,7 +75,7 @@ namespace CyberChan
         public static IServiceCollection ConfigureServices(this IServiceCollection services)
         {
             return services.AddHttpClient()
-                .AddSingleton(new OpenAIService(new OpenAiOptions { ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"] }))
+                .AddSingleton(new OpenAIService(new OpenAIOptions { ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"] }))
                 .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
                 .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
                 .AddSingleton<AiService>()
