@@ -222,7 +222,7 @@ namespace CyberChan.Services
 
         {
 
-            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.O1_Mini, 3072);
+            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.O1_mini, 3072);
 
             return searchResult;
 
