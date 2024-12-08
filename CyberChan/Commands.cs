@@ -121,6 +121,12 @@ namespace CyberChan
         [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
         public abstract ValueTask GPT4OmniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
+        [Command(nameof(GPTO1Prompt))]
+        [TextAlias("gpto1", "prompt6")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gptO1 <hackerman> test")]
+        public abstract ValueTask GPTO1Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+
+
         //[Command("db")]
         //[Description("Just saying hello.")]
         //public async ValueTask Db(CommandContext ctx)
