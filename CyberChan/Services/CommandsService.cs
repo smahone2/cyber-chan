@@ -400,7 +400,7 @@ namespace CyberChan.Services
             await aiService.GPTPromptCommon(aiService.GPT4OmniPrompt, ctx, query);
         }
         
-        public override async ValueTask GPTO2Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask GPTO1Prompt(TextCommandContext ctx, string query = "")
 
         {
 
