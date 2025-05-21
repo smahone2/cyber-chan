@@ -1,0 +1,56 @@
+name: branches-test
+on:
+  push:
+    branches: test
+env:
+  user: "${{ secrets.user }}"
+  server: "${{ secrets.server }}"
+jobs:
+  step_job_1:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+    steps:
+    - uses: actions/checkout@v4.1.0
+    - name: Cache dotnetcore
+      uses: actions/cache@v3.3.2
+      with:
+        key: "${{ runner.os }}-dotnetcore-${{ hashFiles('~/.nuget/packages') }}"
+        path: "~/.nuget/packages"
+    - name: Build and Test
+      run: |-
+        dotnet clean -o Build
+        dotnet restore
+        dotnet build --no-restore --configuration Release -o Build
+    - uses: actions/upload-artifact@v4.1.0
+      with:
+        name: step_job_1
+        path: Build/**
+  step_job_2:
+    runs-on: ubuntu-latest
+    environment:
+      name: Test
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+    needs:
+    - step_job_1
+    steps:
+    - uses: actions/checkout@v4.1.0
+    - uses: actions/download-artifact@v4.1.0
+      with:
+        name: step_job_1
+    - name: Deploy to test
+      run: echo "Deploying code"
+    - uses: Burnett01/rsync-deployments@6.0.0
+      with:
+        switches: "-rp --delete"
+        remote_host: "${{ env.server }}"
+        remote_user: "${{ env.user }}"
+        remote_path: "$directory"
+        path: Build/
+        remote_key: "${{ secrets.SSH_KEY }}"
+    - uses: appleboy/ssh-action@v1.0.0
+      with:
+        username: "${{ env.user }}"
+        host: "${{ env.server }}"
+        script: "$command"
