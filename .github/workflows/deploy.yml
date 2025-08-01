@@ -42,19 +42,23 @@ jobs:
         name: deployment-build
         path: Build/
         
-    - name: Deploy to test environment
-      run: |
-        echo "Deploying to test environment"
-        # Add deployment steps here using secrets for server credentials
-        # Example using SSH:
-        # - name: Deploy via SSH
-        #   uses: appleboy/ssh-action@v1.0.3
-        #   with:
-        #     host: ${{ secrets.TEST_SERVER }}
-        #     username: ${{ secrets.TEST_USER }}
-        #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-        #     source: "Build/"
-        #     target: ${{ secrets.TEST_DIRECTORY }}
+    - name: Deploy files via rsync
+      uses: burnett01/rsync-deployments@7.0.1
+      with:
+        switches: -avzr --delete-after
+        path: Build/
+        remote_path: ${{ secrets.DIRECTORY }}
+        remote_host: ${{ secrets.SERVER }}
+        remote_user: ${{ secrets.USER }}
+        remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        
+    - name: Execute post-deployment command
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: ${{ secrets.COMMAND }}
 
   deploy-production:
     if: github.ref == 'refs/heads/master'
@@ -69,7 +73,20 @@ jobs:
         name: deployment-build
         path: Build/
         
-    - name: Deploy to production environment
-      run: |
-        echo "Deploying to production environment"
-        # Add deployment steps here using secrets for server credentials
+    - name: Deploy files via rsync
+      uses: burnett01/rsync-deployments@7.0.1
+      with:
+        switches: -avzr --delete-after
+        path: Build/
+        remote_path: ${{ secrets.DIRECTORY }}
+        remote_host: ${{ secrets.SERVER }}
+        remote_user: ${{ secrets.USER }}
+        remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        
+    - name: Execute post-deployment command
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: ${{ secrets.COMMAND }}
