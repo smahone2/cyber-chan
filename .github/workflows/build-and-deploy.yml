@@ -1,43 +1,52 @@
-name: Build and Deploy
+name: Deploy
 
 on:
   push:
-    branches: [master, test]
-  pull_request:
-    branches: [master]
+    branches: [ test, master ]
   workflow_dispatch:  # Allow manual deployment
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore --configuration Release -o Build
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-build
+        path: Build/
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build (Debug)
-        run: dotnet build --no-restore --configuration Debug
-
-      - name: Build (Release)
-        run: dotnet build --no-restore --configuration Release
   deploy-test:
-    if: github.ref == 'refs/heads/test' && github.event_name == 'test'
+    if: github.ref == 'refs/heads/test'
+    needs: build
     runs-on: ubuntu-latest
     environment: Test
     
     steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: deployment-build
+        path: Build/
+        
     - name: Deploy files via rsync
       uses: burnett01/rsync-deployments@7.0.1
       with:
         switches: -avzr --delete-after
-        path: CyberChan/bin/Release/net8.0/
+        path: Build/
         remote_path: ${{ vars.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
         remote_user: ${{ secrets.USER }}
@@ -52,16 +61,23 @@ jobs:
         script: ${{ vars.COMMAND }}
 
   deploy-production:
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master'
+    needs: build
     runs-on: ubuntu-latest
     environment: Production
     
     steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: deployment-build
+        path: Build/
+        
     - name: Deploy files via rsync
       uses: burnett01/rsync-deployments@7.0.1
       with:
         switches: -avzr --delete-after
-        path: CyberChan/bin/Release/net8.0/
+        path: Build/
         remote_path: ${{ vars.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
         remote_user: ${{ secrets.USER }}
