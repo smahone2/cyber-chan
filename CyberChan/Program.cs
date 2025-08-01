@@ -33,11 +33,11 @@ namespace CyberChan
             await Host.CreateDefaultBuilder(args)
                 .UseSerilog()
                 .UseConsoleLifetime()
-                .ConfigureServices((context, services) => 
+                .ConfigureServices((context, services) =>
                 {
                     services.AddLogging(logging => logging.ClearProviders().AddSerilog())
                         .ConfigureServices();
-                        //.ConfigureEventHandlers(b => b.HandleMessageCreated(AutoReplyToSean));
+                    //.ConfigureEventHandlers(b => b.HandleMessageCreated(AutoReplyToSean));
                 })
                 .RunConsoleAsync();
 
@@ -86,14 +86,14 @@ namespace CyberChan
                 .AddSingleton<TraceDotMoeService>()
                 .AddSingleton<CommandsService>()
                 .AddHostedService<DiscordService>()
-                .AddSingleton(new DiscordClient(new DiscordConfiguration 
-                { 
+                .AddSingleton(new DiscordClient(new DiscordConfiguration
+                {
                     TokenType = TokenType.Bot,
-                    Token = ConfigurationManager.AppSettings["DiscordToken"], 
-                    Intents = DiscordIntents.All 
+                    Token = ConfigurationManager.AppSettings["DiscordToken"],
+                    Intents = DiscordIntents.All
                 }));
         }
 
-        
+
     }
 }
