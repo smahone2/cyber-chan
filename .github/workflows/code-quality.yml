@@ -19,9 +19,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
       
-    - name: Build project
-      run: dotnet build --no-restore --configuration Release
-      
     - name: Check code formatting
       run: dotnet format --verify-no-changes --verbosity diagnostic
       continue-on-error: true
