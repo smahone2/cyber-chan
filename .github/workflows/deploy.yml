@@ -50,7 +50,6 @@ jobs:
       with:
         name: build-artifacts
         path: Build/
-        github-token: ${{ secrets.GITHUB_TOKEN }}
         run-id: ${{ github.event.workflow_run.id }}
         
     - name: Deploy files via rsync
