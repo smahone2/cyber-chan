@@ -50,14 +50,14 @@ jobs:
         remote_path: ${{ secrets.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
         remote_user: ${{ secrets.USER }}
-        remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        remote_key: ${{ secrets.SSH_KEY }}
         
     - name: Execute post-deployment command
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SERVER }}
         username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key: ${{ secrets.SSH_KEY }}
         script: ${{ secrets.COMMAND }}
 
   deploy-production:
@@ -81,12 +81,12 @@ jobs:
         remote_path: ${{ secrets.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
         remote_user: ${{ secrets.USER }}
-        remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        remote_key: ${{ secrets.SSH_KEY }}
         
     - name: Execute post-deployment command
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SERVER }}
         username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key: ${{ secrets.SSH_KEY }}
         script: ${{ secrets.COMMAND }}
