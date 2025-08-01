@@ -20,6 +20,7 @@ jobs:
         name: build-artifacts
         path: Build/
         run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Deploy files via rsync
       uses: burnett01/rsync-deployments@7.0.1
@@ -51,6 +52,7 @@ jobs:
         name: build-artifacts
         path: Build/
         run-id: ${{ github.event.workflow_run.id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Deploy files via rsync
       uses: burnett01/rsync-deployments@7.0.1
