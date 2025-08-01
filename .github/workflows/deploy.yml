@@ -7,6 +7,9 @@ on:
       - completed
   workflow_dispatch:  # Allow manual deployment
 
+permissions:
+  actions: read
+
 jobs:
   deploy-test:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'test'
