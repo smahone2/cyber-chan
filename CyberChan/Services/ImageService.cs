@@ -21,7 +21,7 @@ namespace CyberChan.Services
 
             NameValueCollection queryString = HttpUtility.ParseQueryString(string.Empty);
             queryString.Add(new NameValueCollection
-            { 
+            {
                 { "key"          , ConfigurationManager.AppSettings["TenorAPI"] },
                 { "q"            , searchText                                   },
                 { "contentfilter", "medium"                                     },
@@ -51,9 +51,9 @@ namespace CyberChan.Services
 
             if (await aiService.Moderation(query) == "Pass")
             {
-                DiscordMessageBuilder msg = new ();
+                DiscordMessageBuilder msg = new();
                 var imageResponse = await modelDelegate(query, ctx.User.Mention, seed);
-                DiscordEmbedBuilder embed = new ();
+                DiscordEmbedBuilder embed = new();
 
                 foreach (var chunk in query.SplitBy(1024))
                 {

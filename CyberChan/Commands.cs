@@ -15,7 +15,7 @@ namespace CyberChan
         [Description("Get Help")]
         public abstract ValueTask Help(TextCommandContext ctx, string command, [RemainingText] string extraText = "");
 
-        [Command(nameof(Hi))] 
+        [Command(nameof(Hi))]
         [TextAlias("hi")]
         [Description("Just saying hello.")]
         public abstract ValueTask Hi(TextCommandContext ctx, [RemainingText] string extraText = "");
