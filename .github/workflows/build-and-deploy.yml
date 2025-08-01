@@ -1,0 +1,82 @@
+---
+name: Build and Deploy
+
+'on':
+  push:
+    branches: [master, test]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:  # Allow manual deployment
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build (Debug)
+        run: dotnet build --no-restore --configuration Debug
+
+      - name: Build (Release)
+        run: dotnet build --no-restore --configuration Release
+
+      # Deploy to Test environment when pushing to test branch
+      - name: Deploy to Test
+        if: github.ref == 'refs/heads/test' && github.event_name == 'push'
+        run: echo "Deploying to Test environment"
+
+      - name: Deploy files to Test via rsync
+        if: github.ref == 'refs/heads/test' && github.event_name == 'push'
+        environment: Test
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete-after
+          path: CyberChan/bin/Release/net8.0/
+          remote_path: ${{ vars.DIRECTORY }}
+          remote_host: ${{ secrets.SERVER }}
+          remote_user: ${{ secrets.USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
+
+      - name: Execute post-deployment command for Test
+        if: github.ref == 'refs/heads/test' && github.event_name == 'push'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: ${{ vars.COMMAND }}
+
+      # Deploy to Production environment when pushing to master branch
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: echo "Deploying to Production environment"
+
+      - name: Deploy files to Production via rsync
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        environment: Production
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete-after
+          path: CyberChan/bin/Release/net8.0/
+          remote_path: ${{ vars.DIRECTORY }}
+          remote_host: ${{ secrets.SERVER }}
+          remote_user: ${{ secrets.USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
+
+      - name: Execute post-deployment command for Production
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: ${{ vars.COMMAND }}
