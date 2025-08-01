@@ -8,9 +8,6 @@ name: Build and Deploy
     branches: [master]
   workflow_dispatch:  # Allow manual deployment
 
-permissions:
-  actions: read
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
