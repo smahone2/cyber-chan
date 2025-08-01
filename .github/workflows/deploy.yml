@@ -5,7 +5,6 @@ on:
     workflows: [Code Quality]
     types:
       - completed
-    branches: [ test, master ]
   workflow_dispatch:  # Allow manual deployment
 
 jobs:
