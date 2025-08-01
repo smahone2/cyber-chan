@@ -32,11 +32,11 @@ jobs:
       # Deploy to Test environment when pushing to test branch
       - name: Deploy to Test
         if: github.ref == 'refs/heads/test' && github.event_name == 'push'
-        environment: Test
         run: echo "Deploying to Test environment"
 
       - name: Deploy files to Test via rsync
         if: github.ref == 'refs/heads/test' && github.event_name == 'push'
+        environment: Test
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avzr --delete-after
@@ -58,11 +58,11 @@ jobs:
       # Deploy to Production environment when pushing to master branch
       - name: Deploy to Production
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        environment: Production
         run: echo "Deploying to Production environment"
 
       - name: Deploy files to Production via rsync
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        environment: Production
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avzr --delete-after
