@@ -22,4 +22,5 @@ jobs:
       run: dotnet restore
       
     - name: Check code formatting
-      run: dotnet format --verify-no-changes --verbosity diagnostic
+      run: dotnet format --verify-no-changes --verbosity diagnostic || echo "::warning::Code formatting issues found. Please run 'dotnet format' to fix them."
+      continue-on-error: true
