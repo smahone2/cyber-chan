@@ -47,7 +47,7 @@ jobs:
       with:
         switches: -avzr --delete-after
         path: Build/
-        remote_path: ${{ secrets.DIRECTORY }}
+        remote_path: ${{ vars.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
         remote_user: ${{ secrets.USER }}
         remote_key: ${{ secrets.SSH_KEY }}
@@ -58,7 +58,7 @@ jobs:
         host: ${{ secrets.SERVER }}
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
-        script: ${{ secrets.COMMAND }}
+        script: ${{ vars.COMMAND }}
 
   deploy-production:
     if: github.ref == 'refs/heads/master'
@@ -78,7 +78,7 @@ jobs:
       with:
         switches: -avzr --delete-after
         path: Build/
-        remote_path: ${{ secrets.DIRECTORY }}
+        remote_path: ${{ vars.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
         remote_user: ${{ secrets.USER }}
         remote_key: ${{ secrets.SSH_KEY }}
@@ -89,4 +89,4 @@ jobs:
         host: ${{ secrets.SERVER }}
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
-        script: ${{ secrets.COMMAND }}
+        script: ${{ vars.COMMAND }}
