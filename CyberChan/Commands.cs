@@ -95,7 +95,7 @@ namespace CyberChan
 
         [Command(nameof(GPT3Prompt))]
         [TextAlias("gpt3", "prompt")]
-        [Description("Generate text with GPT3. Usage: !gpt3 test")]
+        [Description("Generate text with GPT-3.5. Usage: !gpt3 test")]
         public abstract ValueTask GPT3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
