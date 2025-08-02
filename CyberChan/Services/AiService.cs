@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
+using System.IO;
 
 namespace CyberChan.Services
 {
@@ -103,15 +104,6 @@ namespace CyberChan.Services
                     break;
             }
 
-            switch (seed.ToLower().Split(",")[1].Trim())
-            {
-                case "natural":
-                    param.style = StaticValues.ImageStatics.Style.Natural;
-                    break;
-                default:
-                    param.style = StaticValues.ImageStatics.Style.Vivid;
-                    break;
-            }
             return param;
         }
 
@@ -126,10 +118,9 @@ namespace CyberChan.Services
             var imageResponse = await GenerateImageTask(query, user, seed, GptModels.Dall_e_3);
             return imageResponse;
         }
-
-        public async Task<ImageRepsonse> GenerateImageVariation(string imageUrl, string user)
+        public async Task<ImageRepsonse> GenerateGptImage1(string query, string user, string seed)
         {
-            var imageResponse = await GenerateImageVariationTask(imageUrl, user);
+            var imageResponse = await GenerateImageTask(query, user, seed, "gpt-image-1");
             return imageResponse;
         }
 
@@ -149,7 +140,7 @@ namespace CyberChan.Services
             {
                 // Use image generation API with analysis
                 var prompt = $"Based on this image analysis: {analysis}. {instructions}";
-                var imageResponse = await GenerateImageFromAnalysis(prompt, user);
+                var imageResponse = await GenerateGptImage1(prompt, user, "");
                 imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nGenerated: {imageResponse.revisedPrompt}";
                 return imageResponse;
             }
@@ -159,6 +150,7 @@ namespace CyberChan.Services
         {
             public string url;
             public string revisedPrompt;
+            public Stream stream;
         }
 
         private async Task<ImageRepsonse> GenerateImageTask(string query, string user, string seed, string model)
@@ -170,18 +162,17 @@ namespace CyberChan.Services
                 Prompt = param.query,
                 N = 1,
                 Size = StaticValues.ImageStatics.Size.Size1024,
-                ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
                 User = user,
                 Model = model,
-                Quality = StaticValues.ImageStatics.Quality.Hd,
-                Style = param.style
+                Quality = (model == "gpt-image-1")? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
+                ResponseFormat = (model == GptModels.Dall_e_2 || model == GptModels.Dall_e_3)?StaticValues.ImageStatics.ResponseFormat.Base64:null,
             });
 
             ImageRepsonse imageResponse = new ImageRepsonse(); ;
 
             if (imageResult.Successful)
             {
-                imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
+                imageResponse.stream = new MemoryStream(Convert.FromBase64String(string.Join("\n", imageResult.Results.Select(r => r.B64))));
                 imageResponse.revisedPrompt = string.Join("\n", imageResult.Results.Select(r => r.RevisedPrompt));
             }
             else
@@ -195,64 +186,31 @@ namespace CyberChan.Services
             return imageResponse;
         }
 
-        private async Task<ImageRepsonse> GenerateImageVariationTask(string imageUrl, string user)
-        {
-            // Download the image to bytes
-            using var response = await new HttpClient().GetAsync(imageUrl);
-            var imageBytes = await response.Content.ReadAsByteArrayAsync();
-
-            var imageResult = await openAiService.Image.CreateImageVariation(new ImageVariationCreateRequest
-            {
-                Image = imageBytes,
-                N = 1,
-                Size = StaticValues.ImageStatics.Size.Size1024,
-                ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
-                User = user
-            });
-
-            ImageRepsonse imageResponse = new ImageRepsonse();
-
-            if (imageResult.Successful)
-            {
-                imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
-                imageResponse.revisedPrompt = "Image variation generated successfully";
-            }
-            else
-            {
-                if (imageResult.Error == null)
-                {
-                    imageResponse.revisedPrompt = "Unknown Error";
-                }
-                else
-                {
-                    imageResponse.revisedPrompt = $"{imageResult.Error.Code}: {imageResult.Error.Message}";
-                }
-            }
-            return imageResponse;
-        }
-
         private async Task<string> AnalyzeImageWithVision(string imageUrl, string instructions, string user)
         {
             try
             {
                 var messages = new List<ChatMessage>
                 {
-                    new ChatMessage(StaticValues.ChatMessageRoles.User, "Analyze this image in detail. Describe what you see, the style, colors, composition, and any notable elements.")
+                    new ChatMessage
                     {
+                        Role = StaticValues.ChatMessageRoles.User,
                         Contents = new List<MessageContent>
                         {
+                            new MessageContent { Type = "text", Text = "Analyze this image in detail. Describe what you see, the style, colors, composition, and any notable elements."},
                             new MessageContent { Type = "text", Text = $"Analyze this image. {instructions}" },
                             new MessageContent { Type = "image_url", ImageUrl = new MessageImageUrl { Url = imageUrl } }
                         }
                     }
+
                 };
 
                 var completionResult = await openAiService.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest()
                 {
                     Messages = messages,
                     Model = GptModels.Gpt_4o,
-                    User = user,
-                    MaxTokens = 500
+                    User = user
+
                 });
 
                 if (completionResult.Successful)
@@ -284,15 +242,17 @@ namespace CyberChan.Services
                     Prompt = prompt,
                     N = 1,
                     Size = StaticValues.ImageStatics.Size.Size1024,
-                    ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
-                    User = user
+                    User = user,
+                    Model = "gpt-image-1",
+                    ImageName = "edited_image.png"
+                    
                 });
 
                 ImageRepsonse imageResponse = new ImageRepsonse();
 
                 if (imageResult.Successful)
                 {
-                    imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
+                    imageResponse.stream = new MemoryStream(Convert.FromBase64String(imageResult.Results[0].B64));
                     imageResponse.revisedPrompt = "Image edited successfully";
                 }
                 else
@@ -312,41 +272,6 @@ namespace CyberChan.Services
             {
                 return new ImageRepsonse { revisedPrompt = $"Edit error: {ex.Message}" };
             }
-        }
-
-        private async Task<ImageRepsonse> GenerateImageFromAnalysis(string prompt, string user)
-        {
-            var imageResult = await openAiService.Image.CreateImage(new ImageCreateRequest
-            {
-                Prompt = prompt,
-                N = 1,
-                Size = StaticValues.ImageStatics.Size.Size1024,
-                ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
-                User = user,
-                Model = GptModels.Dall_e_3,
-                Quality = StaticValues.ImageStatics.Quality.Hd,
-                Style = StaticValues.ImageStatics.Style.Vivid
-            });
-
-            ImageRepsonse imageResponse = new ImageRepsonse();
-
-            if (imageResult.Successful)
-            {
-                imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
-                imageResponse.revisedPrompt = string.Join("\n", imageResult.Results.Select(r => r.RevisedPrompt));
-            }
-            else
-            {
-                if (imageResult.Error == null)
-                {
-                    imageResponse.revisedPrompt = "Unknown Error";
-                }
-                else
-                {
-                    imageResponse.revisedPrompt = $"{imageResult.Error.Code}: {imageResult.Error.Message}";
-                }
-            }
-            return imageResponse;
         }
 
         public async Task<string> GPT3Prompt(string query, string user)

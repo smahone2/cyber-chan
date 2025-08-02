@@ -69,9 +69,9 @@ namespace CyberChan.Services
                     }
                 }
 
-                if (!string.IsNullOrEmpty(imageResponse.url))
+                if (imageResponse.stream != null)
                 {
-                    using Stream stream = await httpClient.GetStreamAsync(imageResponse.url);
+                    using Stream stream = imageResponse.stream;
                     msg.AddFile(baseFilename, stream);
 
                     msg.AddEmbed(embed);
@@ -120,16 +120,11 @@ namespace CyberChan.Services
                     // Parse instructions to determine operation mode
                     bool isEdit = true;
                     string processedInstructions = instructions?.Trim() ?? "";
-                    
-                    if (processedInstructions.StartsWith("create", StringComparison.OrdinalIgnoreCase))
-                    {
-                        isEdit = false;
-                        processedInstructions = processedInstructions.Substring(6).Trim();
-                    }
-                    else if (processedInstructions.StartsWith("edit", StringComparison.OrdinalIgnoreCase))
+
+                    if (!string.IsNullOrEmpty(processedInstructions))
                     {
                         isEdit = true;
-                        processedInstructions = processedInstructions.Substring(4).Trim();
+                        processedInstructions = processedInstructions.Trim();
                     }
                     else if (string.IsNullOrEmpty(processedInstructions))
                     {
@@ -141,16 +136,8 @@ namespace CyberChan.Services
                     DiscordMessageBuilder msg = new();
                     AiService.ImageRepsonse imageResponse;
 
-                    if (string.IsNullOrEmpty(processedInstructions) || processedInstructions == "Create a variation of this image")
-                    {
-                        // Use the original variation method for simple variations
-                        imageResponse = await aiService.GenerateImageVariation(imageUrl, ctx.User.Mention);
-                    }
-                    else
-                    {
-                        // Use the new GPT Vision + editing/generation method
-                        imageResponse = await aiService.AnalyzeAndModifyImage(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
-                    }
+                    // Use the new GPT Vision + editing/generation method
+                    imageResponse = await aiService.AnalyzeAndModifyImage(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
 
                     DiscordEmbedBuilder embed = new();
                     embed.AddField("Source Image:", imageUrl);
@@ -169,9 +156,9 @@ namespace CyberChan.Services
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(imageResponse.url))
+                    if (imageResponse.stream != null)
                     {
-                        using Stream stream = await httpClient.GetStreamAsync(imageResponse.url);
+                        using Stream stream = imageResponse.stream;
                         msg.AddFile(baseFilename, stream);
 
                         msg.AddEmbed(embed);
