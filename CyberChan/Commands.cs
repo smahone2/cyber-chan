@@ -134,7 +134,7 @@ namespace CyberChan
 
         [Command(nameof(GenerateImageVariation))]
         [TextAlias("editimage", "dallevary", "imagevary", "imagemod")]
-        [Description("Modify or create vimage using GPT Vision + GPT-Image-1. Usage: !editimage [instructions]")]
+        [Description("Modify or create image using GPT Vision + GPT-Image-1. Usage: !editimage [instructions]")]
         public abstract ValueTask GenerateImageVariation(TextCommandContext ctx, [RemainingText] string instructions = "");
 
 

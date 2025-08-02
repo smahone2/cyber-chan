@@ -164,8 +164,8 @@ namespace CyberChan.Services
                 Size = StaticValues.ImageStatics.Size.Size1024,
                 User = user,
                 Model = model,
-                Quality = (model == "gpt-image-1")? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
-                ResponseFormat = (model == GptModels.Dall_e_2 || model == GptModels.Dall_e_3)?StaticValues.ImageStatics.ResponseFormat.Base64:null,
+                Quality = (model == "gpt-image-1") ? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
+                ResponseFormat = (model == GptModels.Dall_e_2 || model == GptModels.Dall_e_3) ? StaticValues.ImageStatics.ResponseFormat.Base64 : null,
             });
 
             ImageRepsonse imageResponse = new ImageRepsonse(); ;
