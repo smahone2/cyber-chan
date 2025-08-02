@@ -408,9 +408,9 @@ namespace CyberChan.Services
 
         }
 
-        public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string extraText = "")
+        public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string instructions = "")
         {
-            await imageService.GenerateImageVariationFromMessage(ctx, "dalle-variation.png");
+            await imageService.GenerateImageVariationFromMessage(ctx, instructions, "dalle-ai.png");
         }
     }
 }

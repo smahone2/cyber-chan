@@ -128,9 +128,9 @@ namespace CyberChan
 
 
         [Command(nameof(GenerateImageVariation))]
-        [TextAlias("dallevary", "imagevary")]
-        [Description("Generate variations of an image using DALL-E. Reply to a message with image and use: !dallevary")]
-        public abstract ValueTask GenerateImageVariation(TextCommandContext ctx, [RemainingText] string extraText = "");
+        [TextAlias("dallevary", "imagevary", "imagemod")]
+        [Description("Modify or create variations of an image using GPT Vision + DALL-E. Reply to a message with image and use: !dallevary <edit|create> [instructions]")]
+        public abstract ValueTask GenerateImageVariation(TextCommandContext ctx, [RemainingText] string instructions = "");
 
 
         //[Command("db")]

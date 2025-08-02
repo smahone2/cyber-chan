@@ -133,6 +133,28 @@ namespace CyberChan.Services
             return imageResponse;
         }
 
+        public async Task<ImageRepsonse> AnalyzeAndModifyImage(string imageUrl, string instructions, string user, bool isEdit = true)
+        {
+            // First, analyze the image using GPT-4o vision
+            var analysis = await AnalyzeImageWithVision(imageUrl, instructions, user);
+            
+            if (isEdit && !string.IsNullOrEmpty(instructions))
+            {
+                // Use image editing API
+                var imageResponse = await EditImageTask(imageUrl, instructions, user);
+                imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nEdit Result: {imageResponse.revisedPrompt}";
+                return imageResponse;
+            }
+            else
+            {
+                // Use image generation API with analysis
+                var prompt = $"Based on this image analysis: {analysis}. {instructions}";
+                var imageResponse = await GenerateImageFromAnalysis(prompt, user);
+                imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nGenerated: {imageResponse.revisedPrompt}";
+                return imageResponse;
+            }
+        }
+
         public struct ImageRepsonse
         {
             public string url;
@@ -194,6 +216,124 @@ namespace CyberChan.Services
             {
                 imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
                 imageResponse.revisedPrompt = "Image variation generated successfully";
+            }
+            else
+            {
+                if (imageResult.Error == null)
+                {
+                    imageResponse.revisedPrompt = "Unknown Error";
+                }
+                else
+                {
+                    imageResponse.revisedPrompt = $"{imageResult.Error.Code}: {imageResult.Error.Message}";
+                }
+            }
+            return imageResponse;
+        }
+
+        private async Task<string> AnalyzeImageWithVision(string imageUrl, string instructions, string user)
+        {
+            try
+            {
+                var messages = new List<ChatMessage>
+                {
+                    new ChatMessage(StaticValues.ChatMessageRoles.User, "Analyze this image in detail. Describe what you see, the style, colors, composition, and any notable elements.")
+                    {
+                        Contents = new List<MessageContent>
+                        {
+                            new MessageContent { Type = "text", Text = $"Analyze this image. {instructions}" },
+                            new MessageContent { Type = "image_url", ImageUrl = new MessageImageUrl { Url = imageUrl } }
+                        }
+                    }
+                };
+
+                var completionResult = await openAiService.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest()
+                {
+                    Messages = messages,
+                    Model = GptModels.Gpt_4o,
+                    User = user,
+                    MaxTokens = 500
+                });
+
+                if (completionResult.Successful)
+                {
+                    return completionResult.Choices.FirstOrDefault()?.Message.Content ?? "Could not analyze image";
+                }
+                else
+                {
+                    return $"Analysis failed: {completionResult.Error?.Message ?? "Unknown error"}";
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"Analysis error: {ex.Message}";
+            }
+        }
+
+        private async Task<ImageRepsonse> EditImageTask(string imageUrl, string prompt, string user)
+        {
+            try
+            {
+                // Download the image to bytes
+                using var response = await new HttpClient().GetAsync(imageUrl);
+                var imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+                var imageResult = await openAiService.Image.CreateImageEdit(new ImageEditCreateRequest
+                {
+                    Image = imageBytes,
+                    Prompt = prompt,
+                    N = 1,
+                    Size = StaticValues.ImageStatics.Size.Size1024,
+                    ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
+                    User = user
+                });
+
+                ImageRepsonse imageResponse = new ImageRepsonse();
+
+                if (imageResult.Successful)
+                {
+                    imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
+                    imageResponse.revisedPrompt = "Image edited successfully";
+                }
+                else
+                {
+                    if (imageResult.Error == null)
+                    {
+                        imageResponse.revisedPrompt = "Unknown Error";
+                    }
+                    else
+                    {
+                        imageResponse.revisedPrompt = $"{imageResult.Error.Code}: {imageResult.Error.Message}";
+                    }
+                }
+                return imageResponse;
+            }
+            catch (Exception ex)
+            {
+                return new ImageRepsonse { revisedPrompt = $"Edit error: {ex.Message}" };
+            }
+        }
+
+        private async Task<ImageRepsonse> GenerateImageFromAnalysis(string prompt, string user)
+        {
+            var imageResult = await openAiService.Image.CreateImage(new ImageCreateRequest
+            {
+                Prompt = prompt,
+                N = 1,
+                Size = StaticValues.ImageStatics.Size.Size1024,
+                ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
+                User = user,
+                Model = GptModels.Dall_e_3,
+                Quality = StaticValues.ImageStatics.Quality.Hd,
+                Style = StaticValues.ImageStatics.Style.Vivid
+            });
+
+            ImageRepsonse imageResponse = new ImageRepsonse();
+
+            if (imageResult.Successful)
+            {
+                imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
+                imageResponse.revisedPrompt = string.Join("\n", imageResult.Results.Select(r => r.RevisedPrompt));
             }
             else
             {

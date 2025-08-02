@@ -89,7 +89,7 @@ namespace CyberChan.Services
             }
         }
 
-        internal async Task GenerateImageVariationFromMessage(TextCommandContext ctx, string baseFilename)
+        internal async Task GenerateImageVariationFromMessage(TextCommandContext ctx, string instructions, string baseFilename)
         {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
@@ -98,53 +98,68 @@ namespace CyberChan.Services
             if (message.MessageType == DiscordMessageType.Reply)
             {
                 var reply = message.ReferencedMessage;
+                string imageUrl = null;
+
+                // Check for attachments first
                 if (reply.Attachments.Count > 0)
                 {
                     var attachment = reply.Attachments[0];
                     if (attachment.MediaType?.StartsWith("image/") == true)
                     {
-                        DiscordMessageBuilder msg = new();
-                        var imageResponse = await aiService.GenerateImageVariation(attachment.Url, ctx.User.Mention);
-                        DiscordEmbedBuilder embed = new();
+                        imageUrl = attachment.Url;
+                    }
+                }
+                // Check for embedded images
+                else if (reply.Embeds.Count > 0 && reply.Embeds[0].Image != null)
+                {
+                    imageUrl = reply.Embeds[0].Image.Url.ToString();
+                }
 
-                        embed.AddField("Source Image:", attachment.Url);
+                if (imageUrl != null)
+                {
+                    // Parse instructions to determine operation mode
+                    bool isEdit = true;
+                    string processedInstructions = instructions?.Trim() ?? "";
+                    
+                    if (processedInstructions.StartsWith("create", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isEdit = false;
+                        processedInstructions = processedInstructions.Substring(6).Trim();
+                    }
+                    else if (processedInstructions.StartsWith("edit", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isEdit = true;
+                        processedInstructions = processedInstructions.Substring(4).Trim();
+                    }
+                    else if (string.IsNullOrEmpty(processedInstructions))
+                    {
+                        // Default to creating a variation if no instructions provided
+                        isEdit = false;
+                        processedInstructions = "Create a variation of this image";
+                    }
 
-                        if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
-                        {
-                            foreach (var chunk in imageResponse.revisedPrompt.SplitBy(1024))
-                            {
-                                embed.AddField("Result:", chunk);
-                            }
-                        }
+                    DiscordMessageBuilder msg = new();
+                    AiService.ImageRepsonse imageResponse;
 
-                        if (!string.IsNullOrEmpty(imageResponse.url))
-                        {
-                            using Stream stream = await httpClient.GetStreamAsync(imageResponse.url);
-                            msg.AddFile(baseFilename, stream);
-
-                            msg.AddEmbed(embed);
-                            await ctx.RespondAsync(msg);
-                        }
-                        else
-                        {
-                            msg.AddEmbed(embed);
-                            await ctx.RespondAsync(msg);
-                        }
+                    if (string.IsNullOrEmpty(processedInstructions) || processedInstructions == "Create a variation of this image")
+                    {
+                        // Use the original variation method for simple variations
+                        imageResponse = await aiService.GenerateImageVariation(imageUrl, ctx.User.Mention);
                     }
                     else
                     {
-                        await ctx.RespondAsync("The referenced message doesn't contain a valid image attachment.");
+                        // Use the new GPT Vision + editing/generation method
+                        imageResponse = await aiService.AnalyzeAndModifyImage(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
                     }
-                }
-                else if (reply.Embeds.Count > 0 && reply.Embeds[0].Image != null)
-                {
-                    var imageUrl = reply.Embeds[0].Image.Url.ToString();
-                    
-                    DiscordMessageBuilder msg = new();
-                    var imageResponse = await aiService.GenerateImageVariation(imageUrl, ctx.User.Mention);
-                    DiscordEmbedBuilder embed = new();
 
+                    DiscordEmbedBuilder embed = new();
                     embed.AddField("Source Image:", imageUrl);
+                    embed.AddField("Operation:", isEdit ? "Edit" : "Create New");
+                    
+                    if (!string.IsNullOrEmpty(processedInstructions) && processedInstructions != "Create a variation of this image")
+                    {
+                        embed.AddField("Instructions:", processedInstructions);
+                    }
 
                     if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
                     {
@@ -170,12 +185,12 @@ namespace CyberChan.Services
                 }
                 else
                 {
-                    await ctx.RespondAsync("The referenced message doesn't contain an image.");
+                    await ctx.RespondAsync("The referenced message doesn't contain a valid image.");
                 }
             }
             else
             {
-                await ctx.RespondAsync("Please reply to a message containing an image to generate variations.");
+                await ctx.RespondAsync("Please reply to a message containing an image. Usage: `!dallevary <edit|create> [instructions]`");
             }
         }
     }
