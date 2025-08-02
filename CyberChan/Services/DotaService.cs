@@ -15,7 +15,7 @@ namespace CyberChan.Services
 
         private async Task<string> ExecuteGetMatchId(string steamid)
         {
-            DOTA2Match match = new(null,null);
+            DOTA2Match match = new(null, null);
             var matches = await match.GetMatchHistoryAsync(null, null, null, null, ulong.Parse(steamid), null, null, "1", null);
 
             var matchId = string.Empty;
