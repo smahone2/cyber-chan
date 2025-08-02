@@ -45,7 +45,7 @@ jobs:
     - name: Deploy files via rsync
       uses: burnett01/rsync-deployments@7.0.1
       with:
-        switches: -avzr --delete-after
+        switches: -avzr
         path: Build/
         remote_path: ${{ vars.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
@@ -76,7 +76,7 @@ jobs:
     - name: Deploy files via rsync
       uses: burnett01/rsync-deployments@7.0.1
       with:
-        switches: -avzr --delete-after
+        switches: -avzr
         path: Build/
         remote_path: ${{ vars.DIRECTORY }}
         remote_host: ${{ secrets.SERVER }}
