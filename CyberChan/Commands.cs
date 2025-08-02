@@ -89,8 +89,13 @@ namespace CyberChan
 
         [Command(nameof(GenerateImage2))]
         [TextAlias("dalle3")]
-        [Description("Generate an image with DALL-E. Usage: !dalle3 <simple,natural> test")]
+        [Description("Generate an image with DALL-E. Usage: !dalle3 <simple> test")]
         public abstract ValueTask GenerateImage2(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(GenerateGptImage1))]
+        [TextAlias("gptimage", "gptimage1")]
+        [Description("Generate an image with GPT-Image-1. Usage: !gptimage1 <simple> test")]
+        public abstract ValueTask GenerateGptImage1(TextCommandContext ctx, [RemainingText] string query = "");
 
 
         [Command(nameof(GPT3Prompt))]
@@ -125,6 +130,12 @@ namespace CyberChan
         [TextAlias("gpto1", "prompt6")]
         [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gptO1 <hackerman> test")]
         public abstract ValueTask GPTO1Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+
+
+        [Command(nameof(GenerateImageVariation))]
+        [TextAlias("editimage", "dallevary", "imagevary", "imagemod")]
+        [Description("Modify or create image using GPT Vision + GPT-Image-1. Usage: !editimage [instructions]")]
+        public abstract ValueTask GenerateImageVariation(TextCommandContext ctx, [RemainingText] string instructions = "");
 
 
         //[Command("db")]

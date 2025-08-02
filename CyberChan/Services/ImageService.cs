@@ -1,5 +1,6 @@
 ﻿using CyberChan.Extensions;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Entities;
 using Newtonsoft.Json.Linq;
 using System;
@@ -68,9 +69,9 @@ namespace CyberChan.Services
                     }
                 }
 
-                if (!string.IsNullOrEmpty(imageResponse.url))
+                if (imageResponse.stream != null)
                 {
-                    using Stream stream = await httpClient.GetStreamAsync(imageResponse.url);
+                    using Stream stream = imageResponse.stream;
                     msg.AddFile(baseFilename, stream);
 
                     msg.AddEmbed(embed);
@@ -85,6 +86,98 @@ namespace CyberChan.Services
             else
             {
                 await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
+            }
+        }
+
+        internal async Task GenerateImageVariationFromMessage(TextCommandContext ctx, string instructions, string baseFilename)
+        {
+            await ctx.DeferResponseAsync();
+            await ctx.Channel.TriggerTypingAsync();
+
+            var message = ctx.Message;
+            if (message.MessageType == DiscordMessageType.Reply)
+            {
+                var reply = message.ReferencedMessage;
+                string imageUrl = null;
+
+                // Check for attachments first
+                if (reply.Attachments.Count > 0)
+                {
+                    var attachment = reply.Attachments[0];
+                    if (attachment.MediaType?.StartsWith("image/") == true)
+                    {
+                        imageUrl = attachment.Url;
+                    }
+                }
+                // Check for embedded images
+                else if (reply.Embeds.Count > 0 && reply.Embeds[0].Image != null)
+                {
+                    imageUrl = reply.Embeds[0].Image.Url.ToString();
+                }
+
+                if (imageUrl != null)
+                {
+                    // Parse instructions to determine operation mode
+                    bool isEdit = true;
+                    string processedInstructions = instructions?.Trim() ?? "";
+
+                    if (!string.IsNullOrEmpty(processedInstructions))
+                    {
+                        isEdit = true;
+                        processedInstructions = processedInstructions.Trim();
+                    }
+                    else if (string.IsNullOrEmpty(processedInstructions))
+                    {
+                        // Default to creating a variation if no instructions provided
+                        isEdit = false;
+                        processedInstructions = "Create a variation of this image";
+                    }
+
+                    DiscordMessageBuilder msg = new();
+                    AiService.ImageRepsonse imageResponse;
+
+                    // Use the new GPT Vision + editing/generation method
+                    imageResponse = await aiService.AnalyzeAndModifyImage(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
+
+                    DiscordEmbedBuilder embed = new();
+                    embed.AddField("Source Image:", imageUrl);
+                    embed.AddField("Operation:", isEdit ? "Edit" : "Create New");
+                    
+                    if (!string.IsNullOrEmpty(processedInstructions) && processedInstructions != "Create a variation of this image")
+                    {
+                        embed.AddField("Instructions:", processedInstructions);
+                    }
+
+                    if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
+                    {
+                        foreach (var chunk in imageResponse.revisedPrompt.SplitBy(1024))
+                        {
+                            embed.AddField("Result:", chunk);
+                        }
+                    }
+
+                    if (imageResponse.stream != null)
+                    {
+                        using Stream stream = imageResponse.stream;
+                        msg.AddFile(baseFilename, stream);
+
+                        msg.AddEmbed(embed);
+                        await ctx.RespondAsync(msg);
+                    }
+                    else
+                    {
+                        msg.AddEmbed(embed);
+                        await ctx.RespondAsync(msg);
+                    }
+                }
+                else
+                {
+                    await ctx.RespondAsync("The referenced message doesn't contain a valid image.");
+                }
+            }
+            else
+            {
+                await ctx.RespondAsync("Please reply to a message containing an image. Usage: `!dallevary <edit|create> [instructions]`");
             }
         }
     }
