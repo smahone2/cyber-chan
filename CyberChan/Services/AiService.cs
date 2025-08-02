@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DSharpPlus.Commands;
 
@@ -126,6 +127,12 @@ namespace CyberChan.Services
             return imageResponse;
         }
 
+        public async Task<ImageRepsonse> GenerateImageVariation(string imageUrl, string user)
+        {
+            var imageResponse = await GenerateImageVariationTask(imageUrl, user);
+            return imageResponse;
+        }
+
         public struct ImageRepsonse
         {
             public string url;
@@ -162,6 +169,42 @@ namespace CyberChan.Services
                     imageResponse.revisedPrompt = "Unknown Error";
                 }
                 imageResponse.revisedPrompt += $"{imageResult.Error.Code}: {imageResult.Error.Message}";
+            }
+            return imageResponse;
+        }
+
+        private async Task<ImageRepsonse> GenerateImageVariationTask(string imageUrl, string user)
+        {
+            // Download the image to bytes
+            using var response = await new HttpClient().GetAsync(imageUrl);
+            var imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+            var imageResult = await openAiService.Image.CreateImageVariation(new ImageVariationCreateRequest
+            {
+                Image = imageBytes,
+                N = 1,
+                Size = StaticValues.ImageStatics.Size.Size1024,
+                ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
+                User = user
+            });
+
+            ImageRepsonse imageResponse = new ImageRepsonse();
+
+            if (imageResult.Successful)
+            {
+                imageResponse.url = string.Join("\n", imageResult.Results.Select(r => r.Url));
+                imageResponse.revisedPrompt = "Image variation generated successfully";
+            }
+            else
+            {
+                if (imageResult.Error == null)
+                {
+                    imageResponse.revisedPrompt = "Unknown Error";
+                }
+                else
+                {
+                    imageResponse.revisedPrompt = $"{imageResult.Error.Code}: {imageResult.Error.Message}";
+                }
             }
             return imageResponse;
         }

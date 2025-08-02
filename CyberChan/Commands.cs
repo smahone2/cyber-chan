@@ -127,6 +127,12 @@ namespace CyberChan
         public abstract ValueTask GPTO1Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
+        [Command(nameof(GenerateImageVariation))]
+        [TextAlias("dallevary", "imagevary")]
+        [Description("Generate variations of an image using DALL-E. Reply to a message with image and use: !dallevary")]
+        public abstract ValueTask GenerateImageVariation(TextCommandContext ctx, [RemainingText] string extraText = "");
+
+
         //[Command("db")]
         //[Description("Just saying hello.")]
         //public async ValueTask Db(CommandContext ctx)

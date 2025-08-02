@@ -407,6 +407,11 @@ namespace CyberChan.Services
             await aiService.GPTPromptCommon(aiService.GPTO1Prompt, ctx, query);
 
         }
+
+        public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string extraText = "")
+        {
+            await imageService.GenerateImageVariationFromMessage(ctx, "dalle-variation.png");
+        }
     }
 }
 
