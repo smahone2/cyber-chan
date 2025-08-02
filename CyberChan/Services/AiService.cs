@@ -231,6 +231,31 @@ namespace CyberChan.Services
             return searchResult;
         }
 
+        public async Task<string> O4MiniPrompt(string query, string user, string seed)
+        {
+            // o4-mini might be a newer model, using o1-mini as fallback or it could be "gpt-4o-mini"
+            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-4o-mini", 3072);
+            return searchResult;
+        }
+
+        public async Task<string> GPT41NanoPrompt(string query, string user, string seed)
+        {
+            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-4.1-nano", 3072);
+            return searchResult;
+        }
+
+        public async Task<string> GPT41Prompt(string query, string user, string seed)
+        {
+            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-4.1", 3072);
+            return searchResult;
+        }
+
+        public async Task<string> O3Prompt(string query, string user, string seed)
+        {
+            var searchResult = await ChatGPTPromptTask(query, user, "o1", "o3", 3072);
+            return searchResult;
+        }
+
         private async Task<string> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
         {
 
