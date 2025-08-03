@@ -131,6 +131,26 @@ namespace CyberChan
         [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gptO1 <hackerman> test")]
         public abstract ValueTask GPTO1Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
+        [Command(nameof(O4MiniPrompt))]
+        [TextAlias("o4mini", "prompt7")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o4mini <hackerman> test")]
+        public abstract ValueTask O4MiniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(GPT41NanoPrompt))]
+        [TextAlias("gpt41nano", "prompt8")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41nano <hackerman> test")]
+        public abstract ValueTask GPT41NanoPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(GPT41Prompt))]
+        [TextAlias("gpt41", "prompt9")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41 <hackerman> test")]
+        public abstract ValueTask GPT41Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(O3Prompt))]
+        [TextAlias("o3", "prompt10")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o3 <hackerman> test")]
+        public abstract ValueTask O3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+
 
         [Command(nameof(GenerateImageVariation))]
         [TextAlias("editimage", "dallevary", "imagevary", "imagemod")]
