@@ -405,13 +405,30 @@ namespace CyberChan.Services
         }
 
         public override async ValueTask GPTO1Prompt(TextCommandContext ctx, string query = "")
-
         {
-
             await aiService.GPTPromptCommon(aiService.GPTO1Prompt, ctx, query);
-
+        }
+        
+        public override async ValueTask O4MiniPrompt(TextCommandContext ctx, string query = "")
+        {
+            await aiService.GPTPromptCommon(aiService.O4MiniPrompt, ctx, query);
         }
 
+        public override async ValueTask GPT41NanoPrompt(TextCommandContext ctx, string query = "")
+        {
+            await aiService.GPTPromptCommon(aiService.GPT41NanoPrompt, ctx, query);
+        }
+
+        public override async ValueTask GPT41Prompt(TextCommandContext ctx, string query = "")
+        {
+            await aiService.GPTPromptCommon(aiService.GPT41Prompt, ctx, query);
+        }
+
+        public override async ValueTask O3Prompt(TextCommandContext ctx, string query = "")
+        {
+            await aiService.GPTPromptCommon(aiService.O3Prompt, ctx, query);
+        }
+        
         public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string instructions = "")
         {
             await imageService.GenerateImageVariationFromMessage(ctx, instructions, "dalle-ai.png");
