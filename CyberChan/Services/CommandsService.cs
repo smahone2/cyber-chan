@@ -356,6 +356,10 @@ namespace CyberChan.Services
         {
             await imageService.GenerateImageCommon(aiService.GenerateImage2, ctx, query, "dalle3.png");
         }
+        public override async ValueTask GenerateGptImage1(TextCommandContext ctx, string query = "")
+        {
+            await imageService.GenerateImageCommon(aiService.GenerateGptImage1, ctx, query, "gptimage1.png");
+        }
 
         public override async ValueTask GPT3Prompt(TextCommandContext ctx, string query = "")
         {
@@ -401,13 +405,10 @@ namespace CyberChan.Services
         }
 
         public override async ValueTask GPTO1Prompt(TextCommandContext ctx, string query = "")
-
         {
-
             await aiService.GPTPromptCommon(aiService.GPTO1Prompt, ctx, query);
-
         }
-
+        
         public override async ValueTask O4MiniPrompt(TextCommandContext ctx, string query = "")
         {
             await aiService.GPTPromptCommon(aiService.O4MiniPrompt, ctx, query);
@@ -426,6 +427,11 @@ namespace CyberChan.Services
         public override async ValueTask O3Prompt(TextCommandContext ctx, string query = "")
         {
             await aiService.GPTPromptCommon(aiService.O3Prompt, ctx, query);
+        }
+        
+        public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string instructions = "")
+        {
+            await imageService.GenerateImageVariationFromMessage(ctx, instructions, "dalle-ai.png");
         }
     }
 }
