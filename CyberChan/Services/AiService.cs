@@ -132,7 +132,7 @@ namespace CyberChan.Services
             if (isEdit && !string.IsNullOrEmpty(instructions))
             {
                 // Use image editing API
-                var imageResponse = await EditImageTask(imageUrl, instructions, user);
+                var imageResponse = await EditImageTask(imageUrl, analysis, user);
                 imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nEdit Result: {imageResponse.revisedPrompt}";
                 return imageResponse;
             }
