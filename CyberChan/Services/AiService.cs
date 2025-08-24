@@ -282,13 +282,17 @@ namespace CyberChan.Services
 
         private async Task<string> GPT3PromptTask(string query, string user)
         {
-            var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
+            var messages = new List<ChatMessage>
             {
-                Prompt = query,
-                MaxTokens = 1000,
-                Model = GptModels.TextDavinciV3,
-                User = user
+                new(StaticValues.ChatMessageRoles.User, query)
+            };
 
+            var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
+            {
+                Messages = messages,
+                MaxTokens = 1000,
+                Model = GptModels.Gpt_3_5_Turbo,
+                User = user
             });
 
             var searchResult = "";
@@ -296,7 +300,7 @@ namespace CyberChan.Services
             {
                 if (completion.Successful)
                 {
-                    searchResult += completion.Choices.FirstOrDefault()?.Text;
+                    searchResult += completion.Choices.FirstOrDefault()?.Message.Content;
                 }
                 else
                 {
@@ -311,7 +315,7 @@ namespace CyberChan.Services
         }
         public async Task<string> GPT35Prompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_3_5_Turbo_16k, 15360);
+            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_3_5_Turbo, 4096);
             return searchResult;
         }
 
