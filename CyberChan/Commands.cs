@@ -159,7 +159,7 @@ namespace CyberChan
 
         [Command(nameof(GenerateImage15))]
         [TextAlias("image15", "img15")]
-        [Description("Generate an image with Image-1.5. Usage: !image15 <simple> test")]
+        [Description("Generate an image with GPT-Image-1.5. Usage: !image15 <simple> test")]
         public abstract ValueTask GenerateImage15(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GenerateImageVariation))]

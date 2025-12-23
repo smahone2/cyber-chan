@@ -212,7 +212,7 @@ namespace CyberChan.Services
                 Size = StaticValues.ImageStatics.Size.Size1024,
                 User = user,
                 Model = model,
-                Quality = (model == "gpt-image-1" || model == "image-1.5") ? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
+                Quality = (model == "gpt-image-1" || model == "gpt-image-1.5") ? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
                 ResponseFormat = (model == GptModels.Dall_e_2 || model == GptModels.Dall_e_3) ? StaticValues.ImageStatics.ResponseFormat.Base64 : null,
             });
 
@@ -428,7 +428,7 @@ namespace CyberChan.Services
 
         public async Task<ImageRepsonse> GenerateImage15(string query, string user, string seed)
         {
-            var imageResponse = await GenerateImageTask(query, user, seed, "image-1.5");
+            var imageResponse = await GenerateImageTask(query, user, seed, "gpt-image-1.5");
             return imageResponse;
         }
 
