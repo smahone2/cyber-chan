@@ -212,7 +212,7 @@ namespace CyberChan.Services
                 Size = StaticValues.ImageStatics.Size.Size1024,
                 User = user,
                 Model = model,
-                Quality = (model == "gpt-image-1") ? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
+                Quality = (model == "gpt-image-1" || model == "gpt-image-1.5") ? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
                 ResponseFormat = (model == GptModels.Dall_e_2 || model == GptModels.Dall_e_3) ? StaticValues.ImageStatics.ResponseFormat.Base64 : null,
             });
 
@@ -420,7 +420,19 @@ namespace CyberChan.Services
             return searchResult;
         }
 
-        private async Task<string> ChatGPTPromptTask(List<ChatMessage> messages, string user, string model, int tokens)
+        public async Task<string> GPT52Prompt(string query, string user, string seed)
+        {
+            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-5.2", 3072);
+            return searchResult;
+        }
+
+        public async Task<ImageRepsonse> GenerateImage15(string query, string user, string seed)
+        {
+            var imageResponse = await GenerateImageTask(query, user, seed, "gpt-image-1.5");
+            return imageResponse;
+        }
+
+        private async Task<string> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
         {
             var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
             {

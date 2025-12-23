@@ -151,6 +151,16 @@ namespace CyberChan
         [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o3 <hackerman> test")]
         public abstract ValueTask O3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
+        [Command(nameof(GPT52Prompt))]
+        [TextAlias("gpt52", "prompt11")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt52 <hackerman> test")]
+        public abstract ValueTask GPT52Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+
+
+        [Command(nameof(GenerateImage15))]
+        [TextAlias("image15", "img15")]
+        [Description("Generate an image with GPT-Image-1.5. Usage: !image15 <simple> test")]
+        public abstract ValueTask GenerateImage15(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GenerateImageVariation))]
         [TextAlias("editimage", "dallevary", "imagevary", "imagemod")]

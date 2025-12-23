@@ -428,6 +428,16 @@ namespace CyberChan.Services
         {
             await aiService.GPTPromptCommon(aiService.O3Prompt, ctx, query);
         }
+
+        public override async ValueTask GPT52Prompt(TextCommandContext ctx, string query = "")
+        {
+            await aiService.GPTPromptCommon(aiService.GPT52Prompt, ctx, query);
+        }
+
+        public override async ValueTask GenerateImage15(TextCommandContext ctx, string query = "")
+        {
+            await imageService.GenerateImageCommon(aiService.GenerateImage15, ctx, query, "image15.png");
+        }
         
         public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string instructions = "")
         {
