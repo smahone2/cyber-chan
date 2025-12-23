@@ -567,6 +567,11 @@ namespace CyberChan.Services
                 return ("o3", 3072, "o1");
             }
 
+            if (modelDelegate == GPT52Prompt)
+            {
+                return ("gpt-5.2", 3072, null);
+            }
+
             throw new ArgumentOutOfRangeException(nameof(modelDelegate), "Unknown model delegate provided.");
         }
 
