@@ -434,6 +434,12 @@ namespace CyberChan.Services
 
         private async Task<string> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
         {
+            var messages = ChatSeed(query, seed);
+            return await ChatGPTPromptTask(messages, user, model, tokens);
+        }
+
+        private async Task<string> ChatGPTPromptTask(List<ChatMessage> messages, string user, string model, int tokens)
+        {
             var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
             {
                 Messages = messages,
