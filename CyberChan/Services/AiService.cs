@@ -1,6 +1,7 @@
 ﻿using CyberChan.Extensions;
 using DSharpPlus;
 using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Entities;
 using Betalgo.Ranul.OpenAI;
 using Betalgo.Ranul.OpenAI.Managers;
@@ -483,7 +484,7 @@ namespace CyberChan.Services
             return string.IsNullOrWhiteSpace(cleaned) ? "chat" : cleaned;
         }
 
-        private static string BuildThreadName(CommandContext ctx, string query)
+        private static string BuildThreadName(TextCommandContext ctx, string query)
         {
             var sanitized = SanitizeThreadText(query);
             var baseName = $"{ctx.User.Username}-{sanitized}".Trim('-', ' ');
@@ -618,7 +619,7 @@ namespace CyberChan.Services
             }
         }
 
-        public async Task GPTPromptCommon(Func<string, string, string, Task<string>> modelDelegate, CommandContext ctx, string query)
+        public async Task GPTPromptCommon(Func<string, string, string, Task<string>> modelDelegate, TextCommandContext ctx, string query)
         {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
@@ -653,9 +654,34 @@ namespace CyberChan.Services
             }
             else
             {
-                var threadName = BuildThreadName(ctx, query);
-                threadChannel = await ctx.Message.CreateThreadAsync(threadName, AutoArchiveDuration.OneDay);
-                createdThread = true;
+                try
+                {
+                    var threadName = BuildThreadName(ctx, query);
+                    threadChannel = await ctx.Message.CreateThreadAsync(threadName, DiscordAutoArchiveDuration.Day);
+                    createdThread = true;
+                }
+                catch (Exception ex)
+                {
+                    await ctx.RespondAsync($"⚠️ Failed to create thread: {ex.Message}. Responding in current channel instead.");
+                    // Fallback: respond directly in channel without thread
+                    var fallbackResponse = await modelDelegate(query, ctx.User.Mention, seed);
+                    var fallbackChunks = PrepareResponseChunks(fallbackResponse);
+                    
+                    var firstChunk = true;
+                    foreach (var chunk in fallbackChunks)
+                    {
+                        if (firstChunk)
+                        {
+                            await ctx.RespondAsync($"**Cyber-chan:**\n{chunk}");
+                            firstChunk = false;
+                        }
+                        else
+                        {
+                            await ctx.Channel.SendMessageAsync(chunk);
+                        }
+                    }
+                    return;
+                }
             }
 
             var state = _threadConversations.GetOrAdd(threadChannel.Id, _ => new ConversationState());
