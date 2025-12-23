@@ -139,7 +139,9 @@ namespace CyberChan.Services
 
         private Task HandleThreadUpdatedAsync(DiscordClient sender, ThreadUpdateEventArgs e)
         {
-            if (e.ThreadAfter != null && e.ThreadAfter.ThreadMetadata.IsArchived)
+            // Only clean up if the thread was just archived (wasn't archived before, but is now)
+            if (e.ThreadBefore != null && e.ThreadAfter != null &&
+                !e.ThreadBefore.ThreadMetadata.IsArchived && e.ThreadAfter.ThreadMetadata.IsArchived)
             {
                 aiService.ClearConversation(e.ThreadAfter.Id);
             }
