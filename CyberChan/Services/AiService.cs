@@ -1,23 +1,71 @@
 ﻿using CyberChan.Extensions;
+using DSharpPlus;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Entities;
 using Betalgo.Ranul.OpenAI;
 using Betalgo.Ranul.OpenAI.Managers;
 using Betalgo.Ranul.OpenAI.ObjectModels;
-using GptModels = Betalgo.Ranul.OpenAI.ObjectModels.Models;
 using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
+using GptModels = Betalgo.Ranul.OpenAI.ObjectModels.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using DSharpPlus.Commands;
-using System.IO;
 
 namespace CyberChan.Services
 {
     internal class AiService(OpenAIService openAiService)
     {
+        private readonly ConcurrentDictionary<ulong, ConversationState> _threadConversations = new();
+
+        private sealed class ConversationState
+        {
+            public ConversationState()
+            {
+                Messages = new List<ChatMessage>();
+                Lock = new SemaphoreSlim(1, 1);
+            }
+
+            public List<ChatMessage> Messages { get; }
+            public string Seed { get; set; } = string.Empty;
+            public string Model { get; set; } = string.Empty;
+            public int TokenLimit { get; set; }
+            public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+            public SemaphoreSlim Lock { get; }
+        }
+
+        public enum ConversationResultStatus
+        {
+            Ignored,
+            Success,
+            ModerationFailed
+        }
+
+        public sealed class ConversationResult
+        {
+            private ConversationResult(ConversationResultStatus status, string? response = null)
+            {
+                Status = status;
+                Response = response;
+            }
+
+            public ConversationResultStatus Status { get; }
+
+            public string? Response { get; }
+
+            public static ConversationResult Ignored { get; } = new(ConversationResultStatus.Ignored);
+
+            public static ConversationResult ModerationFailed { get; } = new(ConversationResultStatus.ModerationFailed);
+
+            public static ConversationResult Success(string response) => new(ConversationResultStatus.Success, response);
+        }
+
         private List<ChatMessage> ChatSeed(string query, string seed)
         {
             var promptSeed = new List<ChatMessage>();
@@ -140,7 +188,7 @@ namespace CyberChan.Services
             {
                 // Use image generation API with analysis
                 var prompt = $"Based on this image analysis: {analysis}. {instructions}";
-                var imageResponse = await GenerateGptImage1(prompt, user, "");
+                var imageResponse = await GenerateImage15(prompt, user, "");
                 imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nGenerated: {imageResponse.revisedPrompt}";
                 return imageResponse;
             }
@@ -164,7 +212,7 @@ namespace CyberChan.Services
                 Size = StaticValues.ImageStatics.Size.Size1024,
                 User = user,
                 Model = model,
-                Quality = (model == "gpt-image-1") ? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
+                Quality = (model == "gpt-image-1" || model == "gpt-image-1.5") ? StaticValues.ImageStatics.ImageDetailTypes.High : StaticValues.ImageStatics.Quality.Hd,
                 ResponseFormat = (model == GptModels.Dall_e_2 || model == GptModels.Dall_e_3) ? StaticValues.ImageStatics.ResponseFormat.Base64 : null,
             });
 
@@ -243,7 +291,7 @@ namespace CyberChan.Services
                     N = 1,
                     Size = StaticValues.ImageStatics.Size.Size1024,
                     User = user,
-                    Model = "gpt-image-1",
+                    Model = "gpt-image-1.5",
                     ImageName = "edited_image.png"
                     
                 });
@@ -311,67 +359,90 @@ namespace CyberChan.Services
         }
         public async Task<string> GPT35Prompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_3_5_Turbo_16k, 15360);
+            var promptSeed = ChatSeed(query, seed);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_3_5_Turbo_16k, 15360);
             return searchResult;
         }
 
         public async Task<string> GPT4Prompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4, 7168);
+            var promptSeed = ChatSeed(query, seed);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_4, 7168);
             return searchResult;
         }
 
         public async Task<string> GPT4PreviewPrompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4_turbo_preview, 3072);
+            var promptSeed = ChatSeed(query, seed);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_4_turbo_preview, 3072);
             return searchResult;
         }
 
         public async Task<string> GPT4OmniPrompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, GptModels.Gpt_4o, 3072);
+            var promptSeed = ChatSeed(query, seed);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_4o, 3072);
             return searchResult;
         }
 
         public async Task<string> GPTO1Prompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, "o1", GptModels.O1_mini, 3072);
+            var promptSeed = ChatSeed(query, "o1");
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.O1_mini, 3072);
             return searchResult;
         }
 
         public async Task<string> O4MiniPrompt(string query, string user, string seed)
         {
-            // o4-mini might be a newer model, using o1-mini as fallback or it could be "gpt-4o-mini"
-            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-4o-mini", 3072);
+            var promptSeed = ChatSeed(query, seed);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, "gpt-4o-mini", 3072);
             return searchResult;
         }
 
         public async Task<string> GPT41NanoPrompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-4.1-nano", 3072);
+            var promptSeed = ChatSeed(query, seed);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, "gpt-4.1-nano", 3072);
             return searchResult;
         }
 
         public async Task<string> GPT41Prompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-4.1", 3072);
+            var promptSeed = ChatSeed(query, seed);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, "gpt-4.1", 3072);
             return searchResult;
         }
 
         public async Task<string> O3Prompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, "o1", "o3", 3072);
+            var promptSeed = ChatSeed(query, "o1");
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, "o3", 3072);
             return searchResult;
+        }
+
+        public async Task<string> GPT52Prompt(string query, string user, string seed)
+        {
+            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-5.2", 3072);
+            return searchResult;
+        }
+
+        public async Task<ImageRepsonse> GenerateImage15(string query, string user, string seed)
+        {
+            var imageResponse = await GenerateImageTask(query, user, seed, "gpt-image-1.5");
+            return imageResponse;
         }
 
         private async Task<string> ChatGPTPromptTask(string query, string user, string seed, string model, int tokens)
         {
+            var messages = ChatSeed(query, seed);
+            return await ChatGPTPromptTask(messages, user, model, tokens);
+        }
 
-            var promptSeed = ChatSeed(query, seed);
-
+        private async Task<string> ChatGPTPromptTask(List<ChatMessage> messages, string user, string model, int tokens)
+        {
             var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
             {
-                Messages = promptSeed,
+                Messages = messages,
                 //MaxTokens = tokens,
                 Model = model,
                 User = user
@@ -394,6 +465,114 @@ namespace CyberChan.Services
                 }
             }
             return searchResult;
+        }
+
+        private static string FormatUserMessage(string username, string content)
+        {
+            return string.IsNullOrWhiteSpace(username) ? content : $"{username}: {content}";
+        }
+
+        private static List<string> PrepareResponseChunks(string response)
+        {
+            if (string.IsNullOrWhiteSpace(response))
+            {
+                return new List<string> { "_I'm sorry, I couldn't generate a response._" };
+            }
+
+            return response.SplitBy(1900).ToList();
+        }
+
+        private static string SanitizeThreadText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return "chat";
+            }
+
+            var cleaned = new string(text.Where(c => !char.IsControl(c)).ToArray())
+                .Replace('\n', ' ')
+                .Replace('\r', ' ')
+                .Trim();
+
+            if (cleaned.Length > 40)
+            {
+                cleaned = cleaned[..40];
+            }
+
+            return string.IsNullOrWhiteSpace(cleaned) ? "chat" : cleaned;
+        }
+
+        private static string BuildThreadName(TextCommandContext ctx, string query)
+        {
+            var sanitized = SanitizeThreadText(query);
+            var baseName = $"{ctx.User.Username}-{sanitized}".Trim('-', ' ');
+
+            if (string.IsNullOrWhiteSpace(baseName))
+            {
+                baseName = $"{ctx.User.Username}-chat";
+            }
+
+            if (baseName.Length > 90)
+            {
+                baseName = baseName[..90];
+            }
+
+            return baseName;
+        }
+
+        private (string Model, int TokenLimit, string? SeedOverride) ResolveModel(Func<string, string, string, Task<string>> modelDelegate)
+        {
+            if (modelDelegate == GPT35Prompt)
+            {
+                return (GptModels.Gpt_3_5_Turbo_16k, 15360, null);
+            }
+
+            if (modelDelegate == GPT4Prompt)
+            {
+                return (GptModels.Gpt_4, 7168, null);
+            }
+
+            if (modelDelegate == GPT4PreviewPrompt)
+            {
+                return (GptModels.Gpt_4_turbo_preview, 3072, null);
+            }
+
+            if (modelDelegate == GPT4OmniPrompt)
+            {
+                return (GptModels.Gpt_4o, 3072, null);
+            }
+
+            if (modelDelegate == GPTO1Prompt)
+            {
+                return (GptModels.O1_mini, 3072, "o1");
+            }
+
+            if (modelDelegate == O4MiniPrompt)
+            {
+                return ("gpt-4o-mini", 3072, null);
+            }
+
+            if (modelDelegate == GPT41NanoPrompt)
+            {
+                return ("gpt-4.1-nano", 3072, null);
+            }
+
+            if (modelDelegate == GPT41Prompt)
+            {
+                return ("gpt-4.1", 3072, null);
+            }
+
+            if (modelDelegate == O3Prompt)
+            {
+                return ("o3", 3072, "o1");
+            }
+
+            if (modelDelegate == GPT52Prompt)
+            {
+                return ("gpt-5.2", 3072, null);
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(modelDelegate), "Unknown model delegate provided.");
         }
 
         public async Task<string> Moderation(string query)
@@ -420,12 +599,55 @@ namespace CyberChan.Services
             return searchResult;
         }
 
-        public async Task GPTPromptCommon(Func<string, string, string, Task<string>> modelDelegate, CommandContext ctx, string query)
+        public bool IsThreadConversation(ulong threadId) => _threadConversations.ContainsKey(threadId);
+
+        public void ClearConversation(ulong threadId)
+        {
+            if (_threadConversations.TryRemove(threadId, out var state))
+            {
+                state.Lock.Dispose();
+            }
+        }
+
+        public async Task<ConversationResult> ContinueThreadConversationAsync(ulong threadId, string username, string userMention, string messageContent)
+        {
+            if (!_threadConversations.TryGetValue(threadId, out var state))
+            {
+                return ConversationResult.Ignored;
+            }
+
+            await state.Lock.WaitAsync();
+            try
+            {
+                if (await Moderation(messageContent) != "Pass")
+                {
+                    return ConversationResult.ModerationFailed;
+                }
+
+                state.Messages.Add(new ChatMessage(StaticValues.ChatMessageRoles.User, FormatUserMessage(username, messageContent)));
+                var response = await ChatGPTPromptTask(state.Messages, userMention, state.Model, state.TokenLimit);
+
+                if (!string.IsNullOrWhiteSpace(response))
+                {
+                    state.Messages.Add(new ChatMessage(StaticValues.ChatMessageRoles.Assistant, response));
+                }
+
+                state.LastUpdated = DateTime.UtcNow;
+
+                return ConversationResult.Success(response);
+            }
+            finally
+            {
+                state.Lock.Release();
+            }
+        }
+
+        public async Task GPTPromptCommon(Func<string, string, string, Task<string>> modelDelegate, TextCommandContext ctx, string query)
         {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
-            var seed = "";
+            var seed = string.Empty;
 
             if (query.StartsWith("<") && query.Contains(">"))
             {
@@ -433,22 +655,159 @@ namespace CyberChan.Services
                 query = query.Split("> ")[1].Trim();
             }
 
-            if (await Moderation(query) == "Pass")
+            if (await Moderation(query) != "Pass")
             {
-                var embed = new DiscordEmbedBuilder();
-                embed.AddField("Question:", query);
-                foreach (var chunk in (await modelDelegate(query, ctx.User.Mention, seed)).SplitBy(1024))
-                {
-                    embed.AddField("Cyber-chan Says:", chunk);
-                }
+                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
+                return;
+            }
 
-                await ctx.RespondAsync(embed);
+            var modelInfo = ResolveModel(modelDelegate);
+
+            if (!string.IsNullOrWhiteSpace(modelInfo.SeedOverride))
+            {
+                seed = modelInfo.SeedOverride;
+            }
+
+            DiscordThreadChannel threadChannel;
+            bool createdThread = false;
+
+            if (ctx.Channel is DiscordThreadChannel existingThread)
+            {
+                threadChannel = existingThread;
             }
             else
             {
-                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
+                try
+                {
+                    var threadName = BuildThreadName(ctx, query);
+                    threadChannel = await ctx.Message.CreateThreadAsync(threadName, DiscordAutoArchiveDuration.Day);
+                    createdThread = true;
+                }
+                catch (Exception ex)
+                {
+                    await ctx.RespondAsync($"⚠️ Failed to create thread: {ex.Message}. Responding in current channel instead.");
+                    // Fallback: respond directly in channel without thread
+                    var fallbackResponse = await modelDelegate(query, ctx.User.Mention, seed);
+                    var fallbackChunks = PrepareResponseChunks(fallbackResponse);
+                    
+                    var firstChunk = true;
+                    foreach (var chunk in fallbackChunks)
+                    {
+                        if (firstChunk)
+                        {
+                            await ctx.RespondAsync($"**Cyber-chan:**\n{chunk}");
+                            firstChunk = false;
+                        }
+                        else
+                        {
+                            await ctx.Channel.SendMessageAsync(chunk);
+                        }
+                    }
+                    return;
+                }
             }
 
+            var state = _threadConversations.GetOrAdd(threadChannel.Id, _ => new ConversationState());
+            string response;
+
+            await state.Lock.WaitAsync();
+            try
+            {
+                if (createdThread || !string.Equals(state.Model, modelInfo.Model, StringComparison.OrdinalIgnoreCase))
+                {
+                    state.Messages.Clear();
+                }
+
+                if (!string.IsNullOrWhiteSpace(seed))
+                {
+                    if (state.Messages.Count > 0 && !string.Equals(state.Seed, seed, StringComparison.OrdinalIgnoreCase))
+                    {
+                        state.Messages.Clear();
+                    }
+
+                    state.Seed = seed;
+                }
+                else if (string.IsNullOrWhiteSpace(state.Seed))
+                {
+                    state.Seed = string.Empty;
+                }
+
+                var isFreshConversation = state.Messages.Count == 0;
+
+                if (isFreshConversation)
+                {
+                    var promptSeed = ChatSeed(query, state.Seed);
+                    if (promptSeed.Count > 0)
+                    {
+                        var lastIndex = promptSeed.Count - 1;
+                        var lastMessage = promptSeed[lastIndex];
+                        if (lastMessage.Role == StaticValues.ChatMessageRoles.User)
+                        {
+                            promptSeed[lastIndex] = new ChatMessage(lastMessage.Role, FormatUserMessage(ctx.User.Username, query));
+                        }
+                    }
+
+                    state.Messages.AddRange(promptSeed);
+                }
+                else
+                {
+                    state.Messages.Add(new ChatMessage(StaticValues.ChatMessageRoles.User, FormatUserMessage(ctx.User.Username, query)));
+                }
+
+                state.Model = modelInfo.Model;
+                state.TokenLimit = modelInfo.TokenLimit;
+
+                response = await ChatGPTPromptTask(state.Messages, ctx.User.Mention, state.Model, state.TokenLimit);
+
+                if (!string.IsNullOrWhiteSpace(response))
+                {
+                    state.Messages.Add(new ChatMessage(StaticValues.ChatMessageRoles.Assistant, response));
+                }
+
+                state.LastUpdated = DateTime.UtcNow;
+            }
+            finally
+            {
+                state.Lock.Release();
+            }
+
+            var responseChunks = PrepareResponseChunks(response);
+
+            if (createdThread)
+            {
+                await ctx.RespondAsync($"🧵 Started a chat thread: {threadChannel.Mention}. I'll reply there!");
+                await threadChannel.TriggerTypingAsync();
+
+                if (!string.IsNullOrWhiteSpace(query))
+                {
+                    await threadChannel.SendMessageAsync($"**{ctx.User.Username}** asked:\n{query}");
+                }
+
+                var firstChunk = true;
+                foreach (var chunk in responseChunks)
+                {
+                    var content = firstChunk ? $"**Cyber-chan:**\n{chunk}" : chunk;
+                    await threadChannel.SendMessageAsync(content);
+                    firstChunk = false;
+                }
+            }
+            else
+            {
+                await threadChannel.TriggerTypingAsync();
+                var firstChunk = true;
+                foreach (var chunk in responseChunks)
+                {
+                    if (firstChunk)
+                    {
+                        await ctx.RespondAsync($"**Cyber-chan:**\n{chunk}");
+                        firstChunk = false;
+                    }
+                    else
+                    {
+                        await threadChannel.SendMessageAsync(chunk);
+                    }
+                }
+            }
         }
     }
 }
