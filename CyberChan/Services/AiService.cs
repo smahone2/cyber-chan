@@ -188,7 +188,7 @@ namespace CyberChan.Services
             {
                 // Use image generation API with analysis
                 var prompt = $"Based on this image analysis: {analysis}. {instructions}";
-                var imageResponse = await GenerateGptImage1(prompt, user, "");
+                var imageResponse = await GenerateImage15(prompt, user, "");
                 imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nGenerated: {imageResponse.revisedPrompt}";
                 return imageResponse;
             }
@@ -291,7 +291,7 @@ namespace CyberChan.Services
                     N = 1,
                     Size = StaticValues.ImageStatics.Size.Size1024,
                     User = user,
-                    Model = "gpt-image-1",
+                    Model = "gpt-image-1.5",
                     ImageName = "edited_image.png"
                     
                 });
