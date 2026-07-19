@@ -78,10 +78,20 @@ namespace CyberChan
                 await message.RespondAsync("~b-baka!~");
         }
 
-        private static T GetPropertyValue<T>(object obj, string propertyName) where T : class
+        private static T? GetPropertyValue<T>(object obj, string propertyName) where T : class
         {
+            if (obj is null)
+                return null;
+
             var key = (obj.GetType(), propertyName);
-            var property = PropertyCache.GetOrAdd(key, static item => item.Type.GetProperty(item.Name, BindingFlags.Public | BindingFlags.Instance));
+
+            if (!PropertyCache.TryGetValue(key, out var property))
+            {
+                property = key.Type.GetProperty(key.Name, BindingFlags.Public | BindingFlags.Instance);
+                if (property != null)
+                    PropertyCache.TryAdd(key, property);
+            }
+
             return property?.GetValue(obj) as T;
         }
     }
