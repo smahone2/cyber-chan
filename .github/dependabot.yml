@@ -5,6 +5,12 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "test"
+    ignore:
+      - dependency-name: "Betalgo.Ranul.OpenAI"
+      - dependency-name: "DSharpPlus"
+      - dependency-name: "DSharpPlus.Commands"
+      - dependency-name: "DSharpPlus.Interactivity"
+      - dependency-name: "DSharpPlus.VoiceNext"
     groups:
       # Specify a name for the group, which will be used in pull request titles
       # and branch names
