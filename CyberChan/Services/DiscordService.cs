@@ -4,7 +4,6 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands.Processors.TextCommands.Parsing;
 using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
@@ -18,6 +17,12 @@ namespace CyberChan.Services
 {
     internal class DiscordService(IHostApplicationLifetime applicationLifetime, IServiceProvider serviceProvider, DiscordClient discordClient) : IHostedService
     {
+        private const string AuthorPropertyName = "Author";
+        private const string ChannelPropertyName = "Channel";
+        private const string MessagePropertyName = "Message";
+        private const string ThreadPropertyName = "Thread";
+        private const string ThreadBeforePropertyName = "ThreadBefore";
+        private const string ThreadAfterPropertyName = "ThreadAfter";
         private readonly AiService aiService = serviceProvider.GetRequiredService<AiService>();
 
         public async Task StartAsync(CancellationToken token)
@@ -72,14 +77,23 @@ namespace CyberChan.Services
             // More cleanup possibly here
         }
 
-        private async Task HandleThreadConversationAsync(DiscordClient sender, MessageCreateEventArgs e)
+        private async Task HandleThreadConversationAsync(DiscordClient sender, object e)
         {
-            if (e.Author.IsBot)
+            var author = ReflectionPropertyAccessor.GetPropertyValue<DiscordUser>(e, AuthorPropertyName);
+            var channel = ReflectionPropertyAccessor.GetPropertyValue<DiscordChannel>(e, ChannelPropertyName);
+            var message = ReflectionPropertyAccessor.GetPropertyValue<DiscordMessage>(e, MessagePropertyName);
+
+            if (author == null || channel == null || message == null)
             {
                 return;
             }
 
-            if (e.Channel is not DiscordThreadChannel threadChannel)
+            if (author.IsBot)
+            {
+                return;
+            }
+
+            if (channel is not DiscordThreadChannel threadChannel)
             {
                 return;
             }
@@ -89,19 +103,19 @@ namespace CyberChan.Services
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(e.Message.Content))
+            if (string.IsNullOrWhiteSpace(message.Content))
             {
                 return;
             }
 
-            if (e.Message.Content.StartsWith("!", StringComparison.OrdinalIgnoreCase))
+            if (message.Content.StartsWith("!", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
             await threadChannel.TriggerTypingAsync();
 
-            var result = await aiService.ContinueThreadConversationAsync(threadChannel.Id, e.Author.Username, e.Author.Mention, e.Message.Content);
+            var result = await aiService.ContinueThreadConversationAsync(threadChannel.Id, author.Username, author.Mention, message.Content);
 
             switch (result.Status)
             {
@@ -127,23 +141,27 @@ namespace CyberChan.Services
             }
         }
 
-        private Task HandleThreadDeletedAsync(DiscordClient sender, ThreadDeleteEventArgs e)
+        private Task HandleThreadDeletedAsync(DiscordClient sender, object e)
         {
-            if (e.Thread != null)
+            var thread = ReflectionPropertyAccessor.GetPropertyValue<DiscordThreadChannel>(e, ThreadPropertyName);
+            if (thread != null)
             {
-                aiService.ClearConversation(e.Thread.Id);
+                aiService.ClearConversation(thread.Id);
             }
 
             return Task.CompletedTask;
         }
 
-        private Task HandleThreadUpdatedAsync(DiscordClient sender, ThreadUpdateEventArgs e)
+        private Task HandleThreadUpdatedAsync(DiscordClient sender, object e)
         {
+            var threadBefore = ReflectionPropertyAccessor.GetPropertyValue<DiscordThreadChannel>(e, ThreadBeforePropertyName);
+            var threadAfter = ReflectionPropertyAccessor.GetPropertyValue<DiscordThreadChannel>(e, ThreadAfterPropertyName);
+
             // Only clean up if the thread was just archived (wasn't archived before, but is now)
-            if (e.ThreadBefore != null && e.ThreadAfter != null &&
-                !e.ThreadBefore.ThreadMetadata.IsArchived && e.ThreadAfter.ThreadMetadata.IsArchived)
+            if (threadBefore != null && threadAfter != null &&
+                !threadBefore.ThreadMetadata.IsArchived && threadAfter.ThreadMetadata.IsArchived)
             {
-                aiService.ClearConversation(e.ThreadAfter.Id);
+                aiService.ClearConversation(threadAfter.Id);
             }
 
             return Task.CompletedTask;
