@@ -2,6 +2,7 @@
 using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -60,12 +61,16 @@ namespace CyberChan
             csv.GetRecords<SteamId>();
         }
 
-        public static async Task AutoReplyToSean(DiscordClient d, dynamic e)
+        public static async Task AutoReplyToSean(DiscordClient d, object e)
         {
+            var message = e.GetType().GetProperty("Message")?.GetValue(e) as DiscordMessage;
+            if (message == null || string.IsNullOrEmpty(message.Content))
+                return;
+
             //if (e.Author.Discriminator == "3638") //XPeteX47
             //    await e.Message.RespondAsync("~b-baka!~");
-            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
-                await e.Message.RespondAsync("~b-baka!~");
+            if (message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
+                await message.RespondAsync("~b-baka!~");
         }
     }
 
