@@ -2,7 +2,6 @@
 using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
-using DSharpPlus.EventArgs;
 using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -61,7 +60,7 @@ namespace CyberChan
             csv.GetRecords<SteamId>();
         }
 
-        public static async Task AutoReplyToSean(DiscordClient d, MessageCreateEventArgs e)
+        public static async Task AutoReplyToSean(DiscordClient d, dynamic e)
         {
             //if (e.Author.Discriminator == "3638") //XPeteX47
             //    await e.Message.RespondAsync("~b-baka!~");

@@ -4,7 +4,6 @@ using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands.Processors.TextCommands.Parsing;
 using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
@@ -72,7 +71,7 @@ namespace CyberChan.Services
             // More cleanup possibly here
         }
 
-        private async Task HandleThreadConversationAsync(DiscordClient sender, MessageCreateEventArgs e)
+        private async Task HandleThreadConversationAsync(DiscordClient sender, dynamic e)
         {
             if (e.Author.IsBot)
             {
@@ -127,7 +126,7 @@ namespace CyberChan.Services
             }
         }
 
-        private Task HandleThreadDeletedAsync(DiscordClient sender, ThreadDeleteEventArgs e)
+        private Task HandleThreadDeletedAsync(DiscordClient sender, dynamic e)
         {
             if (e.Thread != null)
             {
@@ -137,7 +136,7 @@ namespace CyberChan.Services
             return Task.CompletedTask;
         }
 
-        private Task HandleThreadUpdatedAsync(DiscordClient sender, ThreadUpdateEventArgs e)
+        private Task HandleThreadUpdatedAsync(DiscordClient sender, dynamic e)
         {
             // Only clean up if the thread was just archived (wasn't archived before, but is now)
             if (e.ThreadBefore != null && e.ThreadAfter != null &&
