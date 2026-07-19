@@ -4,6 +4,15 @@ updates:
     directory: "/CyberChan"
     schedule:
       interval: "weekly"
+    target-branch: "test"
+    groups:
+      # Specify a name for the group, which will be used in pull request titles
+      # and branch names
+      nuget:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore"
