@@ -93,12 +93,10 @@ namespace CyberChan
                 .AddSingleton<TraceDotMoeService>()
                 .AddSingleton<CommandsService>()
                 .AddHostedService<DiscordService>()
-                .AddSingleton(new DiscordClient(new DiscordConfiguration
-                {
-                    TokenType = TokenType.Bot,
-                    Token = ConfigurationManager.AppSettings["DiscordToken"],
-                    Intents = DiscordIntents.All
-                }));
+                .AddSingleton(DiscordClientBuilder.CreateDefault(
+                    ConfigurationManager.AppSettings["DiscordToken"],
+                    DiscordIntents.All
+                ).Build());
         }
 
 
