@@ -10,6 +10,8 @@ using DSharpPlus.Interactivity.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Concurrent;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +19,7 @@ namespace CyberChan.Services
 {
     internal class DiscordService(IHostApplicationLifetime applicationLifetime, IServiceProvider serviceProvider, DiscordClient discordClient) : IHostedService
     {
+        private static readonly ConcurrentDictionary<(Type Type, string Name), PropertyInfo> PropertyCache = new();
         private readonly AiService aiService = serviceProvider.GetRequiredService<AiService>();
 
         public async Task StartAsync(CancellationToken token)
@@ -73,9 +76,9 @@ namespace CyberChan.Services
 
         private async Task HandleThreadConversationAsync(DiscordClient sender, object e)
         {
-            var author = e.GetType().GetProperty("Author")?.GetValue(e) as DiscordUser;
-            var channel = e.GetType().GetProperty("Channel")?.GetValue(e) as DiscordChannel;
-            var message = e.GetType().GetProperty("Message")?.GetValue(e) as DiscordMessage;
+            var author = GetPropertyValue<DiscordUser>(e, "Author");
+            var channel = GetPropertyValue<DiscordChannel>(e, "Channel");
+            var message = GetPropertyValue<DiscordMessage>(e, "Message");
 
             if (author == null || channel == null || message == null)
             {
@@ -137,7 +140,7 @@ namespace CyberChan.Services
 
         private Task HandleThreadDeletedAsync(DiscordClient sender, object e)
         {
-            var thread = e.GetType().GetProperty("Thread")?.GetValue(e) as DiscordThreadChannel;
+            var thread = GetPropertyValue<DiscordThreadChannel>(e, "Thread");
             if (thread != null)
             {
                 aiService.ClearConversation(thread.Id);
@@ -148,8 +151,8 @@ namespace CyberChan.Services
 
         private Task HandleThreadUpdatedAsync(DiscordClient sender, object e)
         {
-            var threadBefore = e.GetType().GetProperty("ThreadBefore")?.GetValue(e) as DiscordThreadChannel;
-            var threadAfter = e.GetType().GetProperty("ThreadAfter")?.GetValue(e) as DiscordThreadChannel;
+            var threadBefore = GetPropertyValue<DiscordThreadChannel>(e, "ThreadBefore");
+            var threadAfter = GetPropertyValue<DiscordThreadChannel>(e, "ThreadAfter");
 
             // Only clean up if the thread was just archived (wasn't archived before, but is now)
             if (threadBefore != null && threadAfter != null &&
@@ -159,6 +162,13 @@ namespace CyberChan.Services
             }
 
             return Task.CompletedTask;
+        }
+
+        private static T GetPropertyValue<T>(object obj, string propertyName) where T : class
+        {
+            var key = (obj.GetType(), propertyName);
+            var property = PropertyCache.GetOrAdd(key, static item => item.Type.GetProperty(item.Name));
+            return property?.GetValue(obj) as T;
         }
     }
 }
