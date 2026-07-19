@@ -13,6 +13,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "DSharpPlus"
+      - dependency-name: "DSharpPlus.Commands"
+      - dependency-name: "DSharpPlus.Interactivity"
+      - dependency-name: "DSharpPlus.VoiceNext"
+      - dependency-name: "Betalgo.Ranul.OpenAI"
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore"
