@@ -748,7 +748,7 @@ namespace CyberChan.Services
                         var lastMessage = promptSeed[lastIndex];
                         if (lastMessage.Role == ChatCompletionRole.User)
                         {
-                            promptSeed[lastIndex] = new ChatMessage(lastMessage.Role ?? ChatCompletionRole.User, FormatUserMessage(ctx.User.Username, query));
+                            promptSeed[lastIndex] = new ChatMessage(lastMessage.Role.Value, FormatUserMessage(ctx.User.Username, query));
                         }
                     }
 
