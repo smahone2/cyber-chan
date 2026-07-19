@@ -23,6 +23,7 @@ namespace CyberChan
 {
     class Program
     {
+        private const string MessagePropertyName = "Message";
         private static readonly ConcurrentDictionary<(Type Type, string Name), PropertyInfo> PropertyCache = new();
 
         static async Task Main(string[] args)
@@ -67,7 +68,7 @@ namespace CyberChan
 
         public static async Task AutoReplyToSean(DiscordClient d, object e)
         {
-            var message = GetPropertyValue<DiscordMessage>(e, "Message");
+            var message = GetPropertyValue<DiscordMessage>(e, MessagePropertyName);
             if (message == null || string.IsNullOrEmpty(message.Content))
                 return;
 
@@ -80,7 +81,7 @@ namespace CyberChan
         private static T GetPropertyValue<T>(object obj, string propertyName) where T : class
         {
             var key = (obj.GetType(), propertyName);
-            var property = PropertyCache.GetOrAdd(key, static item => item.Type.GetProperty(item.Name));
+            var property = PropertyCache.GetOrAdd(key, static item => item.Type.GetProperty(item.Name, BindingFlags.Public | BindingFlags.Instance));
             return property?.GetValue(obj) as T;
         }
     }

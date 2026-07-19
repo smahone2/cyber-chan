@@ -19,6 +19,12 @@ namespace CyberChan.Services
 {
     internal class DiscordService(IHostApplicationLifetime applicationLifetime, IServiceProvider serviceProvider, DiscordClient discordClient) : IHostedService
     {
+        private const string AuthorPropertyName = "Author";
+        private const string ChannelPropertyName = "Channel";
+        private const string MessagePropertyName = "Message";
+        private const string ThreadPropertyName = "Thread";
+        private const string ThreadBeforePropertyName = "ThreadBefore";
+        private const string ThreadAfterPropertyName = "ThreadAfter";
         private static readonly ConcurrentDictionary<(Type Type, string Name), PropertyInfo> PropertyCache = new();
         private readonly AiService aiService = serviceProvider.GetRequiredService<AiService>();
 
@@ -76,9 +82,9 @@ namespace CyberChan.Services
 
         private async Task HandleThreadConversationAsync(DiscordClient sender, object e)
         {
-            var author = GetPropertyValue<DiscordUser>(e, "Author");
-            var channel = GetPropertyValue<DiscordChannel>(e, "Channel");
-            var message = GetPropertyValue<DiscordMessage>(e, "Message");
+            var author = GetPropertyValue<DiscordUser>(e, AuthorPropertyName);
+            var channel = GetPropertyValue<DiscordChannel>(e, ChannelPropertyName);
+            var message = GetPropertyValue<DiscordMessage>(e, MessagePropertyName);
 
             if (author == null || channel == null || message == null)
             {
@@ -140,7 +146,7 @@ namespace CyberChan.Services
 
         private Task HandleThreadDeletedAsync(DiscordClient sender, object e)
         {
-            var thread = GetPropertyValue<DiscordThreadChannel>(e, "Thread");
+            var thread = GetPropertyValue<DiscordThreadChannel>(e, ThreadPropertyName);
             if (thread != null)
             {
                 aiService.ClearConversation(thread.Id);
@@ -151,8 +157,8 @@ namespace CyberChan.Services
 
         private Task HandleThreadUpdatedAsync(DiscordClient sender, object e)
         {
-            var threadBefore = GetPropertyValue<DiscordThreadChannel>(e, "ThreadBefore");
-            var threadAfter = GetPropertyValue<DiscordThreadChannel>(e, "ThreadAfter");
+            var threadBefore = GetPropertyValue<DiscordThreadChannel>(e, ThreadBeforePropertyName);
+            var threadAfter = GetPropertyValue<DiscordThreadChannel>(e, ThreadAfterPropertyName);
 
             // Only clean up if the thread was just archived (wasn't archived before, but is now)
             if (threadBefore != null && threadAfter != null &&
@@ -167,7 +173,7 @@ namespace CyberChan.Services
         private static T GetPropertyValue<T>(object obj, string propertyName) where T : class
         {
             var key = (obj.GetType(), propertyName);
-            var property = PropertyCache.GetOrAdd(key, static item => item.Type.GetProperty(item.Name));
+            var property = PropertyCache.GetOrAdd(key, static item => item.Type.GetProperty(item.Name, BindingFlags.Public | BindingFlags.Instance));
             return property?.GetValue(obj) as T;
         }
     }
