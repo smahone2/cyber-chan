@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using CyberChan.Extensions;
 using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
@@ -65,7 +66,7 @@ namespace CyberChan
 
         public static async Task AutoReplyToSean(DiscordClient d, object e)
         {
-            var message = Extensions.ReflectionPropertyAccessor.GetPropertyValue<DiscordMessage>(e, MessagePropertyName);
+            var message = ReflectionPropertyAccessor.GetPropertyValue<DiscordMessage>(e, MessagePropertyName);
             if (message == null || string.IsNullOrEmpty(message.Content))
                 return;
 
