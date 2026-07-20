@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CyberChan.Services
 {
-    internal class DiscordService(IHostApplicationLifetime applicationLifetime, DiscordClient discordClient) : IHostedService
+    internal class DiscordService(DiscordClient discordClient) : IHostedService
     {
         public async Task StartAsync(CancellationToken token)
         {
