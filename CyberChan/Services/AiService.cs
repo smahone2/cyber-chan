@@ -29,6 +29,30 @@ namespace CyberChan.Services
     internal class AiService(OpenAIService openAiService)
     {
         private readonly ConcurrentDictionary<ulong, ConversationState> _threadConversations = new();
+        private readonly string _gpt3PromptModel = GetConfiguredModel("OpenAIModelGPT3Prompt", "gpt-4.1-mini");
+        private readonly string _chatGptPromptModel = GetConfiguredModel("OpenAIModelChatPrompt", "gpt-4.1-mini");
+        private readonly string _gpt4PromptModel = GetConfiguredModel("OpenAIModelGPT4Prompt", "gpt-4.1");
+        private readonly string _gpt4PreviewPromptModel = GetConfiguredModel("OpenAIModelGPT4PreviewPrompt", "gpt-4.1-mini");
+        private readonly string _gpt4OmniPromptModel = GetConfiguredModel("OpenAIModelGPT4OmniPrompt", "gpt-4o-mini");
+        private readonly string _gptO1PromptModel = GetConfiguredModel("OpenAIModelGPTO1Prompt", GptModels.O1_mini);
+        private readonly string _o4MiniPromptModel = GetConfiguredModel("OpenAIModelO4MiniPrompt", "gpt-4o-mini");
+        private readonly string _gpt41NanoPromptModel = GetConfiguredModel("OpenAIModelGPT41NanoPrompt", "gpt-4.1-mini");
+        private readonly string _gpt41PromptModel = GetConfiguredModel("OpenAIModelGPT41Prompt", "gpt-4.1");
+        private readonly string _o3PromptModel = GetConfiguredModel("OpenAIModelO3Prompt", "o3");
+        private readonly string _gpt52PromptModel = GetConfiguredModel("OpenAIModelGPT52Prompt", "gpt-5.2");
+        private readonly string _visionModel = GetConfiguredModel("OpenAIModelVisionPrompt", "gpt-4o-mini");
+        private readonly string _imageGenerationModel = GetConfiguredModel("OpenAIModelImageGeneration", "gpt-image-1");
+        private readonly string _imageEditModel = GetConfiguredModel("OpenAIModelImageEdit", "gpt-image-1.5");
+
+        private static readonly IReadOnlyDictionary<string, string> DeprecatedModelMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["text-davinci-003"] = "gpt-4.1-mini",
+            ["gpt-3.5-turbo"] = "gpt-4.1-mini",
+            ["gpt-3.5-turbo-16k"] = "gpt-4.1-mini",
+            ["gpt-4"] = "gpt-4.1",
+            ["gpt-4-turbo-preview"] = "gpt-4.1-mini",
+            ["gpt-4o"] = "gpt-4o-mini"
+        };
 
         private sealed class ConversationState
         {
@@ -44,6 +68,15 @@ namespace CyberChan.Services
             public int TokenLimit { get; set; }
             public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
             public SemaphoreSlim Lock { get; }
+        }
+
+        private static string GetConfiguredModel(string appSettingKey, string defaultModel)
+        {
+            var configuredValue = ConfigurationManager.AppSettings[appSettingKey];
+            var selectedModel = string.IsNullOrWhiteSpace(configuredValue) ? defaultModel : configuredValue.Trim();
+            return DeprecatedModelMap.TryGetValue(selectedModel, out var upgradedModel)
+                ? upgradedModel
+                : selectedModel;
         }
 
         public enum ConversationResultStatus
@@ -174,7 +207,7 @@ namespace CyberChan.Services
         }
         public async Task<ImageRepsonse> GenerateGptImage1(string query, string user, string seed)
         {
-            var imageResponse = await GenerateImageTask(query, user, seed, "gpt-image-1");
+            var imageResponse = await GenerateImageTask(query, user, seed, _imageGenerationModel);
             return imageResponse;
         }
 
@@ -262,7 +295,7 @@ namespace CyberChan.Services
                 var completionResult = await openAiService.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest()
                 {
                     Messages = messages,
-                    Model = GptModels.Gpt_4o,
+                    Model = _visionModel,
                     User = user
 
                 });
@@ -297,7 +330,7 @@ namespace CyberChan.Services
                     N = 1,
                     Size = ImageSize.Size1024,
                     User = user,
-                    Model = new ImageModel("gpt-image-1.5"),
+                    Model = new ImageModel(_imageEditModel),
                     
                 });
 
@@ -335,13 +368,16 @@ namespace CyberChan.Services
 
         private async Task<string> GPT3PromptTask(string query, string user)
         {
-            var completionResult = openAiService.Completions.CreateCompletionAsStream(new CompletionCreateRequest()
+            var messages = new List<ChatMessage>
             {
-                Prompt = query,
-                MaxTokens = 1000,
-                Model = GptModels.TextDavinciV3,
-                User = user
+                new(ChatCompletionRole.User, query)
+            };
 
+            var completionResult = openAiService.ChatCompletion.CreateCompletionAsStream(new ChatCompletionCreateRequest()
+            {
+                Messages = messages,
+                Model = _gpt3PromptModel,
+                User = user
             });
 
             var searchResult = "";
@@ -349,7 +385,7 @@ namespace CyberChan.Services
             {
                 if (completion.Successful)
                 {
-                    searchResult += completion.Choices.FirstOrDefault()?.Text;
+                    searchResult += completion.Choices.FirstOrDefault()?.Message.Content;
                 }
                 else
                 {
@@ -365,75 +401,75 @@ namespace CyberChan.Services
         public async Task<string> GPT35Prompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, seed);
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_3_5_Turbo_16k, 15360);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _chatGptPromptModel, 15360);
             return searchResult;
         }
 
         public async Task<string> GPT4Prompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, seed);
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_4, 7168);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _gpt4PromptModel, 7168);
             return searchResult;
         }
 
         public async Task<string> GPT4PreviewPrompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, seed);
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_4_turbo_preview, 3072);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _gpt4PreviewPromptModel, 3072);
             return searchResult;
         }
 
         public async Task<string> GPT4OmniPrompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, seed);
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.Gpt_4o, 3072);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _gpt4OmniPromptModel, 3072);
             return searchResult;
         }
 
         public async Task<string> GPTO1Prompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, "o1");
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, GptModels.O1_mini, 3072);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _gptO1PromptModel, 3072);
             return searchResult;
         }
 
         public async Task<string> O4MiniPrompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, seed);
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, "gpt-4o-mini", 3072);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _o4MiniPromptModel, 3072);
             return searchResult;
         }
 
         public async Task<string> GPT41NanoPrompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, seed);
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, "gpt-4.1-nano", 3072);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _gpt41NanoPromptModel, 3072);
             return searchResult;
         }
 
         public async Task<string> GPT41Prompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, seed);
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, "gpt-4.1", 3072);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _gpt41PromptModel, 3072);
             return searchResult;
         }
 
         public async Task<string> O3Prompt(string query, string user, string seed)
         {
             var promptSeed = ChatSeed(query, "o1");
-            var searchResult = await ChatGPTPromptTask(promptSeed, user, "o3", 3072);
+            var searchResult = await ChatGPTPromptTask(promptSeed, user, _o3PromptModel, 3072);
             return searchResult;
         }
 
         public async Task<string> GPT52Prompt(string query, string user, string seed)
         {
-            var searchResult = await ChatGPTPromptTask(query, user, seed, "gpt-5.2", 3072);
+            var searchResult = await ChatGPTPromptTask(query, user, seed, _gpt52PromptModel, 3072);
             return searchResult;
         }
 
         public async Task<ImageRepsonse> GenerateImage15(string query, string user, string seed)
         {
-            var imageResponse = await GenerateImageTask(query, user, seed, "gpt-image-1.5");
+            var imageResponse = await GenerateImageTask(query, user, seed, _imageEditModel);
             return imageResponse;
         }
 
@@ -529,52 +565,52 @@ namespace CyberChan.Services
         {
             if (modelDelegate == GPT35Prompt)
             {
-                return (GptModels.Gpt_3_5_Turbo_16k, 15360, null);
+                return (_chatGptPromptModel, 15360, null);
             }
 
             if (modelDelegate == GPT4Prompt)
             {
-                return (GptModels.Gpt_4, 7168, null);
+                return (_gpt4PromptModel, 7168, null);
             }
 
             if (modelDelegate == GPT4PreviewPrompt)
             {
-                return (GptModels.Gpt_4_turbo_preview, 3072, null);
+                return (_gpt4PreviewPromptModel, 3072, null);
             }
 
             if (modelDelegate == GPT4OmniPrompt)
             {
-                return (GptModels.Gpt_4o, 3072, null);
+                return (_gpt4OmniPromptModel, 3072, null);
             }
 
             if (modelDelegate == GPTO1Prompt)
             {
-                return (GptModels.O1_mini, 3072, "o1");
+                return (_gptO1PromptModel, 3072, "o1");
             }
 
             if (modelDelegate == O4MiniPrompt)
             {
-                return ("gpt-4o-mini", 3072, null);
+                return (_o4MiniPromptModel, 3072, null);
             }
 
             if (modelDelegate == GPT41NanoPrompt)
             {
-                return ("gpt-4.1-nano", 3072, null);
+                return (_gpt41NanoPromptModel, 3072, null);
             }
 
             if (modelDelegate == GPT41Prompt)
             {
-                return ("gpt-4.1", 3072, null);
+                return (_gpt41PromptModel, 3072, null);
             }
 
             if (modelDelegate == O3Prompt)
             {
-                return ("o3", 3072, "o1");
+                return (_o3PromptModel, 3072, "o1");
             }
 
             if (modelDelegate == GPT52Prompt)
             {
-                return ("gpt-5.2", 3072, null);
+                return (_gpt52PromptModel, 3072, null);
             }
 
             throw new ArgumentOutOfRangeException(nameof(modelDelegate), "Unknown model delegate provided.");
