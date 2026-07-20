@@ -16,9 +16,15 @@ namespace CyberChan.Services
         public async Task HandleEventAsync(DiscordClient sender, MessageCreatedEventArgs eventArgs)
         {
             // Auto-reply logic
-            if (!string.IsNullOrEmpty(eventArgs.Message?.Content) &&
-                eventArgs.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
+            if (eventArgs.Author is { IsBot: false }
+                && !string.IsNullOrEmpty(eventArgs.Message?.Content)
+                && eventArgs.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
             {
+                logger.LogDebug(
+                    "Auto-reply triggered for message {MessageId} in channel {ChannelId}",
+                    eventArgs.Message.Id,
+                    eventArgs.Channel?.Id);
+
                 await eventArgs.Message.RespondAsync("~b-baka!~");
             }
 
