@@ -27,21 +27,29 @@ Dependencies are automatically updated weekly via Dependabot.
 
 ### OpenAI model configuration
 
-Chat and auxiliary model selection is configurable through `appSettings` values (for example in `CyberChan.dll.config`):
+Model selection is configurable through `appSettings` values (for example in `CyberChan.dll.config`).
 
-- `OpenAIModelGPT3Prompt` (default: `gpt-4.1-mini`)
-- `OpenAIModelChatPrompt` (default: `gpt-4.1-mini`)
-- `OpenAIModelGPT4Prompt` (default: `gpt-4.1`)
-- `OpenAIModelGPT4PreviewPrompt` (default: `gpt-4.1-mini`)
-- `OpenAIModelGPT4OmniPrompt` (default: `gpt-4o-mini`)
-- `OpenAIModelGPTO1Prompt` (default: `o1-mini`)
-- `OpenAIModelO4MiniPrompt` (default: `gpt-4o-mini`)
-- `OpenAIModelGPT41NanoPrompt` (default: `gpt-4.1-mini`)
-- `OpenAIModelGPT41Prompt` (default: `gpt-4.1`)
-- `OpenAIModelO3Prompt` (default: `o3`)
-- `OpenAIModelGPT52Prompt` (default: `gpt-5.2`)
-- `OpenAIModelVisionPrompt` (default: `gpt-4o-mini`)
-- `OpenAIModelImageGeneration` (default: `gpt-image-1`)
+#### Chat and reasoning use-cases
+
+- **General chat**
+  - `OpenAIModelGPT3Prompt` (default: `gpt-5.2`)
+  - `OpenAIModelChatPrompt` (default: `gpt-5.2`)
+  - `OpenAIModelGPT4PreviewPrompt` (default: `gpt-5.2`)
+  - `OpenAIModelGPT41NanoPrompt` (default: `gpt-5.2`)
+- **High-context / quality chat**
+  - `OpenAIModelGPT4Prompt` (default: `gpt-5.2`)
+  - `OpenAIModelGPT41Prompt` (default: `gpt-5.2`)
+  - `OpenAIModelGPT52Prompt` (default: `gpt-5.2`)
+- **Multimodal and reasoning**
+  - `OpenAIModelGPT4OmniPrompt` (default: `gpt-5.2`)
+  - `OpenAIModelO4MiniPrompt` (default: `gpt-5.2`)
+  - `OpenAIModelGPTO1Prompt` (default: `o3`)
+  - `OpenAIModelO3Prompt` (default: `o3`)
+
+#### Vision and image use-cases
+
+- `OpenAIModelVisionPrompt` (default: `gpt-4o`)
+- `OpenAIModelImageGeneration` (default: `gpt-image-1.5`)
 - `OpenAIModelImageEdit` (default: `gpt-image-1.5`)
 
-Deprecated values such as `text-davinci-003`, `gpt-3.5-turbo-16k`, `gpt-4`, and `gpt-4-turbo-preview` are automatically mapped to supported models.
+Deprecated values such as `text-davinci-003`, `gpt-3.5-turbo`, `gpt-3.5-turbo-16k`, `gpt-4`, `gpt-4-turbo-preview`, and `gpt-4o-mini` are automatically mapped to supported models.
