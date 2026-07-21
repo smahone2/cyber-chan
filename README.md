@@ -51,5 +51,5 @@ Model selection is configurable through `appSettings` values (for example in `Cy
 #### Vision and image use-cases
 
 - `OpenAIModelVision` (default: `gpt-4o`)
-- `OpenAIModelImageGeneration` (default: `gpt-image-1`)
+- `OpenAIModelImageGeneration` (default: `gpt-image-1-mini`)
 - `OpenAIModelImageEdit` (default: `gpt-image-1`)

@@ -41,7 +41,7 @@ namespace CyberChan.Services
         private readonly string _reasoningPromptModel = ResolveConfiguredModel("OpenAIModelReasoningPrompt", "o3-2025-04-16");
         private readonly string _deepReasoningPromptModel = ResolveConfiguredModel("OpenAIModelDeepReasoningPrompt", "o3-2025-04-16");
         private readonly string _visionModel = ResolveConfiguredModel("OpenAIModelVision", "gpt-4o");
-        private readonly string _imageGenerationModel = ResolveConfiguredModel("OpenAIModelImageGeneration", "gpt-image-1");
+        private readonly string _imageGenerationModel = ResolveConfiguredModel("OpenAIModelImageGeneration", "gpt-image-1-mini");
         private readonly string _imageEditModel = ResolveConfiguredModel("OpenAIModelImageEdit", "gpt-image-1");
 
         private sealed class ConversationState
@@ -238,7 +238,7 @@ namespace CyberChan.Services
                 Size = ImageSize.Size1024,
                 User = user,
                 Model = new ImageModel(model),
-                Quality = (model == "gpt-image-1" || model == "gpt-image-1.5") ? ImageQuality.High : ImageQuality.Hd,
+                Quality = (model == "gpt-image-1" || model == "gpt-image-1-mini" || model == "gpt-image-1.5") ? ImageQuality.High : ImageQuality.Hd,
                 ResponseFormat = (model == GptModels.Dall_e_2 || model == GptModels.Dall_e_3) ? (ImageResponseFormat?)ImageResponseFormat.Base64 : null,
             });
 
