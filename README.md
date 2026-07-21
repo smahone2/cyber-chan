@@ -31,25 +31,25 @@ Model selection is configurable through `appSettings` values (for example in `Cy
 
 #### Chat and reasoning use-cases
 
+- **Simple / fast chat** (no seed support)
+  - `OpenAIModelSimplePrompt` (default: `gpt-4.1-mini`)
 - **General chat**
-  - `OpenAIModelGPT3Prompt` (default: `gpt-5.2`)
-  - `OpenAIModelChatPrompt` (default: `gpt-5.2`)
-  - `OpenAIModelGPT4PreviewPrompt` (default: `gpt-5.2`)
-  - `OpenAIModelGPT41NanoPrompt` (default: `gpt-5.2`)
+  - `OpenAIModelFastPrompt` (default: `gpt-4.1-mini`)
+  - `OpenAIModelBalancedPrompt` (default: `gpt-4.1`)
+  - `OpenAIModelNanoPrompt` (default: `gpt-4.1-nano`)
 - **High-context / quality chat**
-  - `OpenAIModelGPT4Prompt` (default: `gpt-5.2`)
-  - `OpenAIModelGPT41Prompt` (default: `gpt-5.2`)
-  - `OpenAIModelGPT52Prompt` (default: `gpt-5.2`)
-- **Multimodal and reasoning**
-  - `OpenAIModelGPT4OmniPrompt` (default: `gpt-5.2`)
-  - `OpenAIModelO4MiniPrompt` (default: `gpt-5.2`)
-  - `OpenAIModelGPTO1Prompt` (default: `o3`)
-  - `OpenAIModelO3Prompt` (default: `o3`)
+  - `OpenAIModelDeepContextPrompt` (default: `gpt-4.1`)
+  - `OpenAIModelHighQualityPrompt` (default: `gpt-4.1`)
+  - `OpenAIModelFrontierPrompt` (default: `gpt-4.5`)
+- **Multimodal**
+  - `OpenAIModelMultimodalPrompt` (default: `gpt-4o`)
+- **Reasoning**
+  - `OpenAIModelFastReasoningPrompt` (default: `o4-mini`)
+  - `OpenAIModelReasoningPrompt` (default: `o3`)
+  - `OpenAIModelDeepReasoningPrompt` (default: `o3`)
 
 #### Vision and image use-cases
 
-- `OpenAIModelVisionPrompt` (default: `gpt-4o`)
-- `OpenAIModelImageGeneration` (default: `gpt-image-1.5`)
-- `OpenAIModelImageEdit` (default: `gpt-image-1.5`)
-
-Deprecated values such as `text-davinci-003`, `gpt-3.5-turbo`, `gpt-3.5-turbo-16k`, `gpt-4`, `gpt-4-turbo-preview`, and `gpt-4o-mini` are automatically mapped to supported models.
+- `OpenAIModelVision` (default: `gpt-4o`)
+- `OpenAIModelImageGeneration` (default: `gpt-image-1`)
+- `OpenAIModelImageEdit` (default: `gpt-image-1`)

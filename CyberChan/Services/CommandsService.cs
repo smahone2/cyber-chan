@@ -361,7 +361,7 @@ namespace CyberChan.Services
             await imageService.GenerateImageCommon(aiService.GenerateGptImage1, ctx, query, "gptimage1.png");
         }
 
-        public override async ValueTask GPT3Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask SimplePrompt(TextCommandContext ctx, string query = "")
         {
             await ctx.Channel.TriggerTypingAsync();
 
@@ -370,7 +370,7 @@ namespace CyberChan.Services
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Question:", query);
 
-                foreach (var chunk in (await aiService.GPT3Prompt(query, ctx.User.Mention)).SplitBy(1024))
+                foreach (var chunk in (await aiService.SimplePrompt(query, ctx.User.Mention)).SplitBy(1024))
                 {
                     embed.AddField("Cyber-chan Says:", chunk);
                 }
@@ -384,59 +384,59 @@ namespace CyberChan.Services
 
         }
 
-        public override async ValueTask ChatGptPrompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask FastPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPT35Prompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.FastPrompt, ctx, query);
         }
 
-        public override async ValueTask GPT4Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask DeepContextPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPT4Prompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.DeepContextPrompt, ctx, query);
         }
 
-        public override async ValueTask GPT4PreviewPrompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask BalancedPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPT4PreviewPrompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.BalancedPrompt, ctx, query);
         }
 
-        public override async ValueTask GPT4OmniPrompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask MultimodalPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPT4OmniPrompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.MultimodalPrompt, ctx, query);
         }
 
-        public override async ValueTask GPTO1Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask ReasoningPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPTO1Prompt, ctx, query);
-        }
-        
-        public override async ValueTask O4MiniPrompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.O4MiniPrompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.ReasoningPrompt, ctx, query);
         }
 
-        public override async ValueTask GPT41NanoPrompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask FastReasoningPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPT41NanoPrompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.FastReasoningPrompt, ctx, query);
         }
 
-        public override async ValueTask GPT41Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask NanoPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPT41Prompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.NanoPrompt, ctx, query);
         }
 
-        public override async ValueTask O3Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask HighQualityPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.O3Prompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.HighQualityPrompt, ctx, query);
         }
 
-        public override async ValueTask GPT52Prompt(TextCommandContext ctx, string query = "")
+        public override async ValueTask DeepReasoningPrompt(TextCommandContext ctx, string query = "")
         {
-            await aiService.GPTPromptCommon(aiService.GPT52Prompt, ctx, query);
+            await aiService.GPTPromptCommon(aiService.DeepReasoningPrompt, ctx, query);
         }
 
-        public override async ValueTask GenerateImage15(TextCommandContext ctx, string query = "")
+        public override async ValueTask FrontierPrompt(TextCommandContext ctx, string query = "")
         {
-            await imageService.GenerateImageCommon(aiService.GenerateImage15, ctx, query, "image15.png");
+            await aiService.GPTPromptCommon(aiService.FrontierPrompt, ctx, query);
+        }
+
+        public override async ValueTask GenerateEditedImage(TextCommandContext ctx, string query = "")
+        {
+            await imageService.GenerateImageCommon(aiService.GenerateEditedImage, ctx, query, "editedimage.png");
         }
         
         public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string instructions = "")

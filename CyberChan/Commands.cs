@@ -98,69 +98,69 @@ namespace CyberChan
         public abstract ValueTask GenerateGptImage1(TextCommandContext ctx, [RemainingText] string query = "");
 
 
-        [Command(nameof(GPT3Prompt))]
-        [TextAlias("gpt3", "prompt")]
-        [Description("Generate text with GPT3. Usage: !gpt3 test")]
-        public abstract ValueTask GPT3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(SimplePrompt))]
+        [TextAlias("gpt3", "prompt", "simple")]
+        [Description("Generate text with a simple prompt. Usage: !simple test")]
+        public abstract ValueTask SimplePrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
-        [Command(nameof(ChatGptPrompt))]
-        [TextAlias("chatgpt", "prompt2")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
-        public abstract ValueTask ChatGptPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(FastPrompt))]
+        [TextAlias("chatgpt", "prompt2", "fast")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !fast <hackerman> test")]
+        public abstract ValueTask FastPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
-        [Command(nameof(GPT4Prompt))]
-        [TextAlias("gpt4", "prompt3")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public abstract ValueTask GPT4Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(DeepContextPrompt))]
+        [TextAlias("gpt4", "prompt3", "deepcontext")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !deepcontext <hackerman> test")]
+        public abstract ValueTask DeepContextPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
-        [Command(nameof(GPT4PreviewPrompt))]
-        [TextAlias("gpt4p", "prompt4", "gpt4preview")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public abstract ValueTask GPT4PreviewPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(BalancedPrompt))]
+        [TextAlias("gpt4p", "prompt4", "balanced")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !balanced <hackerman> test")]
+        public abstract ValueTask BalancedPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
-        [Command(nameof(GPT4OmniPrompt))]
-        [TextAlias("gpt4o", "prompt5", "gpt4omni")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public abstract ValueTask GPT4OmniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(MultimodalPrompt))]
+        [TextAlias("gpt4o", "prompt5", "multimodal")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !multimodal <hackerman> test")]
+        public abstract ValueTask MultimodalPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
-        [Command(nameof(GPTO1Prompt))]
-        [TextAlias("gpto1", "prompt6")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gptO1 <hackerman> test")]
-        public abstract ValueTask GPTO1Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(ReasoningPrompt))]
+        [TextAlias("gpto1", "prompt6", "reasoning")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !reasoning <hackerman> test")]
+        public abstract ValueTask ReasoningPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
-        [Command(nameof(O4MiniPrompt))]
-        [TextAlias("o4mini", "prompt7")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o4mini <hackerman> test")]
-        public abstract ValueTask O4MiniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(FastReasoningPrompt))]
+        [TextAlias("o4mini", "prompt7", "fastreasoning")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !fastreasoning <hackerman> test")]
+        public abstract ValueTask FastReasoningPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
-        [Command(nameof(GPT41NanoPrompt))]
-        [TextAlias("gpt41nano", "prompt8")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41nano <hackerman> test")]
-        public abstract ValueTask GPT41NanoPrompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(NanoPrompt))]
+        [TextAlias("gpt41nano", "prompt8", "nano")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !nano <hackerman> test")]
+        public abstract ValueTask NanoPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
-        [Command(nameof(GPT41Prompt))]
-        [TextAlias("gpt41", "prompt9")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41 <hackerman> test")]
-        public abstract ValueTask GPT41Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(HighQualityPrompt))]
+        [TextAlias("gpt41", "prompt9", "highquality")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !highquality <hackerman> test")]
+        public abstract ValueTask HighQualityPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
-        [Command(nameof(O3Prompt))]
-        [TextAlias("o3", "prompt10")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o3 <hackerman> test")]
-        public abstract ValueTask O3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(DeepReasoningPrompt))]
+        [TextAlias("o3", "prompt10", "deepreasoning")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !deepreasoning <hackerman> test")]
+        public abstract ValueTask DeepReasoningPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
-        [Command(nameof(GPT52Prompt))]
-        [TextAlias("gpt52", "prompt11")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt52 <hackerman> test")]
-        public abstract ValueTask GPT52Prompt(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(FrontierPrompt))]
+        [TextAlias("gpt52", "prompt11", "frontier")]
+        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !frontier <hackerman> test")]
+        public abstract ValueTask FrontierPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
-        [Command(nameof(GenerateImage15))]
-        [TextAlias("image15", "img15")]
-        [Description("Generate an image with GPT-Image-1.5. Usage: !image15 <simple> test")]
-        public abstract ValueTask GenerateImage15(TextCommandContext ctx, [RemainingText] string query = "");
+        [Command(nameof(GenerateEditedImage))]
+        [TextAlias("image15", "img15", "editedimage")]
+        [Description("Generate an edited image with GPT-Image-1. Usage: !editedimage <simple> test")]
+        public abstract ValueTask GenerateEditedImage(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GenerateImageVariation))]
         [TextAlias("editimage", "dallevary", "imagevary", "imagemod")]
