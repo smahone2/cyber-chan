@@ -29,17 +29,17 @@ namespace CyberChan.Services
     internal class AiService(OpenAIService openAiService)
     {
         private readonly ConcurrentDictionary<ulong, ConversationState> _threadConversations = new();
-        private readonly string _simplePromptModel = ResolveConfiguredModel("OpenAIModelSimplePrompt", "gpt-4.1-mini");
+        private readonly string _simplePromptModel = ResolveConfiguredModel("OpenAIModelSimplePrompt", "gpt-4.1-nano");
         private readonly string _fastPromptModel = ResolveConfiguredModel("OpenAIModelFastPrompt", "gpt-4.1-mini");
         private readonly string _balancedPromptModel = ResolveConfiguredModel("OpenAIModelBalancedPrompt", "gpt-4.1");
         private readonly string _nanoPromptModel = ResolveConfiguredModel("OpenAIModelNanoPrompt", "gpt-4.1-nano");
         private readonly string _deepContextPromptModel = ResolveConfiguredModel("OpenAIModelDeepContextPrompt", "gpt-4.1");
         private readonly string _highQualityPromptModel = ResolveConfiguredModel("OpenAIModelHighQualityPrompt", "gpt-4.1");
-        private readonly string _frontierPromptModel = ResolveConfiguredModel("OpenAIModelFrontierPrompt", "gpt-4.5");
+        private readonly string _frontierPromptModel = ResolveConfiguredModel("OpenAIModelFrontierPrompt", "gpt-4.1");
         private readonly string _multimodalPromptModel = ResolveConfiguredModel("OpenAIModelMultimodalPrompt", "gpt-4o");
-        private readonly string _fastReasoningPromptModel = ResolveConfiguredModel("OpenAIModelFastReasoningPrompt", "o4-mini");
-        private readonly string _reasoningPromptModel = ResolveConfiguredModel("OpenAIModelReasoningPrompt", "o3");
-        private readonly string _deepReasoningPromptModel = ResolveConfiguredModel("OpenAIModelDeepReasoningPrompt", "o3");
+        private readonly string _fastReasoningPromptModel = ResolveConfiguredModel("OpenAIModelFastReasoningPrompt", "o4-mini-2025-04-16");
+        private readonly string _reasoningPromptModel = ResolveConfiguredModel("OpenAIModelReasoningPrompt", "o3-2025-04-16");
+        private readonly string _deepReasoningPromptModel = ResolveConfiguredModel("OpenAIModelDeepReasoningPrompt", "o3-2025-04-16");
         private readonly string _visionModel = ResolveConfiguredModel("OpenAIModelVision", "gpt-4o");
         private readonly string _imageGenerationModel = ResolveConfiguredModel("OpenAIModelImageGeneration", "gpt-image-1");
         private readonly string _imageEditModel = ResolveConfiguredModel("OpenAIModelImageEdit", "gpt-image-1");

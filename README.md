@@ -32,7 +32,7 @@ Model selection is configurable through `appSettings` values (for example in `Cy
 #### Chat and reasoning use-cases
 
 - **Simple / fast chat** (no seed support)
-  - `OpenAIModelSimplePrompt` (default: `gpt-4.1-mini`)
+  - `OpenAIModelSimplePrompt` (default: `gpt-4.1-nano`)
 - **General chat**
   - `OpenAIModelFastPrompt` (default: `gpt-4.1-mini`)
   - `OpenAIModelBalancedPrompt` (default: `gpt-4.1`)
@@ -40,13 +40,13 @@ Model selection is configurable through `appSettings` values (for example in `Cy
 - **High-context / quality chat**
   - `OpenAIModelDeepContextPrompt` (default: `gpt-4.1`)
   - `OpenAIModelHighQualityPrompt` (default: `gpt-4.1`)
-  - `OpenAIModelFrontierPrompt` (default: `gpt-4.5`)
+  - `OpenAIModelFrontierPrompt` (default: `gpt-4.1`)
 - **Multimodal**
   - `OpenAIModelMultimodalPrompt` (default: `gpt-4o`)
 - **Reasoning**
-  - `OpenAIModelFastReasoningPrompt` (default: `o4-mini`)
-  - `OpenAIModelReasoningPrompt` (default: `o3`)
-  - `OpenAIModelDeepReasoningPrompt` (default: `o3`)
+  - `OpenAIModelFastReasoningPrompt` (default: `o4-mini-2025-04-16`)
+  - `OpenAIModelReasoningPrompt` (default: `o3-2025-04-16`)
+  - `OpenAIModelDeepReasoningPrompt` (default: `o3-2025-04-16`)
 
 #### Vision and image use-cases
 
