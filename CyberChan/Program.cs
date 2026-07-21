@@ -2,7 +2,12 @@
 using CyberChan.Models;
 using CyberChan.Services;
 using DSharpPlus;
-using DSharpPlus.EventArgs;
+using DSharpPlus.Commands;
+using DSharpPlus.Commands.Processors.TextCommands;
+using DSharpPlus.Commands.Processors.TextCommands.Parsing;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
 using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,7 +42,6 @@ namespace CyberChan
                 {
                     services.AddLogging(logging => logging.ClearProviders().AddSerilog())
                         .ConfigureServices();
-                    //.ConfigureEventHandlers(b => b.HandleMessageCreated(AutoReplyToSean));
                 })
                 .RunConsoleAsync();
 
@@ -60,40 +64,53 @@ namespace CyberChan
             // Get Steam Id records
             csv.GetRecords<SteamId>();
         }
-
-        public static async Task AutoReplyToSean(DiscordClient d, MessageCreateEventArgs e)
-        {
-            //if (e.Author.Discriminator == "3638") //XPeteX47
-            //    await e.Message.RespondAsync("~b-baka!~");
-            if (e.Message.Content.Contains("anime", StringComparison.OrdinalIgnoreCase))
-                await e.Message.RespondAsync("~b-baka!~");
-        }
     }
 
     public static class ServicesExtensions
     {
         public static IServiceCollection ConfigureServices(this IServiceCollection services)
         {
-            return services.AddHttpClient()
-                .AddSingleton(new OpenAIService(new OpenAIOptions { ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"] }))
-                .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
-                .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
-                .AddSingleton<AiService>()
-                .AddSingleton<ImageService>()
-                .AddSingleton<DotaService>()
-                .AddSingleton<KitsuService>()
-                .AddSingleton<SteamService>()
-                .AddSingleton<TraceDotMoeService>()
-                .AddSingleton<CommandsService>()
-                .AddHostedService<DiscordService>()
-                .AddSingleton(new DiscordClient(new DiscordConfiguration
+            services.AddHttpClient();
+            services.AddSingleton(new OpenAIService(new OpenAIOptions { ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"] }));
+            services.AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]));
+            services.AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"]);
+            services.AddSingleton<AiService>();
+            services.AddSingleton<ImageService>();
+            services.AddSingleton<DotaService>();
+            services.AddSingleton<KitsuService>();
+            services.AddSingleton<SteamService>();
+            services.AddSingleton<TraceDotMoeService>();
+            services.AddSingleton<CommandsService>();
+            services.AddHostedService<DiscordService>();
+
+            var client = DiscordClientBuilder.CreateDefault(
+                    ConfigurationManager.AppSettings["DiscordToken"],
+                    DiscordIntents.All,
+                    services)
+                .ConfigureEventHandlers(b => b.AddEventHandlers<DiscordEventHandlerService>(ServiceLifetime.Transient))
+                .UseInteractivity(new InteractivityConfiguration
                 {
-                    TokenType = TokenType.Bot,
-                    Token = ConfigurationManager.AppSettings["DiscordToken"],
-                    Intents = DiscordIntents.All
-                }));
+                    PollBehaviour = PollBehaviour.KeepEmojis,
+                    Timeout = TimeSpan.FromSeconds(30)
+                })
+                .UseCommands(
+                    (sp, ext) =>
+                    {
+                        ext.AddCommands(typeof(CommandsService));
+                        ext.AddProcessor(new TextCommandProcessor(new TextCommandConfiguration
+                        {
+                            PrefixResolver = new DefaultPrefixResolver(false, "!").ResolvePrefixAsync
+                        }));
+                    },
+                    new CommandsConfiguration
+                    {
+                        DebugGuildId = ulong.Parse(Environment.GetEnvironmentVariable("DEBUG_GUILD_ID") ?? "0")
+                    })
+                .Build();
+
+            services.AddSingleton(client);
+
+            return services;
         }
-
-
     }
 }
