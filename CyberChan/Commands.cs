@@ -87,7 +87,7 @@ namespace CyberChan
 
         [Command(nameof(Chat))]
         [TextAlias("chat", "ask", "gpt")]
-        [Description("Chat with Cyber-chan using the top-capability flagship model (gpt-5.6-sol). " + SeedList + " Usage: !chat <hackerman> hello")]
+        [Description("Chat with Cyber-chan using the cheap default model (gpt-5.6-luna) so normal chats stay inexpensive. Use !fast or !thinkdeep for higher-tier models. " + SeedList + " Usage: !chat <hackerman> hello")]
         public abstract ValueTask Chat(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(ChatFast))]

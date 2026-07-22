@@ -70,7 +70,7 @@ namespace CyberChan
     {
         public static IServiceCollection ConfigureServices(this IServiceCollection services)
         {
-            return services.AddHttpClient()
+            services.AddHttpClient()
                 .AddSingleton(new OpenAIClient(new ApiKeyCredential(ConfigurationManager.AppSettings["OpenAIAPIKey"] ?? string.Empty)))
                 .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
                 .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
@@ -81,12 +81,13 @@ namespace CyberChan
                 .AddSingleton<SteamService>()
                 .AddSingleton<TraceDotMoeService>()
                 .AddSingleton<CommandsService>()
-                .AddHostedService<DiscordService>()
-                .AddSingleton(new DiscordClient(new DiscordConfiguration
-                {
-                    PollBehaviour = PollBehaviour.KeepEmojis,
-                    Timeout = TimeSpan.FromSeconds(30)
-                })
+                .AddHostedService<DiscordService>();
+
+            var client = DiscordClientBuilder
+                .CreateDefault(
+                    ConfigurationManager.AppSettings["DiscordToken"] ?? string.Empty,
+                    DiscordIntents.All,
+                    services)
                 .UseCommands(
                     (sp, ext) =>
                     {

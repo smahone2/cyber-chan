@@ -290,15 +290,15 @@ namespace CyberChan.Services
 
         // === Public chat API — user-facing entry points, one per usefulness tier ===
 
-        /// <summary>Top-capability flagship chat (gpt-5.6-sol).</summary>
+        /// <summary>Default chat — routes to the cheap current-gen model (gpt-5.6-luna) so normal usage stays inexpensive.</summary>
         public Task<string> Chat(string query, string user, string seed) =>
-            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Sol);
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Luna);
 
-        /// <summary>Balanced flagship chat (gpt-5.6-terra) — good quality, faster.</summary>
+        /// <summary>Balanced flagship chat (gpt-5.6-terra) — good quality, mid tier.</summary>
         public Task<string> ChatFast(string query, string user, string seed) =>
             ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Terra);
 
-        /// <summary>Cost-sensitive flagship chat (gpt-5.6-luna) — smallest / cheapest current-gen.</summary>
+        /// <summary>Cost-sensitive flagship chat (gpt-5.6-luna) — same tier as <see cref="Chat"/>, kept as an explicit alias.</summary>
         public Task<string> ChatNano(string query, string user, string seed) =>
             ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Luna);
 
@@ -403,7 +403,7 @@ namespace CyberChan.Services
 
         private (string Model, string? SeedOverride) ResolveModel(Func<string, string, string, Task<string>> modelDelegate)
         {
-            if (modelDelegate == Chat) return (ModelCatalog.Flagship.Gpt56Sol, null);
+            if (modelDelegate == Chat) return (ModelCatalog.Flagship.Gpt56Luna, null);
             if (modelDelegate == ChatFast) return (ModelCatalog.Flagship.Gpt56Terra, null);
             if (modelDelegate == ChatNano) return (ModelCatalog.Flagship.Gpt56Luna, null);
             if (modelDelegate == ChatLegacyFlagship) return (ModelCatalog.LegacyFlagship.Gpt55, null);
