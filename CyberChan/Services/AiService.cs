@@ -140,9 +140,35 @@ namespace CyberChan.Services
 
         // === Public image API — user-facing entry points ===
 
-        /// <summary>Generate an image using the current image model (gpt-image-2).</summary>
+        /// <summary>
+        /// Supported image generation quality levels. Maps to the OpenAI SDK's
+        /// <see cref="GeneratedImageQuality"/> values that we expose to callers.
+        /// </summary>
+        public enum ImageQuality
+        {
+            LowQuality,
+            MediumQuality,
+            HighQuality
+        }
+
+        /// <summary>The default image quality used when a caller does not specify one.</summary>
+        public const ImageQuality DefaultImageQuality = ImageQuality.LowQuality;
+
+        /// <summary>
+        /// Generate an image using the current image model (gpt-image-2) at the default quality
+        /// (<see cref="DefaultImageQuality"/> = <see cref="ImageQuality.LowQuality"/>).
+        /// </summary>
         public Task<ImageResponse> GenerateImage(string query, string user, string seed) =>
-            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.ImageGen);
+            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.ImageGen, DefaultImageQuality);
+
+        /// <summary>
+        /// Generate an image using the current image model (gpt-image-2) at the requested
+        /// <paramref name="quality"/>. Only <see cref="ImageQuality.LowQuality"/>,
+        /// <see cref="ImageQuality.MediumQuality"/>, and <see cref="ImageQuality.HighQuality"/>
+        /// are accepted; any other value safely falls back to the default.
+        /// </summary>
+        public Task<ImageResponse> GenerateImage(string query, string user, string seed, ImageQuality quality) =>
+            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.ImageGen, quality);
 
         public async Task<ImageResponse> EditOrCreateImageFromReference(string imageUrl, string instructions, string user, bool isEdit = true)
         {
@@ -161,6 +187,15 @@ namespace CyberChan.Services
             return response;
         }
 
+        private static GeneratedImageQuality MapImageQuality(ImageQuality quality) => quality switch
+        {
+            ImageQuality.LowQuality => GeneratedImageQuality.LowQuality,
+            ImageQuality.MediumQuality => GeneratedImageQuality.MediumQuality,
+            ImageQuality.HighQuality => GeneratedImageQuality.HighQuality,
+            // Safe fallback: unknown/invalid enum values (e.g. from an out-of-range cast) map to the default.
+            _ => GeneratedImageQuality.LowQuality,
+        };
+
         public struct ImageResponse
         {
             public string Url;
@@ -168,7 +203,7 @@ namespace CyberChan.Services
             public Stream Stream;
         }
 
-        private async Task<ImageResponse> GenerateImageTask(string query, string user, string seed, string model)
+        private async Task<ImageResponse> GenerateImageTask(string query, string user, string seed, string model, ImageQuality quality = DefaultImageQuality)
         {
             var prompt = BuildImagePrompt(query, seed);
             var imageClient = openAiClient.GetImageClient(model);
@@ -177,7 +212,7 @@ namespace CyberChan.Services
             {
                 Size = GeneratedImageSize.W1024xH1024,
                 EndUserId = user,
-                Quality = GeneratedImageQuality.HighQuality,
+                Quality = MapImageQuality(quality),
             };
 
             if (ModelCatalog.Base64ImageModels.Contains(model))
