@@ -17,7 +17,7 @@ namespace CyberChan.Services
     internal class ImageService(HttpClient httpClient, AiService aiService)
     {
         // Recognised image-quality tokens accepted inside the `< ... >` prefix of the
-        // image command. Kept lower-case; we compare after ToLowerInvariant().
+        // image command. Keys are lower-case and lookup is case-insensitive (OrdinalIgnoreCase).
         private static readonly System.Collections.Generic.Dictionary<string, ImageQuality> QualityTokens = new(StringComparer.OrdinalIgnoreCase)
         {
             ["low"] = ImageQuality.LowQuality,
