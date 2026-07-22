@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <!-- OPENAI001: OpenAI SDK marks some APIs (e.g., GeneratedImageQuality.HighQuality) as experimental; suppress to keep CI builds green. -->
     <NoWarn>$(NoWarn);OPENAI001</NoWarn>
   </PropertyGroup>
 
