@@ -5,75 +5,74 @@ namespace CyberChan.Services
     /// <summary>
     /// Central source of truth for OpenAI model identifiers used by the bot,
     /// grouped by usefulness category. Update model strings here to migrate
-    /// all call sites at once.
+    /// all call sites at once. Legacy / superseded models have been removed.
     /// </summary>
     internal static class ModelCatalog
     {
-        // General-purpose / flagship
+        /// <summary>General-purpose flagship chat models.</summary>
         public static class Flagship
         {
-            public const string Gpt4o = "gpt-4o";
-            public const string Gpt41 = "gpt-4.1";
-            // Latest flagship: keep in sync with Commands.cs aliases
+            // Newest general-purpose flagship.
             public const string Gpt5 = "gpt-5";
+            // Prior-generation flagship, kept as a fallback for callers that need it.
+            public const string Gpt41 = "gpt-4.1";
         }
 
-        // Reasoning-heavy
+        /// <summary>Reasoning-heavy models (for tough problems, math, planning).</summary>
         public static class Reasoning
         {
-            public const string O1 = "o1";
-            public const string O1Mini = "o1-mini";
-            public const string O3 = "o3";
+            // Newest small-but-fast reasoning model.
             public const string O4Mini = "o4-mini";
+            // Highest-capability reasoning model.
+            public const string O3 = "o3";
         }
 
-        // Cost-efficient / fast
-        public static class CostEfficient
+        /// <summary>Cost-efficient / fast chat models.</summary>
+        public static class Fast
         {
-            public const string Gpt4oMini = "gpt-4o-mini";
+            // Newest cost-efficient siblings of gpt-5.
+            public const string Gpt5Mini = "gpt-5-mini";
+            public const string Gpt5Nano = "gpt-5-nano";
+            // Prior-generation cost-efficient fallbacks.
             public const string Gpt41Mini = "gpt-4.1-mini";
             public const string Gpt41Nano = "gpt-4.1-nano";
-            // Legacy alias retained for compatibility with the !gpt3/!chatgpt commands.
-            [System.Obsolete("Legacy chat model; prefer Gpt4oMini or Gpt41Mini.")]
-            public const string Gpt35Turbo = "gpt-3.5-turbo";
         }
 
-        // Multimodal (vision + image gen)
+        /// <summary>Multimodal models (vision input, image generation).</summary>
         public static class Multimodal
         {
-            public const string VisionChat = "gpt-4o";
-            public const string DallE2 = "dall-e-2";
+            // Use gpt-4.1 for vision analysis (broad availability, strong vision).
+            public const string VisionChat = "gpt-4.1";
+            // Preferred image-generation model.
+            public const string ImageGen = "gpt-image-1";
+            // Legacy DALL-E kept for the !dalle3 alias.
             public const string DallE3 = "dall-e-3";
-            public const string GptImage1 = "gpt-image-1";
         }
 
-        // Embeddings
+        /// <summary>Text embedding models.</summary>
         public static class Embeddings
         {
-            public const string TextEmbedding3Small = "text-embedding-3-small";
-            public const string TextEmbedding3Large = "text-embedding-3-large";
+            public const string Small = "text-embedding-3-small";
+            public const string Large = "text-embedding-3-large";
         }
 
-        // Moderation
+        /// <summary>Moderation model used for input safety checks.</summary>
         public const string Moderation = "omni-moderation-latest";
 
         /// <summary>
-        /// Image models that support base64 response payloads (used to pick response format).
+        /// Image models that support base64 response payloads and therefore need
+        /// an explicit <c>ResponseFormat = Bytes</c> to receive raw image data.
         /// </summary>
         public static readonly HashSet<string> Base64ImageModels = new()
         {
-            Multimodal.DallE2,
             Multimodal.DallE3,
         };
 
         /// <summary>
-        /// Chat models that only support the "developer"/user role scheme (reasoning models
-        /// reject the legacy "system" role in favor of "developer" messages).
+        /// Chat models that use the "developer" role instead of "system" (reasoning models).
         /// </summary>
         public static readonly HashSet<string> ReasoningChatModels = new()
         {
-            Reasoning.O1,
-            Reasoning.O1Mini,
             Reasoning.O3,
             Reasoning.O4Mini,
         };

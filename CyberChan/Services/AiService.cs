@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace CyberChan.Services
 {
-    internal class AiService(OpenAIClient openAiClient)
+    internal class AiService(OpenAIClient openAiClient, IHttpClientFactory httpClientFactory)
     {
         private readonly ConcurrentDictionary<ulong, ConversationState> _threadConversations = new();
 
@@ -34,7 +34,6 @@ namespace CyberChan.Services
             public List<ChatMessage> Messages { get; }
             public string Seed { get; set; } = string.Empty;
             public string Model { get; set; } = string.Empty;
-            public int TokenLimit { get; set; }
             public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
             public SemaphoreSlim Lock { get; }
         }
@@ -65,9 +64,8 @@ namespace CyberChan.Services
             public static ConversationResult Success(string response) => new(ConversationResultStatus.Success, response);
         }
 
-        // Benign, fun persona seeds. Prior jailbreak-style prompts (hackerman/evil/dev/dev+/steve/dude)
-        // were removed; their names are reused here only for safe personas that do NOT instruct
-        // the model to bypass safety, policies, or produce harmful content.
+        // Benign, fun persona seeds. Prior jailbreak-style prompts were removed and replaced
+        // with safe personas that do NOT instruct the model to bypass safety or policies.
         private static List<ChatMessage> ChatSeed(string query, string seed, string model)
         {
             var messages = new List<ChatMessage>();
@@ -105,13 +103,6 @@ namespace CyberChan.Services
                     messages.Add(SystemOrDeveloper("Thou shalt respond in the style of William Shakespeare: iambic where feasible, with 'thee', 'thou', 'hast', and dramatic flair. Remain helpful and accurate."));
                     messages.Add(new UserChatMessage(query));
                     break;
-                case "o1":
-                    messages.Add(new UserChatMessage("You will always use discord code blocks when code is included in a message."));
-                    messages.Add(new UserChatMessage("You will always split replies into 1024 character chunks for clean formatting in discord embed fields."));
-                    messages.Add(new UserChatMessage("You will not over explain a solution unless asked to."));
-                    messages.Add(new AssistantChatMessage("I understand. I will follow these guidelines."));
-                    messages.Add(new UserChatMessage(query));
-                    break;
                 default:
                     messages.Add(SystemOrDeveloper("Have very creative problem solving and storytelling capabilities, while still giving accurate answers."));
                     messages.Add(SystemOrDeveloper("Do not overly flourish responses with creativity, unless asked to."));
@@ -125,131 +116,103 @@ namespace CyberChan.Services
             return messages;
         }
 
-        private struct DalleParam
+        private struct ImagePromptOptions
         {
-            public string query;
-            public string style;
+            public string Query;
         }
 
-        private static DalleParam DalleSeed(string query, string seed)
+        private static ImagePromptOptions BuildImagePrompt(string query, string seed)
         {
-            DalleParam param = new()
-            {
-                query = query
-            };
-
-            if (seed.Split(',').Length == 1)
-            {
-                seed = seed + ",";
-            }
+            var options = new ImagePromptOptions { Query = query };
 
             switch (seed.ToLower().Split(",")[0].Trim())
             {
                 case "simple":
-                    param.query = "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: " + query;
+                    options.Query = "I NEED to test how the tool works with extremely simple prompts. DO NOT add any detail, just use it AS-IS: " + query;
                     break;
                 case "detailed":
-                    param.query = "My prompt has full detail so no need to add more: " + query;
-                    break;
-                default:
+                    options.Query = "My prompt has full detail so no need to add more: " + query;
                     break;
             }
 
-            return param;
+            return options;
         }
 
-        public async Task<ImageRepsonse> GenerateImage(string query, string user, string seed)
-        {
-            return await GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.DallE2);
-        }
+        // === Public image API — user-facing entry points ===
 
-        public async Task<ImageRepsonse> GenerateImage2(string query, string user, string seed)
-        {
-            return await GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.DallE3);
-        }
+        /// <summary>Generate an image using the default (newest) image model.</summary>
+        public Task<ImageResponse> GenerateImage(string query, string user, string seed) =>
+            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.ImageGen);
 
-        public async Task<ImageRepsonse> GenerateGptImage1(string query, string user, string seed)
-        {
-            return await GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.GptImage1);
-        }
+        /// <summary>Generate an image using the legacy DALL-E 3 model.</summary>
+        public Task<ImageResponse> GenerateImageDallE3(string query, string user, string seed) =>
+            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.DallE3);
 
-        public async Task<ImageRepsonse> GenerateImage15(string query, string user, string seed)
-        {
-            // gpt-image-1 is the current stable image-gen model in the catalog.
-            return await GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.GptImage1);
-        }
-
-        public async Task<ImageRepsonse> AnalyzeAndModifyImage(string imageUrl, string instructions, string user, bool isEdit = true)
+        public async Task<ImageResponse> EditOrCreateImageFromReference(string imageUrl, string instructions, string user, bool isEdit = true)
         {
             var analysis = await AnalyzeImageWithVision(imageUrl, instructions, user);
 
             if (isEdit && !string.IsNullOrEmpty(instructions))
             {
                 var imageResponse = await EditImageTask(imageUrl, analysis, user);
-                imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nEdit Result: {imageResponse.revisedPrompt}";
+                imageResponse.RevisedPrompt = $"Analysis: {analysis}\n\nEdit Result: {imageResponse.RevisedPrompt}";
                 return imageResponse;
             }
-            else
-            {
-                var prompt = $"Based on this image analysis: {analysis}. {instructions}";
-                var imageResponse = await GenerateImage15(prompt, user, "");
-                imageResponse.revisedPrompt = $"Analysis: {analysis}\n\nGenerated: {imageResponse.revisedPrompt}";
-                return imageResponse;
-            }
+
+            var prompt = $"Based on this image analysis: {analysis}. {instructions}";
+            var response = await GenerateImage(prompt, user, string.Empty);
+            response.RevisedPrompt = $"Analysis: {analysis}\n\nGenerated: {response.RevisedPrompt}";
+            return response;
         }
 
-        public struct ImageRepsonse
+        public struct ImageResponse
         {
-            public string url;
-            public string revisedPrompt;
-            public Stream stream;
+            public string Url;
+            public string RevisedPrompt;
+            public Stream Stream;
         }
 
-        private async Task<ImageRepsonse> GenerateImageTask(string query, string user, string seed, string model)
+        private async Task<ImageResponse> GenerateImageTask(string query, string user, string seed, string model)
         {
-            var param = DalleSeed(query, seed);
+            var prompt = BuildImagePrompt(query, seed);
             var imageClient = openAiClient.GetImageClient(model);
 
             var options = new ImageGenerationOptions
             {
                 Size = GeneratedImageSize.W1024xH1024,
                 EndUserId = user,
+                Quality = GeneratedImageQuality.High,
             };
 
             if (ModelCatalog.Base64ImageModels.Contains(model))
             {
                 options.ResponseFormat = GeneratedImageFormat.Bytes;
-                options.Quality = GeneratedImageQuality.High;
-            }
-            else
-            {
-                options.Quality = GeneratedImageQuality.High;
             }
 
-            var response = new ImageRepsonse();
+            var response = new ImageResponse();
             try
             {
-                ClientResult<GeneratedImage> result = await imageClient.GenerateImageAsync(param.query, options);
+                ClientResult<GeneratedImage> result = await imageClient.GenerateImageAsync(prompt.Query, options);
                 var image = result.Value;
 
                 if (image.ImageBytes != null)
                 {
-                    response.stream = new MemoryStream(image.ImageBytes.ToArray());
+                    response.Stream = new MemoryStream(image.ImageBytes.ToArray());
                 }
                 else if (image.ImageUri != null)
                 {
-                    response.url = image.ImageUri.ToString();
+                    response.Url = image.ImageUri.ToString();
                 }
 
-                response.revisedPrompt = image.RevisedPrompt ?? string.Empty;
+                response.RevisedPrompt = image.RevisedPrompt ?? string.Empty;
             }
             catch (ClientResultException ex)
             {
-                response.revisedPrompt = $"{ex.Status}: {ex.Message}";
+                response.RevisedPrompt = $"{ex.Status}: {ex.Message}";
             }
             catch (Exception ex)
             {
-                response.revisedPrompt = $"Error: {ex.Message}";
+                response.RevisedPrompt = $"Error: {ex.Message}";
             }
 
             return response;
@@ -260,13 +223,18 @@ namespace CyberChan.Services
             try
             {
                 var chatClient = openAiClient.GetChatClient(ModelCatalog.Multimodal.VisionChat);
-                var messages = new List<ChatMessage>
+                var parts = new List<ChatMessageContentPart>
                 {
-                    new UserChatMessage(
-                        ChatMessageContentPart.CreateTextPart("Analyze this image in detail. Describe what you see, the style, colors, composition, and any notable elements."),
-                        ChatMessageContentPart.CreateTextPart($"Analyze this image. {instructions}"),
-                        ChatMessageContentPart.CreateImagePart(new Uri(imageUrl)))
+                    ChatMessageContentPart.CreateTextPart("Analyze this image in detail. Describe what you see, the style, colors, composition, and any notable elements."),
+                    ChatMessageContentPart.CreateImagePart(new Uri(imageUrl))
                 };
+
+                if (!string.IsNullOrWhiteSpace(instructions))
+                {
+                    parts.Add(ChatMessageContentPart.CreateTextPart($"Additional context / instructions: {instructions}"));
+                }
+
+                var messages = new List<ChatMessage> { new UserChatMessage(parts) };
 
                 var options = new ChatCompletionOptions { EndUserId = user };
                 var completion = await chatClient.CompleteChatAsync(messages, options);
@@ -282,15 +250,15 @@ namespace CyberChan.Services
             }
         }
 
-        private async Task<ImageRepsonse> EditImageTask(string imageUrl, string prompt, string user)
+        private async Task<ImageResponse> EditImageTask(string imageUrl, string prompt, string user)
         {
             try
             {
-                using var httpClient = new HttpClient();
-                using var response = await httpClient.GetAsync(imageUrl);
-                var imageBytes = await response.Content.ReadAsByteArrayAsync();
+                var httpClient = httpClientFactory.CreateClient();
+                using var httpResponse = await httpClient.GetAsync(imageUrl);
+                var imageBytes = await httpResponse.Content.ReadAsByteArrayAsync();
 
-                var imageClient = openAiClient.GetImageClient(ModelCatalog.Multimodal.GptImage1);
+                var imageClient = openAiClient.GetImageClient(ModelCatalog.Multimodal.ImageGen);
                 var options = new ImageEditOptions
                 {
                     Size = GeneratedImageSize.W1024xH1024,
@@ -302,106 +270,58 @@ namespace CyberChan.Services
                     imageStream, "edited_image.png", prompt, options);
 
                 var image = result.Value;
-                var imageResponse = new ImageRepsonse();
+                var imageResponse = new ImageResponse();
                 if (image.ImageBytes != null)
                 {
-                    imageResponse.stream = new MemoryStream(image.ImageBytes.ToArray());
-                    imageResponse.revisedPrompt = "Image edited successfully";
+                    imageResponse.Stream = new MemoryStream(image.ImageBytes.ToArray());
+                    imageResponse.RevisedPrompt = "Image edited successfully";
                 }
                 else
                 {
-                    imageResponse.revisedPrompt = "No image returned";
+                    imageResponse.RevisedPrompt = "No image returned";
                 }
                 return imageResponse;
             }
             catch (ClientResultException ex)
             {
-                return new ImageRepsonse { revisedPrompt = $"{ex.Status}: {ex.Message}" };
+                return new ImageResponse { RevisedPrompt = $"{ex.Status}: {ex.Message}" };
             }
             catch (Exception ex)
             {
-                return new ImageRepsonse { revisedPrompt = $"Edit error: {ex.Message}" };
+                return new ImageResponse { RevisedPrompt = $"Edit error: {ex.Message}" };
             }
         }
 
-        public async Task<string> GPT3Prompt(string query, string user)
-        {
-            // The legacy text-completions endpoint is deprecated. Route through chat with a
-            // cost-efficient model to preserve the !gpt3 command's behavior.
-            var messages = new List<ChatMessage> { new UserChatMessage(query) };
-            return await ChatCompletionTask(messages, user, ModelCatalog.CostEfficient.Gpt4oMini);
-        }
+        // === Public chat API — user-facing entry points, one per usefulness tier ===
 
-        public async Task<string> GPT35Prompt(string query, string user, string seed)
+        /// <summary>Newest flagship general-purpose chat (gpt-5).</summary>
+        public Task<string> Chat(string query, string user, string seed) =>
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt5);
+
+        /// <summary>Cost-efficient / fast chat (gpt-5-mini).</summary>
+        public Task<string> ChatFast(string query, string user, string seed) =>
+            ChatWithModel(query, user, seed, ModelCatalog.Fast.Gpt5Mini);
+
+        /// <summary>Cheapest / smallest chat tier (gpt-5-nano).</summary>
+        public Task<string> ChatNano(string query, string user, string seed) =>
+            ChatWithModel(query, user, seed, ModelCatalog.Fast.Gpt5Nano);
+
+        /// <summary>Prior-generation flagship (gpt-4.1) — kept as fallback.</summary>
+        public Task<string> ChatLegacyFlagship(string query, string user, string seed) =>
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt41);
+
+        /// <summary>Reasoning model, small/fast tier (o4-mini).</summary>
+        public Task<string> Reason(string query, string user, string seed) =>
+            ChatWithModel(query, user, seed, ModelCatalog.Reasoning.O4Mini);
+
+        /// <summary>Reasoning model, high-capability tier (o3).</summary>
+        public Task<string> ReasonDeep(string query, string user, string seed) =>
+            ChatWithModel(query, user, seed, ModelCatalog.Reasoning.O3);
+
+        private Task<string> ChatWithModel(string query, string user, string seed, string model)
         {
-#pragma warning disable CS0618 // legacy alias intentional
-            var model = ModelCatalog.CostEfficient.Gpt35Turbo;
-#pragma warning restore CS0618
             var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> GPT4Prompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Flagship.Gpt41;
-            var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> GPT4PreviewPrompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Flagship.Gpt41;
-            var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> GPT4OmniPrompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Flagship.Gpt4o;
-            var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> GPTO1Prompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Reasoning.O1Mini;
-            var messages = ChatSeed(query, "o1", model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> O4MiniPrompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Reasoning.O4Mini;
-            var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> GPT41NanoPrompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.CostEfficient.Gpt41Nano;
-            var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> GPT41Prompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Flagship.Gpt41;
-            var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> O3Prompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Reasoning.O3;
-            var messages = ChatSeed(query, "o1", model);
-            return await ChatCompletionTask(messages, user, model);
-        }
-
-        public async Task<string> GPT52Prompt(string query, string user, string seed)
-        {
-            var model = ModelCatalog.Flagship.Gpt5;
-            var messages = ChatSeed(query, seed, model);
-            return await ChatCompletionTask(messages, user, model);
+            return ChatCompletionTask(messages, user, model);
         }
 
         private async Task<string> ChatCompletionTask(List<ChatMessage> messages, string user, string model)
@@ -484,20 +404,14 @@ namespace CyberChan.Services
             return baseName;
         }
 
-        private (string Model, int TokenLimit, string? SeedOverride) ResolveModel(Func<string, string, string, Task<string>> modelDelegate)
+        private (string Model, string? SeedOverride) ResolveModel(Func<string, string, string, Task<string>> modelDelegate)
         {
-#pragma warning disable CS0618
-            if (modelDelegate == GPT35Prompt) return (ModelCatalog.CostEfficient.Gpt35Turbo, 15360, null);
-#pragma warning restore CS0618
-            if (modelDelegate == GPT4Prompt) return (ModelCatalog.Flagship.Gpt41, 7168, null);
-            if (modelDelegate == GPT4PreviewPrompt) return (ModelCatalog.Flagship.Gpt41, 3072, null);
-            if (modelDelegate == GPT4OmniPrompt) return (ModelCatalog.Flagship.Gpt4o, 3072, null);
-            if (modelDelegate == GPTO1Prompt) return (ModelCatalog.Reasoning.O1Mini, 3072, "o1");
-            if (modelDelegate == O4MiniPrompt) return (ModelCatalog.Reasoning.O4Mini, 3072, null);
-            if (modelDelegate == GPT41NanoPrompt) return (ModelCatalog.CostEfficient.Gpt41Nano, 3072, null);
-            if (modelDelegate == GPT41Prompt) return (ModelCatalog.Flagship.Gpt41, 3072, null);
-            if (modelDelegate == O3Prompt) return (ModelCatalog.Reasoning.O3, 3072, "o1");
-            if (modelDelegate == GPT52Prompt) return (ModelCatalog.Flagship.Gpt5, 3072, null);
+            if (modelDelegate == Chat) return (ModelCatalog.Flagship.Gpt5, null);
+            if (modelDelegate == ChatFast) return (ModelCatalog.Fast.Gpt5Mini, null);
+            if (modelDelegate == ChatNano) return (ModelCatalog.Fast.Gpt5Nano, null);
+            if (modelDelegate == ChatLegacyFlagship) return (ModelCatalog.Flagship.Gpt41, null);
+            if (modelDelegate == Reason) return (ModelCatalog.Reasoning.O4Mini, null);
+            if (modelDelegate == ReasonDeep) return (ModelCatalog.Reasoning.O3, null);
 
             throw new ArgumentOutOfRangeException(nameof(modelDelegate), "Unknown model delegate provided.");
         }
@@ -561,7 +475,7 @@ namespace CyberChan.Services
             }
         }
 
-        public async Task GPTPromptCommon(Func<string, string, string, Task<string>> modelDelegate, TextCommandContext ctx, string query)
+        public async Task ChatCommandCommon(Func<string, string, string, Task<string>> modelDelegate, TextCommandContext ctx, string query)
         {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
@@ -672,7 +586,6 @@ namespace CyberChan.Services
                 }
 
                 state.Model = modelInfo.Model;
-                state.TokenLimit = modelInfo.TokenLimit;
 
                 response = await ChatCompletionTask(state.Messages, ctx.User.Mention, state.Model);
 
