@@ -172,18 +172,18 @@ namespace CyberChan.Services
 
         public async Task<ImageResponse> EditOrCreateImageFromReference(string imageUrl, string instructions, string user, bool isEdit = true)
         {
-            var analysis = await AnalyzeImageWithVision(imageUrl, instructions, user);
-
             if (isEdit && !string.IsNullOrEmpty(instructions))
             {
-                var imageResponse = await EditImageTask(imageUrl, analysis, user);
-                imageResponse.RevisedPrompt = $"Analysis: {analysis}\n\nEdit Result: {imageResponse.RevisedPrompt}";
-                return imageResponse;
+                var response = await EditImageTask(imageUrl, analysis, user);
+                imageResponse.RevisedPrompt = $"Edit Prompt: {instructions}\n\nEdit Result: {imageResponse.RevisedPrompt}";
+            } 
+            else
+            {
+                var analysis = await AnalyzeImageWithVision(imageUrl, instructions, user);
+                var prompt = $"Based on this image analysis: {analysis}. {instructions}";
+                var response = await GenerateImage(prompt, user, string.Empty);
+                response.RevisedPrompt = $"Analysis: {analysis}\n\nGenerated: {response.RevisedPrompt}";
             }
-
-            var prompt = $"Based on this image analysis: {analysis}. {instructions}";
-            var response = await GenerateImage(prompt, user, string.Empty);
-            response.RevisedPrompt = $"Analysis: {analysis}\n\nGenerated: {response.RevisedPrompt}";
             return response;
         }
 
