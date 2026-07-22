@@ -106,54 +106,54 @@ namespace CyberChan
 
         [Command(nameof(ChatGptPrompt))]
         [TextAlias("chatgpt", "prompt2")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !chatgpt <hackerman> test")]
         public abstract ValueTask ChatGptPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
         [Command(nameof(GPT4Prompt))]
         [TextAlias("gpt4", "prompt3")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !gpt4 <hackerman> test")]
         public abstract ValueTask GPT4Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
         [Command(nameof(GPT4PreviewPrompt))]
         [TextAlias("gpt4p", "prompt4", "gpt4preview")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !gpt4 <hackerman> test")]
         public abstract ValueTask GPT4PreviewPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GPT4OmniPrompt))]
         [TextAlias("gpt4o", "prompt5", "gpt4omni")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !gpt4 <hackerman> test")]
         public abstract ValueTask GPT4OmniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GPTO1Prompt))]
         [TextAlias("gpto1", "prompt6")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gptO1 <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !gptO1 <hackerman> test")]
         public abstract ValueTask GPTO1Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(O4MiniPrompt))]
         [TextAlias("o4mini", "prompt7")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o4mini <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !o4mini <hackerman> test")]
         public abstract ValueTask O4MiniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GPT41NanoPrompt))]
         [TextAlias("gpt41nano", "prompt8")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41nano <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !gpt41nano <hackerman> test")]
         public abstract ValueTask GPT41NanoPrompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GPT41Prompt))]
         [TextAlias("gpt41", "prompt9")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41 <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !gpt41 <hackerman> test")]
         public abstract ValueTask GPT41Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(O3Prompt))]
         [TextAlias("o3", "prompt10")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o3 <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !o3 <hackerman> test")]
         public abstract ValueTask O3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(GPT52Prompt))]
         [TextAlias("gpt52", "prompt11")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt52 <hackerman> test")]
+        [Description("Seeds are code, hackerman, steve, pirate, uwu, and shakespeare. Usage: !gpt52 <hackerman> test")]
         public abstract ValueTask GPT52Prompt(TextCommandContext ctx, [RemainingText] string query = "");
 
 
