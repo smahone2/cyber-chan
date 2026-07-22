@@ -16,6 +16,75 @@ namespace CyberChan.Services
 {
     internal class ImageService(HttpClient httpClient, AiService aiService)
     {
+        // Recognised image-quality tokens accepted inside the `< ... >` prefix of the
+        // image command. Kept lower-case; we compare after ToLowerInvariant().
+        private static readonly System.Collections.Generic.Dictionary<string, ImageQuality> QualityTokens = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["low"] = ImageQuality.LowQuality,
+            ["lowquality"] = ImageQuality.LowQuality,
+            ["medium"] = ImageQuality.MediumQuality,
+            ["mediumquality"] = ImageQuality.MediumQuality,
+            ["high"] = ImageQuality.HighQuality,
+            ["highquality"] = ImageQuality.HighQuality,
+        };
+
+        /// <summary>
+        /// Splits the raw seed prefix into (remaining-seed, quality). If a quality token is
+        /// present it is removed from the seed; otherwise the default quality is returned and
+        /// the seed is passed through unchanged. Unrecognised tokens are left in place so
+        /// they can still act as persona/style seeds (safe fallback — no validation error).
+        /// </summary>
+        private static (string Seed, ImageQuality Quality) ExtractQualityFromSeed(string rawSeed)
+        {
+            if (string.IsNullOrWhiteSpace(rawSeed))
+            {
+                return (rawSeed ?? string.Empty, AiService.DefaultImageQuality);
+            }
+
+            var quality = AiService.DefaultImageQuality;
+            var remaining = new System.Collections.Generic.List<string>();
+
+            foreach (var raw in rawSeed.Split(','))
+            {
+                var token = raw.Trim();
+                if (token.Length == 0)
+                {
+                    continue;
+                }
+
+                if (QualityTokens.TryGetValue(token, out var mapped))
+                {
+                    quality = mapped;
+                }
+                else
+                {
+                    remaining.Add(token);
+                }
+            }
+
+            return (string.Join(",", remaining), quality);
+        }
+
+        /// <summary>
+        /// Invokes the image-generation delegate, routing to the quality-aware overload when
+        /// the delegate targets <see cref="AiService.GenerateImage(string, string, string)"/>.
+        /// For any other delegate the original three-argument signature is used unchanged.
+        /// </summary>
+        private static Task<ImageResponse> InvokeImageDelegate(
+            Func<string, string, string, Task<ImageResponse>> modelDelegate,
+            string query,
+            string user,
+            string seed,
+            ImageQuality quality)
+        {
+            if (modelDelegate.Target is AiService ai && modelDelegate.Method.Name == nameof(AiService.GenerateImage))
+            {
+                return ai.GenerateImage(query, user, seed, quality);
+            }
+
+            return modelDelegate(query, user, seed);
+        }
+
         internal async Task<JToken> TenorGifSearch(string searchText)
         {
             var rand = new Random();
@@ -43,17 +112,23 @@ namespace CyberChan.Services
             await ctx.Channel.TriggerTypingAsync();
 
             var seed = "";
+            ImageQuality quality = AiService.DefaultImageQuality;
 
             if (query.StartsWith('<') && query.Contains('>'))
             {
                 seed = query.Split("> ")[0].Replace("<", "");
                 query = query.Split("> ")[1].Trim();
+
+                // The seed prefix may contain persona/style tokens ("simple", "detailed", ...)
+                // and/or a quality token ("low", "medium", "high"). Pull out any quality token,
+                // leaving the remaining tokens as the seed for BuildImagePrompt.
+                (seed, quality) = ExtractQualityFromSeed(seed);
             }
 
             if (await aiService.Moderation(query) == "Pass")
             {
                 DiscordMessageBuilder msg = new();
-                var imageResponse = await modelDelegate(query, ctx.User.Mention, seed);
+                var imageResponse = await InvokeImageDelegate(modelDelegate, query, ctx.User.Mention, seed, quality);
                 DiscordEmbedBuilder embed = new();
 
                 foreach (var chunk in query.SplitBy(1024))
