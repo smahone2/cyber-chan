@@ -256,7 +256,7 @@ namespace CyberChan.Services
         {
             try
             {
-                var httpClient = httpClientFactory.CreateClient();
+                var httpClient = httpClientFactory.CreateClient(ImageGenerationSettings.DefaultHttpClientName);
                 using var httpResponse = await httpClient.GetAsync(imageUrl);
                 var imageBytes = await httpResponse.Content.ReadAsByteArrayAsync();
 

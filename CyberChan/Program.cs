@@ -20,6 +20,7 @@ using System.ClientModel;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace CyberChan
@@ -110,7 +111,8 @@ namespace CyberChan
 
         public static IServiceCollection AddCyberChanHttpClient(this IServiceCollection services)
         {
-            services.AddHttpClient(string.Empty, client => client.Timeout = ImageGenerationSettings.NetworkTimeout);
+            services.AddHttpClient(ImageGenerationSettings.DefaultHttpClientName, client => client.Timeout = ImageGenerationSettings.NetworkTimeout);
+            services.AddTransient(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(ImageGenerationSettings.DefaultHttpClientName));
             return services;
         }
     }

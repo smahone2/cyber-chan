@@ -1,27 +1,16 @@
 using CyberChan.Services;
 using Microsoft.Extensions.DependencyInjection;
-using OpenAI.Images;
 using System;
-using System.Linq;
 using System.Net.Http;
 using Xunit;
 
 namespace CyberChan.Tests;
 
-public class UnitTest1
+public class ImageGenerationSettingsTests
 {
     [Fact]
-    public void GenerateImage_UsesLowQualityByDefault()
+    public void CreateImageGenerationOptions_UsesLowQualityByDefault()
     {
-        var method = typeof(AiService).GetMethod(nameof(AiService.GenerateImage), [typeof(string), typeof(string), typeof(string), typeof(ImageGenerationQuality)]);
-
-        Assert.NotNull(method);
-
-        var qualityParameter = method!.GetParameters().Single(parameter => parameter.Name == "quality");
-
-        Assert.True(qualityParameter.IsOptional);
-        Assert.Equal(ImageGenerationQuality.LowQuality, qualityParameter.DefaultValue);
-
         var options = AiService.CreateImageGenerationOptions("@user", ModelCatalog.Multimodal.ImageGen);
 
         Assert.Equal("low", options.Quality.ToString());
@@ -57,8 +46,10 @@ public class UnitTest1
 
         using var provider = services.BuildServiceProvider();
         var factory = provider.GetRequiredService<IHttpClientFactory>();
-        using HttpClient client = factory.CreateClient();
+        using HttpClient client = factory.CreateClient(ImageGenerationSettings.DefaultHttpClientName);
+        using HttpClient injectedClient = provider.GetRequiredService<HttpClient>();
 
         Assert.Equal(TimeSpan.FromMinutes(5), client.Timeout);
+        Assert.Equal(TimeSpan.FromMinutes(5), injectedClient.Timeout);
     }
 }

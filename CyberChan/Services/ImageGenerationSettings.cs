@@ -12,6 +12,7 @@ namespace CyberChan.Services
 
     internal static class ImageGenerationSettings
     {
+        internal const string DefaultHttpClientName = "CyberChan";
         internal static readonly TimeSpan NetworkTimeout = TimeSpan.FromMinutes(5);
 
         internal static bool TryParseRequest(string seed, out string promptStyle, out ImageGenerationQuality quality, out string validationError)
@@ -27,8 +28,12 @@ namespace CyberChan.Services
 
             var qualitySpecified = false;
 
-            foreach (var token in seed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            var tokens = seed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            for (var index = 0; index < tokens.Length; index++)
             {
+                var token = tokens[index];
+
                 if (IsPromptStyle(token))
                 {
                     promptStyle = token;
@@ -48,7 +53,7 @@ namespace CyberChan.Services
                     continue;
                 }
 
-                if (string.IsNullOrEmpty(promptStyle))
+                if (index == 0 && string.IsNullOrEmpty(promptStyle))
                 {
                     promptStyle = token;
                     continue;
@@ -89,7 +94,8 @@ namespace CyberChan.Services
         {
             ImageGenerationQuality.LowQuality => GeneratedImageQuality.LowQuality,
             ImageGenerationQuality.MediumQuality => GeneratedImageQuality.MediumQuality,
-            _ => GeneratedImageQuality.HighQuality,
+            ImageGenerationQuality.HighQuality => GeneratedImageQuality.HighQuality,
+            _ => throw new ArgumentOutOfRangeException(nameof(quality), quality, "Unsupported image generation quality."),
         };
 
         private static bool IsPromptStyle(string value) =>
