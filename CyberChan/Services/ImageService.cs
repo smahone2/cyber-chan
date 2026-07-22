@@ -37,7 +37,7 @@ namespace CyberChan.Services
             return json["results"][rand.Next(0, 20)];
         }
 
-        internal async Task GenerateImageCommon(Func<string, string, string, Task<ImageRepsonse>> modelDelegate, CommandContext ctx, string query, string baseFilename)
+        internal async Task GenerateImageCommon(Func<string, string, string, Task<ImageResponse>> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
@@ -61,17 +61,17 @@ namespace CyberChan.Services
                     embed.AddField("Original Prompt:", chunk);
                 }
 
-                if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
+                if (!string.IsNullOrEmpty(imageResponse.RevisedPrompt))
                 {
-                    foreach (var chunk in imageResponse.revisedPrompt.SplitBy(1024))
+                    foreach (var chunk in imageResponse.RevisedPrompt.SplitBy(1024))
                     {
                         embed.AddField("Revised Prompt:", chunk);
                     }
                 }
 
-                if (imageResponse.stream != null)
+                if (imageResponse.Stream != null)
                 {
-                    using Stream stream = imageResponse.stream;
+                    using Stream stream = imageResponse.Stream;
                     msg.AddFile(baseFilename, stream);
 
                     msg.AddEmbed(embed);
@@ -89,7 +89,7 @@ namespace CyberChan.Services
             }
         }
 
-        internal async Task GenerateImageVariationFromMessage(TextCommandContext ctx, string instructions, string baseFilename)
+        internal async Task EditImageFromMessage(TextCommandContext ctx, string instructions, string baseFilename)
         {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
@@ -134,31 +134,31 @@ namespace CyberChan.Services
                     }
 
                     DiscordMessageBuilder msg = new();
-                    AiService.ImageRepsonse imageResponse;
+                    AiService.ImageResponse imageResponse;
 
                     // Use the new GPT Vision + editing/generation method
-                    imageResponse = await aiService.AnalyzeAndModifyImage(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
+                    imageResponse = await aiService.EditOrCreateImageFromReference(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
 
                     DiscordEmbedBuilder embed = new();
                     embed.AddField("Source Image:", imageUrl);
                     embed.AddField("Operation:", isEdit ? "Edit" : "Create New");
-                    
+
                     if (!string.IsNullOrEmpty(processedInstructions) && processedInstructions != "Create a variation of this image")
                     {
                         embed.AddField("Instructions:", processedInstructions);
                     }
 
-                    if (!string.IsNullOrEmpty(imageResponse.revisedPrompt))
+                    if (!string.IsNullOrEmpty(imageResponse.RevisedPrompt))
                     {
-                        foreach (var chunk in imageResponse.revisedPrompt.SplitBy(1024))
+                        foreach (var chunk in imageResponse.RevisedPrompt.SplitBy(1024))
                         {
                             embed.AddField("Result:", chunk);
                         }
                     }
 
-                    if (imageResponse.stream != null)
+                    if (imageResponse.Stream != null)
                     {
-                        using Stream stream = imageResponse.stream;
+                        using Stream stream = imageResponse.Stream;
                         msg.AddFile(baseFilename, stream);
 
                         msg.AddEmbed(embed);
@@ -177,7 +177,7 @@ namespace CyberChan.Services
             }
             else
             {
-                await ctx.RespondAsync("Please reply to a message containing an image. Usage: `!dallevary <edit|create> [instructions]`");
+                await ctx.RespondAsync("Please reply to a message containing an image. Usage: `!editimage [instructions]`");
             }
         }
     }

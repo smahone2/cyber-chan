@@ -12,15 +12,15 @@ using GiphyDotNet.Manager;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Betalgo.Ranul.OpenAI.Managers;
+using OpenAI;
 using Serilog;
 using SteamWebAPI2.Utilities;
 using System;
+using System.ClientModel;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using Betalgo.Ranul.OpenAI;
 
 namespace CyberChan
 {
@@ -70,29 +70,24 @@ namespace CyberChan
     {
         public static IServiceCollection ConfigureServices(this IServiceCollection services)
         {
-            services.AddHttpClient();
-            services.AddSingleton(new OpenAIService(new OpenAIOptions { ApiKey = ConfigurationManager.AppSettings["OpenAIAPIKey"] }));
-            services.AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]));
-            services.AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"]);
-            services.AddSingleton<AiService>();
-            services.AddSingleton<ImageService>();
-            services.AddSingleton<DotaService>();
-            services.AddSingleton<KitsuService>();
-            services.AddSingleton<SteamService>();
-            services.AddSingleton<TraceDotMoeService>();
-            services.AddSingleton<CommandsService>();
-            services.AddHostedService<DiscordService>();
+            services.AddHttpClient()
+                .AddSingleton(new OpenAIClient(new ApiKeyCredential(ConfigurationManager.AppSettings["OpenAIAPIKey"] ?? string.Empty)))
+                .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
+                .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
+                .AddSingleton<AiService>()
+                .AddSingleton<ImageService>()
+                .AddSingleton<DotaService>()
+                .AddSingleton<KitsuService>()
+                .AddSingleton<SteamService>()
+                .AddSingleton<TraceDotMoeService>()
+                .AddSingleton<CommandsService>()
+                .AddHostedService<DiscordService>();
 
-            var client = DiscordClientBuilder.CreateDefault(
-                    ConfigurationManager.AppSettings["DiscordToken"],
+            var client = DiscordClientBuilder
+                .CreateDefault(
+                    ConfigurationManager.AppSettings["DiscordToken"] ?? string.Empty,
                     DiscordIntents.All,
                     services)
-                .ConfigureEventHandlers(b => b.AddEventHandlers<DiscordEventHandlerService>(ServiceLifetime.Transient))
-                .UseInteractivity(new InteractivityConfiguration
-                {
-                    PollBehaviour = PollBehaviour.KeepEmojis,
-                    Timeout = TimeSpan.FromSeconds(30)
-                })
                 .UseCommands(
                     (sp, ext) =>
                     {
