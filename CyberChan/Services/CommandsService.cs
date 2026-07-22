@@ -347,101 +347,48 @@ namespace CyberChan.Services
             await ctx.RespondAsync(embed: embed);
         }
 
+        // === Chat ===
+
+        public override async ValueTask Chat(TextCommandContext ctx, string query = "")
+        {
+            await aiService.ChatCommandCommon(aiService.Chat, ctx, query);
+        }
+
+        public override async ValueTask ChatFast(TextCommandContext ctx, string query = "")
+        {
+            await aiService.ChatCommandCommon(aiService.ChatFast, ctx, query);
+        }
+
+        public override async ValueTask ChatNano(TextCommandContext ctx, string query = "")
+        {
+            await aiService.ChatCommandCommon(aiService.ChatNano, ctx, query);
+        }
+
+        public override async ValueTask Reason(TextCommandContext ctx, string query = "")
+        {
+            await aiService.ChatCommandCommon(aiService.Reason, ctx, query);
+        }
+
+        public override async ValueTask ReasonDeep(TextCommandContext ctx, string query = "")
+        {
+            await aiService.ChatCommandCommon(aiService.ReasonDeep, ctx, query);
+        }
+
+        public override async ValueTask ChatLegacy(TextCommandContext ctx, string query = "")
+        {
+            await aiService.ChatCommandCommon(aiService.ChatLegacyFlagship, ctx, query);
+        }
+
+        // === Images ===
+
         public override async ValueTask GenerateImage(TextCommandContext ctx, string query = "")
         {
-            await imageService.GenerateImageCommon(aiService.GenerateImage, ctx, query, "dalle2.png");
+            await imageService.GenerateImageCommon(aiService.GenerateImage, ctx, query, "image.png");
         }
 
-        public override async ValueTask GenerateImage2(TextCommandContext ctx, string query = "")
+        public override async ValueTask EditImage(TextCommandContext ctx, string instructions = "")
         {
-            await imageService.GenerateImageCommon(aiService.GenerateImage2, ctx, query, "dalle3.png");
-        }
-        public override async ValueTask GenerateGptImage1(TextCommandContext ctx, string query = "")
-        {
-            await imageService.GenerateImageCommon(aiService.GenerateGptImage1, ctx, query, "gptimage1.png");
-        }
-
-        public override async ValueTask GPT3Prompt(TextCommandContext ctx, string query = "")
-        {
-            await ctx.Channel.TriggerTypingAsync();
-
-            if (await aiService.Moderation(query) == "Pass")
-            {
-                var embed = new DiscordEmbedBuilder();
-                embed.AddField("Question:", query);
-
-                foreach (var chunk in (await aiService.GPT3Prompt(query, ctx.User.Mention)).SplitBy(1024))
-                {
-                    embed.AddField("Cyber-chan Says:", chunk);
-                }
-
-                await ctx.RespondAsync(embed);
-            }
-            else
-            {
-                await ctx.RespondAsync("Query failed to pass OpenAI content moderation");
-            }
-
-        }
-
-        public override async ValueTask ChatGptPrompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPT35Prompt, ctx, query);
-        }
-
-        public override async ValueTask GPT4Prompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPT4Prompt, ctx, query);
-        }
-
-        public override async ValueTask GPT4PreviewPrompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPT4PreviewPrompt, ctx, query);
-        }
-
-        public override async ValueTask GPT4OmniPrompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPT4OmniPrompt, ctx, query);
-        }
-
-        public override async ValueTask GPTO1Prompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPTO1Prompt, ctx, query);
-        }
-        
-        public override async ValueTask O4MiniPrompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.O4MiniPrompt, ctx, query);
-        }
-
-        public override async ValueTask GPT41NanoPrompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPT41NanoPrompt, ctx, query);
-        }
-
-        public override async ValueTask GPT41Prompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPT41Prompt, ctx, query);
-        }
-
-        public override async ValueTask O3Prompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.O3Prompt, ctx, query);
-        }
-
-        public override async ValueTask GPT52Prompt(TextCommandContext ctx, string query = "")
-        {
-            await aiService.GPTPromptCommon(aiService.GPT52Prompt, ctx, query);
-        }
-
-        public override async ValueTask GenerateImage15(TextCommandContext ctx, string query = "")
-        {
-            await imageService.GenerateImageCommon(aiService.GenerateImage15, ctx, query, "image15.png");
-        }
-        
-        public override async ValueTask GenerateImageVariation(TextCommandContext ctx, string instructions = "")
-        {
-            await imageService.GenerateImageVariationFromMessage(ctx, instructions, "dalle-ai.png");
+            await imageService.EditImageFromMessage(ctx, instructions, "edited-image.png");
         }
     }
 }

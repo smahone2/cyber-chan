@@ -10,6 +10,8 @@ namespace CyberChan
 {
     internal abstract class Commands
     {
+        private const string SeedList = "Available personas: code, hackerman, steve, pirate, uwu, shakespeare.";
+
         [Command(nameof(Help))]
         [TextAlias("help", "h")]
         [Description("Get Help")]
@@ -81,163 +83,49 @@ namespace CyberChan
         public abstract ValueTask EightBall(TextCommandContext ctx, [Description("Question you want Cyber-chan to answer."), RemainingText] string _question);
 
 
+        // === Chat commands, grouped by usefulness ===
+
+        [Command(nameof(Chat))]
+        [TextAlias("chat", "ask", "gpt")]
+        [Description("Chat with Cyber-chan using the cheap default model (gpt-5.6-luna) so normal chats stay inexpensive. Use !fast or !thinkdeep for higher-tier models. " + SeedList + " Usage: !chat <hackerman> hello")]
+        public abstract ValueTask Chat(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(ChatFast))]
+        [TextAlias("fast", "mini")]
+        [Description("Chat with a balanced, faster flagship model (gpt-5.6-terra). " + SeedList + " Usage: !fast <hackerman> hello")]
+        public abstract ValueTask ChatFast(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(ChatNano))]
+        [TextAlias("nano", "quick")]
+        [Description("Chat with the smallest / cheapest current-gen model (gpt-5.6-luna). " + SeedList + " Usage: !nano <hackerman> hello")]
+        public abstract ValueTask ChatNano(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(Reason))]
+        [TextAlias("think", "reason")]
+        [Description("Ask a reasoning-focused model (routes to gpt-5.6-terra) for tough or multi-step problems. " + SeedList + " Usage: !think <code> solve...")]
+        public abstract ValueTask Reason(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(ReasonDeep))]
+        [TextAlias("thinkdeep", "reasondeep", "deepthink")]
+        [Description("Ask the highest-capability reasoning model (routes to gpt-5.6-sol). " + SeedList + " Usage: !thinkdeep <code> solve...")]
+        public abstract ValueTask ReasonDeep(TextCommandContext ctx, [RemainingText] string query = "");
+
+        [Command(nameof(ChatLegacy))]
+        [TextAlias("legacy", "gpt55")]
+        [Description("Chat using the prior-generation flagship (gpt-5.5). " + SeedList + " Usage: !legacy <hackerman> hello")]
+        public abstract ValueTask ChatLegacy(TextCommandContext ctx, [RemainingText] string query = "");
+
+
+        // === Image commands ===
+
         [Command(nameof(GenerateImage))]
-        [TextAlias("dalle2", "dalle")]
-        [Description("Generate an image with DALL-E. Usage: !dalle2 test")]
+        [TextAlias("image", "img", "draw", "gptimage")]
+        [Description("Generate an image with the current image model (gpt-image-2). Usage: !image <simple|detailed> prompt")]
         public abstract ValueTask GenerateImage(TextCommandContext ctx, [RemainingText] string query = "");
 
-
-        [Command(nameof(GenerateImage2))]
-        [TextAlias("dalle3")]
-        [Description("Generate an image with DALL-E. Usage: !dalle3 <simple> test")]
-        public abstract ValueTask GenerateImage2(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GenerateGptImage1))]
-        [TextAlias("gptimage", "gptimage1")]
-        [Description("Generate an image with GPT-Image-1. Usage: !gptimage1 <simple> test")]
-        public abstract ValueTask GenerateGptImage1(TextCommandContext ctx, [RemainingText] string query = "");
-
-
-        [Command(nameof(GPT3Prompt))]
-        [TextAlias("gpt3", "prompt")]
-        [Description("Generate text with GPT3. Usage: !gpt3 test")]
-        public abstract ValueTask GPT3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-
-        [Command(nameof(ChatGptPrompt))]
-        [TextAlias("chatgpt", "prompt2")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !chatgpt <hackerman> test")]
-        public abstract ValueTask ChatGptPrompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-
-        [Command(nameof(GPT4Prompt))]
-        [TextAlias("gpt4", "prompt3")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public abstract ValueTask GPT4Prompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-
-        [Command(nameof(GPT4PreviewPrompt))]
-        [TextAlias("gpt4p", "prompt4", "gpt4preview")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public abstract ValueTask GPT4PreviewPrompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GPT4OmniPrompt))]
-        [TextAlias("gpt4o", "prompt5", "gpt4omni")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt4 <hackerman> test")]
-        public abstract ValueTask GPT4OmniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GPTO1Prompt))]
-        [TextAlias("gpto1", "prompt6")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gptO1 <hackerman> test")]
-        public abstract ValueTask GPTO1Prompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(O4MiniPrompt))]
-        [TextAlias("o4mini", "prompt7")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o4mini <hackerman> test")]
-        public abstract ValueTask O4MiniPrompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GPT41NanoPrompt))]
-        [TextAlias("gpt41nano", "prompt8")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41nano <hackerman> test")]
-        public abstract ValueTask GPT41NanoPrompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GPT41Prompt))]
-        [TextAlias("gpt41", "prompt9")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt41 <hackerman> test")]
-        public abstract ValueTask GPT41Prompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(O3Prompt))]
-        [TextAlias("o3", "prompt10")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !o3 <hackerman> test")]
-        public abstract ValueTask O3Prompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GPT52Prompt))]
-        [TextAlias("gpt52", "prompt11")]
-        [Description("Seeds are hackerman, code, evil, dev, dev+, steve, and dude. Usage: !gpt52 <hackerman> test")]
-        public abstract ValueTask GPT52Prompt(TextCommandContext ctx, [RemainingText] string query = "");
-
-
-        [Command(nameof(GenerateImage15))]
-        [TextAlias("image15", "img15")]
-        [Description("Generate an image with GPT-Image-1.5. Usage: !image15 <simple> test")]
-        public abstract ValueTask GenerateImage15(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GenerateImageVariation))]
-        [TextAlias("editimage", "dallevary", "imagevary", "imagemod")]
-        [Description("Modify or create image using GPT Vision + GPT-Image-1. Usage: !editimage [instructions]")]
-        public abstract ValueTask GenerateImageVariation(TextCommandContext ctx, [RemainingText] string instructions = "");
-
-
-        //[Command("db")]
-        //[Description("Just saying hello.")]
-        //public async ValueTask Db(CommandContext ctx)
-        //{
-        //    Dotabuff(ctx).ConfigureAwait(false).GetAwaiter().GetResult();
-        //}
-
-        //[Command("dotabuff")]
-        //[Description("Retrieve your most recent dota match from dotabuff.")]
-        //[Aliases("db", "dota")]
-        //public async ValueTask Dotabuff(CommandContext ctx)
-        //{
-        //    try
-        //    {
-        //        if (!Program.steamID.ContainsKey(ctx.User.Username))
-        //        {
-        //            await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
-        //        }
-        //        else
-        //        {
-        //            await ctx.RespondAsync($"Dotabuff Link: https://www.dotabuff.com/matches/{ Program.dota.GetMatchId(Program.steamID[ctx.User.Username])}");
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
-        //    }
-
-        //}
-
-        //[Command("steamname")]
-        //[Description("Displays your steam display name.")]
-        //public async ValueTask SteamTest(CommandContext ctx)
-        //{
-        //    try
-        //    {
-        //        if (!Program.steamID.ContainsKey(ctx.User.Username))
-        //        {
-        //            await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
-        //        }
-        //        else
-        //        {
-        //            await ctx.RespondAsync($"Steam Display Name: { Program.steam.DisplayNameSearch(Program.steamID[ctx.User.Username])}");
-        //        }
-        //    }
-        //    catch
-        //    {
-        //        await ctx.RespondAsync($"Current stored steam id is {Program.steamID[ctx.User.Username]}... Provide a valid steam ID by using command !steamid <steamid>");
-        //    }
-
-        //}
-
-        //[Command("steamid")]
-        //[Description("Associate your Steam ID with the bot. Usage: !steamid <steamid>")]
-        //public async ValueTask Steamid(CommandContext ctx)
-        //{
-        //    var id = ctx.Message.Content.Replace("!steamid ", "");
-        //    if (!Program.steamID.ContainsKey(ctx.User.Username))
-        //        Program.steamID.Add(ctx.User.Username, id);
-        //    else
-        //        Program.steamID[ctx.User.Username] = id;
-        //    StreamWriter sw = new StreamWriter("SteamIds.txt");
-        //    foreach (var user in Program.steamID)
-        //    {
-        //        sw.WriteLine(user.Key + "," + user.Value);
-        //    }
-        //    sw.Close();
-        //    await ctx.RespondAsync($"Steam Id {id} saved for {ctx.User.Mention}");
-
-        //}
-
+        [Command(nameof(EditImage))]
+        [TextAlias("editimage", "imageedit", "imagevary", "imagemod")]
+        [Description("Reply to a message containing an image to edit or create a variation. Usage (reply): !editimage [instructions]")]
+        public abstract ValueTask EditImage(TextCommandContext ctx, [RemainingText] string instructions = "");
     }
 }
