@@ -71,7 +71,14 @@ namespace CyberChan
         public static IServiceCollection ConfigureServices(this IServiceCollection services)
         {
             services.AddHttpClient()
-                .AddSingleton(new OpenAIClient(new ApiKeyCredential(ConfigurationManager.AppSettings["OpenAIAPIKey"] ?? string.Empty)))
+                .AddSingleton(new OpenAIClient(
+                    new ApiKeyCredential(ConfigurationManager.AppSettings["OpenAIAPIKey"] ?? string.Empty),
+                    new OpenAIClientOptions
+                    {
+                        // Image generation (especially at higher qualities) and long chat completions
+                        // can exceed the SDK's default network timeout. Allow up to 5 minutes per request.
+                        NetworkTimeout = TimeSpan.FromMinutes(5),
+                    }))
                 .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
                 .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
                 .AddSingleton<AiService>()
