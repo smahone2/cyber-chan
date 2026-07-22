@@ -177,7 +177,7 @@ namespace CyberChan.Services
             {
                 Size = GeneratedImageSize.W1024xH1024,
                 EndUserId = user,
-                Quality = GeneratedImageQuality.High,
+                Quality = GeneratedImageQuality.HighQuality,
             };
 
             if (ModelCatalog.Base64ImageModels.Contains(model))
