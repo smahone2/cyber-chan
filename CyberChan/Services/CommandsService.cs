@@ -386,11 +386,6 @@ namespace CyberChan.Services
             await imageService.GenerateImageCommon(aiService.GenerateImage, ctx, query, "image.png");
         }
 
-        public override async ValueTask GenerateImageDallE3(TextCommandContext ctx, string query = "")
-        {
-            await imageService.GenerateImageCommon(aiService.GenerateImageDallE3, ctx, query, "dalle3.png");
-        }
-
         public override async ValueTask EditImage(TextCommandContext ctx, string instructions = "")
         {
             await imageService.EditImageFromMessage(ctx, instructions, "edited-image.png");

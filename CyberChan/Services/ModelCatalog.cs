@@ -5,48 +5,45 @@ namespace CyberChan.Services
     /// <summary>
     /// Central source of truth for OpenAI model identifiers used by the bot,
     /// grouped by usefulness category. Update model strings here to migrate
-    /// all call sites at once. Legacy / superseded models have been removed.
+    /// all call sites at once.
+    ///
+    /// Model IDs reflect the current frontier per the OpenAI models docs page
+    /// (https://developers.openai.com/api/docs/models/all). Models the page
+    /// marks as deprecated (e.g. gpt-5, gpt-image-1, dall-e-3, o3, o4-mini)
+    /// have been removed. Dedicated reasoning models are no longer a separate
+    /// category — the gpt-5.6-* frontier handles reasoning workloads.
     /// </summary>
     internal static class ModelCatalog
     {
-        /// <summary>General-purpose flagship chat models.</summary>
+        /// <summary>Current frontier general-purpose chat models (gpt-5.6 family).</summary>
         public static class Flagship
         {
-            // Newest general-purpose flagship.
-            public const string Gpt5 = "gpt-5";
-            // Prior-generation flagship, kept as a fallback for callers that need it.
-            public const string Gpt41 = "gpt-4.1";
+            // Top-capability flagship — best quality, handles reasoning workloads.
+            public const string Gpt56Sol = "gpt-5.6-sol";
+            // Balanced flagship — good quality, faster / cheaper than Sol.
+            public const string Gpt56Terra = "gpt-5.6-terra";
+            // Cost-sensitive flagship — smallest / cheapest of the gpt-5.6 tier.
+            public const string Gpt56Luna = "gpt-5.6-luna";
         }
 
-        /// <summary>Reasoning-heavy models (for tough problems, math, planning).</summary>
-        public static class Reasoning
+        /// <summary>Prior-generation flagship chat models, kept as fallbacks.</summary>
+        public static class LegacyFlagship
         {
-            // Newest small-but-fast reasoning model.
-            public const string O4Mini = "o4-mini";
-            // Highest-capability reasoning model.
-            public const string O3 = "o3";
-        }
-
-        /// <summary>Cost-efficient / fast chat models.</summary>
-        public static class Fast
-        {
-            // Newest cost-efficient siblings of gpt-5.
-            public const string Gpt5Mini = "gpt-5-mini";
-            public const string Gpt5Nano = "gpt-5-nano";
-            // Prior-generation cost-efficient fallbacks.
-            public const string Gpt41Mini = "gpt-4.1-mini";
-            public const string Gpt41Nano = "gpt-4.1-nano";
+            public const string Gpt55 = "gpt-5.5";
+            public const string Gpt55Pro = "gpt-5.5-pro";
+            public const string Gpt54 = "gpt-5.4";
+            public const string Gpt54Pro = "gpt-5.4-pro";
+            public const string Gpt54Mini = "gpt-5.4-mini";
+            public const string Gpt54Nano = "gpt-5.4-nano";
         }
 
         /// <summary>Multimodal models (vision input, image generation).</summary>
         public static class Multimodal
         {
-            // Use gpt-4.1 for vision analysis (broad availability, strong vision).
-            public const string VisionChat = "gpt-4.1";
-            // Preferred image-generation model.
-            public const string ImageGen = "gpt-image-1";
-            // Legacy DALL-E kept for the !dalle3 alias.
-            public const string DallE3 = "dall-e-3";
+            // Frontier flagship also handles vision — reuse Terra for image analysis.
+            public const string VisionChat = Flagship.Gpt56Terra;
+            // Current image-generation model.
+            public const string ImageGen = "gpt-image-2";
         }
 
         /// <summary>Text embedding models.</summary>
@@ -62,19 +59,15 @@ namespace CyberChan.Services
         /// <summary>
         /// Image models that support base64 response payloads and therefore need
         /// an explicit <c>ResponseFormat = Bytes</c> to receive raw image data.
+        /// Empty for now — gpt-image-2 returns bytes by default.
         /// </summary>
-        public static readonly HashSet<string> Base64ImageModels = new()
-        {
-            Multimodal.DallE3,
-        };
+        public static readonly HashSet<string> Base64ImageModels = new();
 
         /// <summary>
-        /// Chat models that use the "developer" role instead of "system" (reasoning models).
+        /// Chat models that use the "developer" role instead of "system"
+        /// (historically the o-series reasoning models). Empty now that
+        /// dedicated reasoning models are deprecated.
         /// </summary>
-        public static readonly HashSet<string> ReasoningChatModels = new()
-        {
-            Reasoning.O3,
-            Reasoning.O4Mini,
-        };
+        public static readonly HashSet<string> ReasoningChatModels = new();
     }
 }

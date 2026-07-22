@@ -140,13 +140,9 @@ namespace CyberChan.Services
 
         // === Public image API — user-facing entry points ===
 
-        /// <summary>Generate an image using the default (newest) image model.</summary>
+        /// <summary>Generate an image using the current image model (gpt-image-2).</summary>
         public Task<ImageResponse> GenerateImage(string query, string user, string seed) =>
             GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.ImageGen);
-
-        /// <summary>Generate an image using the legacy DALL-E 3 model.</summary>
-        public Task<ImageResponse> GenerateImageDallE3(string query, string user, string seed) =>
-            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.DallE3);
 
         public async Task<ImageResponse> EditOrCreateImageFromReference(string imageUrl, string instructions, string user, bool isEdit = true)
         {
@@ -294,29 +290,30 @@ namespace CyberChan.Services
 
         // === Public chat API — user-facing entry points, one per usefulness tier ===
 
-        /// <summary>Newest flagship general-purpose chat (gpt-5).</summary>
+        /// <summary>Top-capability flagship chat (gpt-5.6-sol).</summary>
         public Task<string> Chat(string query, string user, string seed) =>
-            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt5);
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Sol);
 
-        /// <summary>Cost-efficient / fast chat (gpt-5-mini).</summary>
+        /// <summary>Balanced flagship chat (gpt-5.6-terra) — good quality, faster.</summary>
         public Task<string> ChatFast(string query, string user, string seed) =>
-            ChatWithModel(query, user, seed, ModelCatalog.Fast.Gpt5Mini);
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Terra);
 
-        /// <summary>Cheapest / smallest chat tier (gpt-5-nano).</summary>
+        /// <summary>Cost-sensitive flagship chat (gpt-5.6-luna) — smallest / cheapest current-gen.</summary>
         public Task<string> ChatNano(string query, string user, string seed) =>
-            ChatWithModel(query, user, seed, ModelCatalog.Fast.Gpt5Nano);
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Luna);
 
-        /// <summary>Prior-generation flagship (gpt-4.1) — kept as fallback.</summary>
+        /// <summary>Prior-generation flagship (gpt-5.5) — kept as fallback.</summary>
         public Task<string> ChatLegacyFlagship(string query, string user, string seed) =>
-            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt41);
+            ChatWithModel(query, user, seed, ModelCatalog.LegacyFlagship.Gpt55);
 
-        /// <summary>Reasoning model, small/fast tier (o4-mini).</summary>
+        /// <summary>Reasoning-focused chat — routes to the balanced flagship (gpt-5.6-terra).
+        /// Dedicated o-series reasoning models are deprecated; the gpt-5.6 tier handles reasoning natively.</summary>
         public Task<string> Reason(string query, string user, string seed) =>
-            ChatWithModel(query, user, seed, ModelCatalog.Reasoning.O4Mini);
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Terra);
 
-        /// <summary>Reasoning model, high-capability tier (o3).</summary>
+        /// <summary>Deep reasoning — routes to the top-capability flagship (gpt-5.6-sol).</summary>
         public Task<string> ReasonDeep(string query, string user, string seed) =>
-            ChatWithModel(query, user, seed, ModelCatalog.Reasoning.O3);
+            ChatWithModel(query, user, seed, ModelCatalog.Flagship.Gpt56Sol);
 
         private Task<string> ChatWithModel(string query, string user, string seed, string model)
         {
@@ -406,12 +403,12 @@ namespace CyberChan.Services
 
         private (string Model, string? SeedOverride) ResolveModel(Func<string, string, string, Task<string>> modelDelegate)
         {
-            if (modelDelegate == Chat) return (ModelCatalog.Flagship.Gpt5, null);
-            if (modelDelegate == ChatFast) return (ModelCatalog.Fast.Gpt5Mini, null);
-            if (modelDelegate == ChatNano) return (ModelCatalog.Fast.Gpt5Nano, null);
-            if (modelDelegate == ChatLegacyFlagship) return (ModelCatalog.Flagship.Gpt41, null);
-            if (modelDelegate == Reason) return (ModelCatalog.Reasoning.O4Mini, null);
-            if (modelDelegate == ReasonDeep) return (ModelCatalog.Reasoning.O3, null);
+            if (modelDelegate == Chat) return (ModelCatalog.Flagship.Gpt56Sol, null);
+            if (modelDelegate == ChatFast) return (ModelCatalog.Flagship.Gpt56Terra, null);
+            if (modelDelegate == ChatNano) return (ModelCatalog.Flagship.Gpt56Luna, null);
+            if (modelDelegate == ChatLegacyFlagship) return (ModelCatalog.LegacyFlagship.Gpt55, null);
+            if (modelDelegate == Reason) return (ModelCatalog.Flagship.Gpt56Terra, null);
+            if (modelDelegate == ReasonDeep) return (ModelCatalog.Flagship.Gpt56Sol, null);
 
             throw new ArgumentOutOfRangeException(nameof(modelDelegate), "Unknown model delegate provided.");
         }

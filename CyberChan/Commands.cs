@@ -87,32 +87,32 @@ namespace CyberChan
 
         [Command(nameof(Chat))]
         [TextAlias("chat", "ask", "gpt")]
-        [Description("Chat with Cyber-chan using the newest flagship model (gpt-5). " + SeedList + " Usage: !chat <hackerman> hello")]
+        [Description("Chat with Cyber-chan using the top-capability flagship model (gpt-5.6-sol). " + SeedList + " Usage: !chat <hackerman> hello")]
         public abstract ValueTask Chat(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(ChatFast))]
         [TextAlias("fast", "mini")]
-        [Description("Chat with a fast, cost-efficient model (gpt-5-mini). " + SeedList + " Usage: !fast <hackerman> hello")]
+        [Description("Chat with a balanced, faster flagship model (gpt-5.6-terra). " + SeedList + " Usage: !fast <hackerman> hello")]
         public abstract ValueTask ChatFast(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(ChatNano))]
         [TextAlias("nano", "quick")]
-        [Description("Chat with the smallest / cheapest model (gpt-5-nano). " + SeedList + " Usage: !nano <hackerman> hello")]
+        [Description("Chat with the smallest / cheapest current-gen model (gpt-5.6-luna). " + SeedList + " Usage: !nano <hackerman> hello")]
         public abstract ValueTask ChatNano(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(Reason))]
         [TextAlias("think", "reason")]
-        [Description("Ask a reasoning-focused model (o4-mini) for tough or multi-step problems. " + SeedList + " Usage: !think <code> solve...")]
+        [Description("Ask a reasoning-focused model (routes to gpt-5.6-terra) for tough or multi-step problems. " + SeedList + " Usage: !think <code> solve...")]
         public abstract ValueTask Reason(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(ReasonDeep))]
         [TextAlias("thinkdeep", "reasondeep", "deepthink")]
-        [Description("Ask the highest-capability reasoning model (o3). " + SeedList + " Usage: !thinkdeep <code> solve...")]
+        [Description("Ask the highest-capability reasoning model (routes to gpt-5.6-sol). " + SeedList + " Usage: !thinkdeep <code> solve...")]
         public abstract ValueTask ReasonDeep(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(ChatLegacy))]
-        [TextAlias("legacy", "gpt41")]
-        [Description("Chat using the prior-generation flagship (gpt-4.1). " + SeedList + " Usage: !legacy <hackerman> hello")]
+        [TextAlias("legacy", "gpt55")]
+        [Description("Chat using the prior-generation flagship (gpt-5.5). " + SeedList + " Usage: !legacy <hackerman> hello")]
         public abstract ValueTask ChatLegacy(TextCommandContext ctx, [RemainingText] string query = "");
 
 
@@ -120,13 +120,8 @@ namespace CyberChan
 
         [Command(nameof(GenerateImage))]
         [TextAlias("image", "img", "draw", "gptimage")]
-        [Description("Generate an image with the newest image model (gpt-image-1). Usage: !image <simple|detailed> prompt")]
+        [Description("Generate an image with the current image model (gpt-image-2). Usage: !image <simple|detailed> prompt")]
         public abstract ValueTask GenerateImage(TextCommandContext ctx, [RemainingText] string query = "");
-
-        [Command(nameof(GenerateImageDallE3))]
-        [TextAlias("dalle3", "dalle")]
-        [Description("Generate an image with DALL-E 3 (legacy). Usage: !dalle3 <simple|detailed> prompt")]
-        public abstract ValueTask GenerateImageDallE3(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(EditImage))]
         [TextAlias("editimage", "imageedit", "imagevary", "imagemod")]
