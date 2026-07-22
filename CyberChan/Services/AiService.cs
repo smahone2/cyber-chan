@@ -141,8 +141,8 @@ namespace CyberChan.Services
         // === Public image API — user-facing entry points ===
 
         /// <summary>Generate an image using the current image model (gpt-image-2).</summary>
-        public Task<ImageResponse> GenerateImage(string query, string user, string seed) =>
-            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.ImageGen);
+        public Task<ImageResponse> GenerateImage(string query, string user, string seed, ImageGenerationQuality quality = ImageGenerationQuality.LowQuality) =>
+            GenerateImageTask(query, user, seed, ModelCatalog.Multimodal.ImageGen, quality);
 
         public async Task<ImageResponse> EditOrCreateImageFromReference(string imageUrl, string instructions, string user, bool isEdit = true)
         {
@@ -168,22 +168,28 @@ namespace CyberChan.Services
             public Stream Stream;
         }
 
-        private async Task<ImageResponse> GenerateImageTask(string query, string user, string seed, string model)
+        internal static ImageGenerationOptions CreateImageGenerationOptions(string user, string model, ImageGenerationQuality quality = ImageGenerationQuality.LowQuality)
         {
-            var prompt = BuildImagePrompt(query, seed);
-            var imageClient = openAiClient.GetImageClient(model);
-
             var options = new ImageGenerationOptions
             {
                 Size = GeneratedImageSize.W1024xH1024,
                 EndUserId = user,
-                Quality = GeneratedImageQuality.HighQuality,
+                Quality = ImageGenerationSettings.ToSdkQuality(quality),
             };
 
             if (ModelCatalog.Base64ImageModels.Contains(model))
             {
                 options.ResponseFormat = GeneratedImageFormat.Bytes;
             }
+
+            return options;
+        }
+
+        private async Task<ImageResponse> GenerateImageTask(string query, string user, string seed, string model, ImageGenerationQuality quality = ImageGenerationQuality.LowQuality)
+        {
+            var prompt = BuildImagePrompt(query, seed);
+            var imageClient = openAiClient.GetImageClient(model);
+            var options = CreateImageGenerationOptions(user, model, quality);
 
             var response = new ImageResponse();
             try

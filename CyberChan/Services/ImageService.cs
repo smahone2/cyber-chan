@@ -37,7 +37,7 @@ namespace CyberChan.Services
             return json["results"][rand.Next(0, 20)];
         }
 
-        internal async Task GenerateImageCommon(Func<string, string, string, Task<ImageResponse>> modelDelegate, CommandContext ctx, string query, string baseFilename)
+        internal async Task GenerateImageCommon(Func<string, string, string, ImageGenerationQuality, Task<ImageResponse>> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
@@ -50,10 +50,16 @@ namespace CyberChan.Services
                 query = query.Split("> ")[1].Trim();
             }
 
+            if (!ImageGenerationSettings.TryParseRequest(seed, out var promptStyle, out var quality, out var validationError))
+            {
+                await ctx.RespondAsync(validationError);
+                return;
+            }
+
             if (await aiService.Moderation(query) == "Pass")
             {
                 DiscordMessageBuilder msg = new();
-                var imageResponse = await modelDelegate(query, ctx.User.Mention, seed);
+                var imageResponse = await modelDelegate(query, ctx.User.Mention, promptStyle, quality);
                 DiscordEmbedBuilder embed = new();
 
                 foreach (var chunk in query.SplitBy(1024))

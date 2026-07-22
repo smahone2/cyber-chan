@@ -70,7 +70,7 @@ namespace CyberChan
     {
         public static IServiceCollection ConfigureServices(this IServiceCollection services)
         {
-            services.AddHttpClient()
+            services.AddCyberChanHttpClient()
                 .AddSingleton(new OpenAIClient(new ApiKeyCredential(ConfigurationManager.AppSettings["OpenAIAPIKey"] ?? string.Empty)))
                 .AddSingleton(new Giphy(ConfigurationManager.AppSettings["GiphyAPI"]))
                 .AddSteamWebInterfaceFactory(x => x.SteamWebApiKey = ConfigurationManager.AppSettings["SteamAPIKey"])
@@ -105,6 +105,12 @@ namespace CyberChan
 
             services.AddSingleton(client);
 
+            return services;
+        }
+
+        public static IServiceCollection AddCyberChanHttpClient(this IServiceCollection services)
+        {
+            services.AddHttpClient(string.Empty, client => client.Timeout = ImageGenerationSettings.NetworkTimeout);
             return services;
         }
     }

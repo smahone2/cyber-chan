@@ -120,7 +120,7 @@ namespace CyberChan
 
         [Command(nameof(GenerateImage))]
         [TextAlias("image", "img", "draw", "gptimage")]
-        [Description("Generate an image with the current image model (gpt-image-2). Usage: !image <simple|detailed> prompt")]
+        [Description("Generate an image with the current image model (gpt-image-2). Quality defaults to LowQuality. Usage: !image <simple, MediumQuality> prompt")]
         public abstract ValueTask GenerateImage(TextCommandContext ctx, [RemainingText] string query = "");
 
         [Command(nameof(EditImage))]
