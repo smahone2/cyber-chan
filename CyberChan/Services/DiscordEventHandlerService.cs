@@ -38,6 +38,13 @@ namespace CyberChan.Services
             if (eventArgs.Channel is not DiscordThreadChannel threadChannel)
                 return;
 
+            // If the thread was created by the bot, always reply in it — even if the
+            // in-memory conversation state has been lost (e.g. after a restart).
+            if (threadChannel.CreatorId == sender.CurrentUser.Id)
+            {
+                aiService.EnsureThreadConversation(threadChannel.Id);
+            }
+
             if (!aiService.IsThreadConversation(threadChannel.Id))
                 return;
 
