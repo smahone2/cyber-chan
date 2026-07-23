@@ -74,12 +74,10 @@ namespace CyberChan.Services
                         ? "_I'm sorry, I couldn't generate a response._"
                         : result.Response;
 
-                    var firstChunk = true;
                     foreach (var chunk in responseText.SplitBy(1900))
                     {
-                        var content = firstChunk ? $"**Cyber-chan:**\n{chunk}" : chunk;
+                        var content = chunk;
                         await threadChannel.SendMessageAsync(content);
-                        firstChunk = false;
                     }
                     return;
             }
