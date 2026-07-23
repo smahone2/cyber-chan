@@ -467,6 +467,19 @@ namespace CyberChan.Services
 
         public bool IsThreadConversation(ulong threadId) => _threadConversations.ContainsKey(threadId);
 
+        /// <summary>
+        /// Ensures a conversation state exists for the given thread id. Used to (re)attach to
+        /// threads that were created by the bot but for which in-memory state has been lost
+        /// (e.g. after a restart), so that the bot continues to auto-reply in them.
+        /// </summary>
+        public void EnsureThreadConversation(ulong threadId)
+        {
+            _threadConversations.GetOrAdd(threadId, _ => new ConversationState
+            {
+                Model = ModelCatalog.Flagship.Gpt56Luna
+            });
+        }
+
         public void ClearConversation(ulong threadId)
         {
             if (_threadConversations.TryRemove(threadId, out var state))
