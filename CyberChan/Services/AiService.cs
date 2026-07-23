@@ -175,7 +175,7 @@ namespace CyberChan.Services
             if (isEdit && !string.IsNullOrEmpty(instructions))
             {
                 var response = await EditImageTask(imageUrl, analysis, user);
-                imageResponse.RevisedPrompt = $"Edit Prompt: {instructions}\n\nEdit Result: {imageResponse.RevisedPrompt}";
+                response.RevisedPrompt = $"Edit Prompt: {instructions}\n\nEdit Result: {response.RevisedPrompt}";
             } 
             else
             {
