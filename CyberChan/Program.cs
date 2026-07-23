@@ -95,6 +95,7 @@ namespace CyberChan
                     ConfigurationManager.AppSettings["DiscordToken"] ?? string.Empty,
                     DiscordIntents.All,
                     services)
+                .ConfigureEventHandlers(b => b.AddEventHandlers<DiscordEventHandlerService>(ServiceLifetime.Singleton))
                 .UseCommands(
                     (sp, ext) =>
                     {
