@@ -172,7 +172,7 @@ namespace CyberChan.Services
 
         public async Task<ImageResponse> EditOrCreateImageFromReference(string imageUrl, string instructions, string user, bool isEdit = true)
         {
-            Task<ImageResponse> response;
+            ImageResponse response;
             if (isEdit && !string.IsNullOrEmpty(instructions))
             {
                 response = await EditImageTask(imageUrl, analysis, user);
