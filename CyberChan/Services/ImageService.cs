@@ -106,6 +106,25 @@ namespace CyberChan.Services
             return json["results"][rand.Next(0, 20)];
         }
 
+        private static async Task RespondWithImage(CommandContext ctx, DiscordEmbedBuilder embed, ImageResponse response, string filename)
+        {
+            DiscordMessageBuilder message = new();
+            message.AddEmbed(embed);
+
+            if (response.Stream is Stream stream)
+            {
+                using (stream)
+                {
+                    message.AddFile(filename, stream);
+                    await ctx.RespondAsync(message);
+                }
+            }
+            else
+            {
+                await ctx.RespondAsync(message);
+            }
+        }
+
         internal async Task GenerateImageCommon(Func<string, string, string, Task<ImageResponse>> modelDelegate, CommandContext ctx, string query, string baseFilename)
         {
             await ctx.DeferResponseAsync();
@@ -127,7 +146,6 @@ namespace CyberChan.Services
 
             if (await aiService.Moderation(query) == "Pass")
             {
-                DiscordMessageBuilder msg = new();
                 var imageResponse = await InvokeImageDelegate(modelDelegate, query, ctx.User.Mention, seed, quality);
                 DiscordEmbedBuilder embed = new();
 
@@ -144,19 +162,7 @@ namespace CyberChan.Services
                     }
                 }
 
-                if (imageResponse.Stream != null)
-                {
-                    using Stream stream = imageResponse.Stream;
-                    msg.AddFile(baseFilename, stream);
-
-                    msg.AddEmbed(embed);
-                    await ctx.RespondAsync(msg);
-                }
-                else
-                {
-                    msg.AddEmbed(embed);
-                    await ctx.RespondAsync(msg);
-                }
+                await RespondWithImage(ctx, embed, imageResponse, baseFilename);
             }
             else
             {
@@ -193,26 +199,14 @@ namespace CyberChan.Services
                 if (imageUrl != null)
                 {
                     // Parse instructions to determine operation mode
-                    bool isEdit = true;
                     string processedInstructions = instructions?.Trim() ?? "";
-
-                    if (!string.IsNullOrEmpty(processedInstructions))
+                    bool isEdit = !string.IsNullOrEmpty(processedInstructions);
+                    if (!isEdit)
                     {
-                        isEdit = true;
-                        processedInstructions = processedInstructions.Trim();
-                    }
-                    else if (string.IsNullOrEmpty(processedInstructions))
-                    {
-                        // Default to creating a variation if no instructions provided
-                        isEdit = false;
                         processedInstructions = "Create a variation of this image";
                     }
 
-                    DiscordMessageBuilder msg = new();
-                    AiService.ImageResponse imageResponse;
-
-                    // Use the new GPT Vision + editing/generation method
-                    imageResponse = await aiService.EditOrCreateImageFromReference(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
+                    ImageResponse imageResponse = await aiService.EditOrCreateImageFromReference(imageUrl, processedInstructions, ctx.User.Mention, isEdit);
 
                     DiscordEmbedBuilder embed = new();
                     embed.AddField("Source Image:", imageUrl);
@@ -231,19 +225,7 @@ namespace CyberChan.Services
                         }
                     }
 
-                    if (imageResponse.Stream != null)
-                    {
-                        using Stream stream = imageResponse.Stream;
-                        msg.AddFile(baseFilename, stream);
-
-                        msg.AddEmbed(embed);
-                        await ctx.RespondAsync(msg);
-                    }
-                    else
-                    {
-                        msg.AddEmbed(embed);
-                        await ctx.RespondAsync(msg);
-                    }
+                    await RespondWithImage(ctx, embed, imageResponse, baseFilename);
                 }
                 else
                 {
