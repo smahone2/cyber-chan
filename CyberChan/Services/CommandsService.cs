@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace CyberChan.Services
 {
-    internal class CommandsService(Giphy giphy, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : Commands
+    internal partial class CommandsService(Giphy giphy, TraceDotMoeService traceDotMoeService, KitsuService kitsuService, AiService aiService, ImageService imageService) : Commands
     {
         public override async ValueTask Help(TextCommandContext ctx, string command = "", [RemainingText] string extraText = "")
         {
@@ -309,48 +309,5 @@ namespace CyberChan.Services
             await ctx.RespondAsync(embed: embed);
         }
 
-        // === Chat ===
-
-        public override async ValueTask Chat(TextCommandContext ctx, string query = "")
-        {
-            await aiService.ChatCommandCommon(aiService.Chat, ctx, query);
-        }
-
-        public override async ValueTask ChatFast(TextCommandContext ctx, string query = "")
-        {
-            await aiService.ChatCommandCommon(aiService.ChatFast, ctx, query);
-        }
-
-        public override async ValueTask ChatNano(TextCommandContext ctx, string query = "")
-        {
-            await aiService.ChatCommandCommon(aiService.ChatNano, ctx, query);
-        }
-
-        public override async ValueTask Reason(TextCommandContext ctx, string query = "")
-        {
-            await aiService.ChatCommandCommon(aiService.Reason, ctx, query);
-        }
-
-        public override async ValueTask ReasonDeep(TextCommandContext ctx, string query = "")
-        {
-            await aiService.ChatCommandCommon(aiService.ReasonDeep, ctx, query);
-        }
-
-        public override async ValueTask ChatLegacy(TextCommandContext ctx, string query = "")
-        {
-            await aiService.ChatCommandCommon(aiService.ChatLegacyFlagship, ctx, query);
-        }
-
-        // === Images ===
-
-        public override async ValueTask GenerateImage(TextCommandContext ctx, string query = "")
-        {
-            await imageService.GenerateImageCommon(aiService.GenerateImage, ctx, query, "image.png");
-        }
-
-        public override async ValueTask EditImage(TextCommandContext ctx, string instructions = "")
-        {
-            await imageService.EditImageFromMessage(ctx, instructions, "edited-image.png");
-        }
     }
 }
