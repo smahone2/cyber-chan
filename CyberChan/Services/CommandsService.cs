@@ -28,14 +28,13 @@ namespace CyberChan.Services
                     Description = "Listing all top-level commands and groups. Specify a command to see more information.\n\n"
                 };
 
-                var methodList = GetType().GetMethods().ToList();
-                var commandText = methodList
-                    .Where(method => method.GetCustomAttributes(typeof(CommandAttribute), true).FirstOrDefault() != null)
+                var commandText = GetType().GetMethods()
+                    .Where(method => method.IsDefined(typeof(CommandAttribute), true))
                     .Select(method =>
                     {
                         var textAliasAttribute = method.GetCustomAttributes(typeof(TextAliasAttribute), true).FirstOrDefault() as TextAliasAttribute;
 
-                        return ("`" + textAliasAttribute?.Aliases.FirstOrDefault() ?? method.Name) + "`";
+                        return $"`{textAliasAttribute?.Aliases.FirstOrDefault() ?? method.Name}`";
                     });
 
                 embed.AddField("Commands", string.Join(", ", commandText));
@@ -44,97 +43,60 @@ namespace CyberChan.Services
             }
             else
             {
-                //DiscordEmbedBuilder embed = new()
-                //{
-                //    Color = DiscordColor.Azure,
-                //    Title = "Help"
-                //};
-
-                //var methodList = GetType().GetMethods().ToList();
-                //var commandText = methodList
-                //    .Where(method => method.GetCustomAttributes(typeof(CommandAttribute), true).FirstOrDefault() != null)
-                //    .Select(method =>
-                //    {
-                //        var textAliasAttribute = method.GetCustomAttributes(typeof(TextAliasAttribute), true).FirstOrDefault() as TextAliasAttribute;
-
-                //        return ("`" + textAliasAttribute?.Aliases.FirstOrDefault() ?? method.Name) + "`";
-                //    });
-
                 await ctx.RespondAsync("Not implemented yet");
             }
+        }
+
+        private static async Task RespondWithGif(TextCommandContext ctx, Giphy giphy, string tag)
+        {
+            await ctx.DeferResponseAsync();
+            await ctx.Channel.TriggerTypingAsync();
+
+            DiscordEmbedBuilder embed = new()
+            {
+                ImageUrl = (await giphy.RandomGif(new RandomParameter { Tag = tag })).Data.Images.Downsized.Url
+            };
+
+            await ctx.RespondAsync($"👋 {tag}, {ctx.User.Mention}!", embed);
         }
 
         public override async ValueTask Hi(TextCommandContext ctx, string extraText = "")
         {
             Log.Information("Hi command initiated");
-
-            await ctx.DeferResponseAsync();
-            await ctx.Channel.TriggerTypingAsync();
-
-            RandomParameter giphyParameters = new()
-            {
-                Tag = "Hi"
-            };
-
-            DiscordEmbedBuilder embed = new()
-            {
-                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.Images.Downsized.Url
-            };
-
-            await ctx.RespondAsync($"👋 Hi, {ctx.User.Mention}!", embed);
-
+            await RespondWithGif(ctx, giphy, "Hi");
             Log.Information("Hi command finished");
         }
 
         public override async ValueTask Bye(TextCommandContext ctx, string extraText = "")
         {
             Log.Information("Bye command initiated");
+            await RespondWithGif(ctx, giphy, "Bye");
+            Log.Information("Bye command finished");
+        }
 
+        private static async Task RespondWithTenorGif(TextCommandContext ctx, ImageService imageService, string search, string label)
+        {
             await ctx.DeferResponseAsync();
             await ctx.Channel.TriggerTypingAsync();
 
-            RandomParameter giphyParameters = new()
-            {
-                Tag = "Bye"
-            };
+            var result = await imageService.TenorGifSearch(search);
+
             DiscordEmbedBuilder embed = new()
             {
-                ImageUrl = (await giphy.RandomGif(giphyParameters)).Data.Images.Downsized.Url
+                ImageUrl = result["media"][0]["gif"]["url"].ToString()
             };
 
-            await ctx.RespondAsync($"👋 Bye, {ctx.User.Mention}!", embed);
-
-            Log.Information("Bye command finished");
+            await ctx.RespondAsync($"{ctx.User.Mention}, here is your {label}!", embed);
         }
 
         public override async ValueTask Waifu(TextCommandContext ctx, string extraText = "")
         {
-            await ctx.DeferResponseAsync();
-            await ctx.Channel.TriggerTypingAsync();
-
-            var result = await imageService.TenorGifSearch("Anime Girl");
-
-            DiscordEmbedBuilder embed = new()
-            {
-                ImageUrl = result["media"][0]["gif"]["url"].ToString()
-            };
-
-            await ctx.RespondAsync($"{ctx.User.Mention}, here is your waifu!", embed);
+            await RespondWithTenorGif(ctx, imageService, "Anime Girl", "waifu");
         }
 
         public override async ValueTask Gif(TextCommandContext ctx, string searchText = null)
         {
-            await ctx.DeferResponseAsync();
-            await ctx.Channel.TriggerTypingAsync();
-
-            var result = await imageService.TenorGifSearch(string.IsNullOrWhiteSpace(searchText) ? "random" : searchText);
-
-            DiscordEmbedBuilder embed = new()
-            {
-                ImageUrl = result["media"][0]["gif"]["url"].ToString()
-            };
-
-            await ctx.RespondAsync($"{ctx.User.Mention}, here is your gif!", embed);
+            await RespondWithTenorGif(ctx, imageService, string.IsNullOrWhiteSpace(searchText) ? "random" : searchText, "gif");
         }
 
         public override async ValueTask LookupAnime(TextCommandContext ctx, string extraText = "")
@@ -392,4 +354,3 @@ namespace CyberChan.Services
         }
     }
 }
-
