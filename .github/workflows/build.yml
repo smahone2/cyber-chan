@@ -2,7 +2,7 @@ name: Verify-Build
 
 on:
   pull_request:
-    branches-ignore: [ test, master ]
+    branches-ignore: [ master ]
   workflow_dispatch:  # Allow manual deployment
 
 jobs:
